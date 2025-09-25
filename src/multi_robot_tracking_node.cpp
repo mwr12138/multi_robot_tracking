@@ -695,7 +695,7 @@ void multi_robot_tracking_Node::init(void)
 
     priv_nh.param<std::string>("filter",filter_to_use_,"phd"); //store which filter to use
     priv_nh.param<std::string>("input_bbox_topic",input_bbox_topic,"/DragonPro1/snpe_ros/detections"); //input bbox topic
-    priv_nh.param<std::string>("input_img_topic",input_img_topic,"DragonPro1/image_publisher/image_raw"); //input img topic
+    priv_nh.param<std::string>("input_img_topic",input_img_topic,"/usb_cam/image_raw"); //input img topic
     priv_nh.param<std::string>("input_imu_topic",input_imu_topic,"/DragonPro1/imu"); //input imu topic
 
     priv_nh.param<int>("num_drones",num_drones,2);

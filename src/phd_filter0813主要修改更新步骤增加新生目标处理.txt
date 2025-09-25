@@ -135,7 +135,7 @@ void PhdFilter::set_num_drones(int num_drones_in)  //设置无人机数量
 void PhdFilter::initialize(float q_pos, float q_vel, float r_meas, float p_pos_init, float p_vel_init,
                         float prune_weight_threshold, float prune_mahalanobis_threshold, float extract_weight_threshold)  //初始化
 {
-    //ROS_ERROR("======= Initialize ======= \n");
+    ROS_ERROR("======= Initialize ======= \n");
     Eigen::MatrixXf P_k_init;
     P_k_init = Eigen::MatrixXf(n_state,n_state); //根据输入的参数初始化状态协方差矩阵
     P_k_init <<
@@ -149,10 +149,10 @@ void PhdFilter::initialize(float q_pos, float q_vel, float r_meas, float p_pos_i
     for(int i = 0; i < Z_k.cols(); i ++)
     {   
         //store Z into mk (x,y)
-        // ROS_ERROR_STREAM("ZK: \n" << Z_k << endl); 
+        ROS_ERROR_STREAM("ZK: \n" << Z_k << endl); 
         // mk_minus_1.block(0, i, n_state, 1) = H.transpose()*Z_k.block(0,i, n_meas,1);
         mk_minus_1.block(0, i, n_state, 1) << Z_k.block(0, i, 1, 1), 0, Z_k.block(1, i, 1, 1), 0;   //将Z_k的测量值转换为mk_minus_1状态向量
-        // ROS_ERROR_STREAM("mk_minus_1: \n" << mk_minus_1 << endl);         
+        ROS_ERROR_STREAM("mk_minus_1: \n" << mk_minus_1 << endl);         
         //store pre-determined weight into wk (from matlab)
         wk_minus_1(i) = .0016;  //给每个目标分配一个初始权重
         //store pre-determined weight into Pk (from paper)
@@ -274,7 +274,7 @@ void PhdFilter::phd_construct() //滤波器构建
 
 void PhdFilter::phd_update() //更新
 {
-    // ROS_ERROR("======= 3. update ======= \n");
+    ROS_ERROR("======= 3. update ======= \n");
     
     //1. set up matrix size
     mahalDistance = Eigen::MatrixXf::Zero(1,numTargets_Jk_k_minus_1 * detected_size_k + numTargets_Jk_k_minus_1);
@@ -377,14 +377,14 @@ void PhdFilter::phd_update() //更新
         }
 
     }
-    // ROS_ERROR_STREAM("++++++++++associationWeights: " << endl << setprecision(3) << associationWeights << endl);
-    // ROS_ERROR_STREAM("wk(post_post): " << endl << setprecision(3) << wk << endl);
-    // ROS_ERROR_STREAM("mk(post_post): " << endl << setprecision(3) << mk << endl);
+    ROS_ERROR_STREAM("++++++++++associationWeights: " << endl << setprecision(3) << associationWeights << endl);
+    ROS_ERROR_STREAM("wk(post_post): " << endl << setprecision(3) << wk << endl);
+    ROS_ERROR_STREAM("mk(post_post): " << endl << setprecision(3) << mk << endl);
 // 新增部分：处理未匹配测量值（放入前四列的空位置）
     // ==============================================
 
     // 1. 定义参数
-    const float birth_weight = 1.0f;        // 新生目标初始权重
+    const float birth_weight = 0.2f;        // 新生目标初始权重
     const float birth_pos_var = 1.0f;       // 位置初始不确定性
     const float birth_vel_var = 0.5f;       // 速度初始不确定性
     //const float match_threshold = 0.01f;     // 关联权重低于此值视为未匹配
@@ -451,7 +451,7 @@ for (int z = 0; z < detected_size_k; z++) {
         // 条件2：即使权重低，但如果对应“全0列”（被遮挡目标），也视为匹配（优先分配）
         else if (std::find(zero_columns.begin(), zero_columns.end(), best_j) != zero_columns.end()) {
             is_matched = true;
-            
+            ROS_INFO("测量值z=%d匹配全0列目标%d（权重=%f），视为遮挡恢复", z, best_j, max_weight);
         }
     }
 
@@ -464,7 +464,7 @@ for (int z = 0; z < detected_size_k; z++) {
 
 
     // 3. 找出真正的空列（权重低且历史状态无效）
-//std::vector<int> empty_columns;
+std::vector<int> empty_columns;
 //std::vector<int> occluded_frame_count(NUM_DRONES, 0);  // 记录每列连续低权重帧数（需作为类成员变量）
 
 // 第一次使用时初始化计数器（确保只执行一次）
@@ -474,7 +474,7 @@ if (!is_occlusion_counter_init) {
     ROS_INFO("首次初始化连续遮挡计数器，大小=%d", NUM_DRONES);
 }
 
-empty_columns.clear();  // 关键：清空上一帧的空列信息
+
 for (int j = 0; j < NUM_DRONES; j++) {
     // 若当前权重低，累加连续遮挡帧数
     if (wk(j) < empty_threshold) {
@@ -585,9 +585,16 @@ for (int j = 0; j < NUM_DRONES; j++) {
 
     // // =================================  
 
-    // ROS_INFO_STREAM("Mahalanobis Distance: " << mahalDistance);
-    // ROS_ERROR_STREAM("wk(post): " << endl << setprecision(3) << wk << endl);
-    // ROS_ERROR_STREAM("mk(post): " << endl << setprecision(3) << mk << endl);
+
+
+
+
+
+
+
+    ROS_INFO_STREAM("Mahalanobis Distance: " << mahalDistance);
+    ROS_ERROR_STREAM("wk(post): " << endl << setprecision(3) << wk << endl);
+    ROS_ERROR_STREAM("mk(post): " << endl << setprecision(3) << mk << endl);
     //ROS_ERROR_STREAM("Pk(post): " << endl << setprecision(3) << Pk << endl);
 
 }
@@ -595,7 +602,7 @@ for (int j = 0; j < NUM_DRONES; j++) {
 void PhdFilter::phd_prune() //剪枝
 {
 
-    //ROS_ERROR_STREAM("======= 4.Pruning =======");
+    ROS_ERROR_STREAM("======= 4.Pruning =======");
     Eigen::MatrixXi::Index maxRow, maxCol;  // 临时索引
     Eigen::MatrixXi I, I_copy;  // 保留的目标索引
     Eigen::MatrixXf I_weights;  // 保留的目标权重
@@ -609,8 +616,8 @@ void PhdFilter::phd_prune() //剪枝
     float mahalanobis_threshold = 4.0;  // 马氏距离阈值（来自配置）
     int l = 0;  // 合并迭代计数
 
-// 2. 第一步：修剪低权重目标（保留高权重+新生目标）
-   for(int i=0; i<wk.cols(); i++)
+    // 第一步：修剪低权重目标（保留权重>阈值的目标）
+    for(int i=0; i<wk.cols(); i++)
     {
         if(wk(i) > weight_threshold)
         {
@@ -622,31 +629,6 @@ void PhdFilter::phd_prune() //剪枝
         }
     }
     I_copy = I;
-
-
-// for(int i=0; i<wk.cols(); i++)
-    // {
-    //     bool is_new_birth = false;
-    //     // 检查当前目标是否是新生目标（属于空列恢复的目标）
-    //     for (int col : empty_columns) {  // empty_columns来自phd_update中的空列列表
-    //         if (i == col) {  // 新生目标的索引与空列索引一致
-    //             is_new_birth = true;
-    //             break;
-    //         }
-    //     }
-
-    //     // 保留条件：权重高于阈值 或 是新生目标（即使权重略低）
-    //     if(wk(i) > weight_threshold || is_new_birth)
-    //     {
-    //         I_counter += 1;
-    //         I.conservativeResize(1, I_counter);
-    //         I_weights.conservativeResize(1, I_counter);
-    //         I(0, I_counter-1) = i;
-    //         I_weights(0, I_counter-1) = wk(i);
-    //         ROS_INFO_STREAM("保留目标索引" << i << "（" << (is_new_birth ? "新生目标" : "高权重目标") << "，权重=" << wk(i) << "）");
-    //     }
-    // }
-    // I_copy = I;
 
     ROS_INFO_STREAM("I is:\n" << I << "\nWK is:\n" << wk);
     
@@ -660,7 +642,7 @@ void PhdFilter::phd_prune() //剪枝
 
     Eigen::MatrixXi L = Eigen::MatrixXi::Zero(1, I.cols());
 
-    // 第二步：合并相似目标（马氏距离<阈值）这里还需要考虑新生目标
+    // 第二步：合并相似目标（马氏距离<阈值）
     while(I.cols() != 0)
     {
         l++;
@@ -693,16 +675,6 @@ void PhdFilter::phd_prune() //剪枝
         ROS_INFO_STREAM("maxW is: " << maxW << " and its index is " << maxW_index);
 
         int j = I_copy(maxW_index); // 权重最大的目标的索引
-        
-        //增加了检查合并中心是否是新生目标，若是则不合并
-        
-        
-        
-        
-        
-        
-        
-        
         L = Eigen::MatrixXi::Zero(1, 0); // 存储与j相似的目标索引
         
         // 计算所有保留目标与j的马氏距离
@@ -803,9 +775,9 @@ void PhdFilter::phd_prune() //剪枝
         ROS_INFO_STREAM("Pk_bar_fixed_k:\n" << Pk_bar_fixed_k);
     }
 
-    // ROS_ERROR_STREAM("wk_bar_fixed_k is:\n" << wk_bar_fixed_k << "\n");
-    // ROS_ERROR_STREAM("mk_bar_fixed_k is:\n" << mk_bar_fixed_k << "\n");
-    // ROS_INFO_STREAM("Pk_bar_fixed_k is:\n" << Pk_bar_fixed_k << "\n");
+    ROS_ERROR_STREAM("wk_bar_fixed_k is:\n" << wk_bar_fixed_k << "\n");
+    ROS_ERROR_STREAM("mk_bar_fixed_k is:\n" << mk_bar_fixed_k << "\n");
+    ROS_INFO_STREAM("Pk_bar_fixed_k is:\n" << Pk_bar_fixed_k << "\n");
     // 调整索引
     Eigen::MatrixXi newIndex = index_order;
     for(int i=0; i<newIndex.cols(); i++)
@@ -870,7 +842,7 @@ cout<<"newIndex.cols()======="<<newIndex.cols()<<endl;
         {
             continue;
         }
-        //cout<<"hahahaha"<<endl;
+        cout<<"hahahaha"<<endl;
         int sortedIndex = newIndex(i);    //按新索引排序
         wk_bar_fixed.block(0, sortedIndex, 1, 1) = wk_bar_fixed_k.block(0, i, 1, 1);
         mk_bar_fixed.block(0, sortedIndex, n_state, 1) = mk_bar_fixed_k.block(0, i, n_state, 1);
@@ -881,12 +853,12 @@ cout<<"newIndex.cols()======="<<newIndex.cols()<<endl;
         mk_bar_display.block(0, sortedIndex, n_state, 1) = mk_bar_fixed_k.block(0, i, n_state, 1);
         Pk_bar_display.block(0, n_state*sortedIndex, n_state, n_state) = Pk_bar_fixed_k.block(0, n_state*i, n_state, n_state);
     }
-    // ROS_ERROR_STREAM("wk_bar_fixed is:\n" << wk_bar_fixed << "\n");
-    // ROS_ERROR_STREAM("mk_bar_fixed is:\n" << mk_bar_fixed << "\n");
-    // ROS_INFO_STREAM("Pk_bar_fixed is:\n" << Pk_bar_fixed << "\n");
-    // ROS_ERROR_STREAM("wk_bar_display is:\n" << wk_bar_display << "\n");
-    // ROS_ERROR_STREAM("mk_bar_display is:\n" << mk_bar_display << "\n");
-    // ROS_INFO_STREAM("Pk_bar_display is:\n" << Pk_bar_display << "\n");
+    ROS_ERROR_STREAM("wk_bar_fixed is:\n" << wk_bar_fixed << "\n");
+    ROS_ERROR_STREAM("mk_bar_fixed is:\n" << mk_bar_fixed << "\n");
+    ROS_INFO_STREAM("Pk_bar_fixed is:\n" << Pk_bar_fixed << "\n");
+    ROS_ERROR_STREAM("wk_bar_display is:\n" << wk_bar_display << "\n");
+    ROS_ERROR_STREAM("mk_bar_display is:\n" << mk_bar_display << "\n");
+    ROS_INFO_STREAM("Pk_bar_display is:\n" << Pk_bar_display << "\n");
 
     numTargets_Jk_minus_1 = wk_bar_fixed.cols();  // 更新目标数量
     ROS_INFO_STREAM("numTargets_Jk_minus_1: " << numTargets_Jk_minus_1);
@@ -952,7 +924,7 @@ void PhdFilter::phd_state_extract() //状态提取
             }
             
         }
-        //ROS_ERROR_STREAM("X_k is:\n" << X_k << "\n");
+        ROS_ERROR_STREAM("X_k is:\n" << X_k << "\n");
         // for(int i=0; i<wk_bar_fixed.cols(); i++)
         // {
         //     if(wk_bar_fixed(i) < weight_threshold_for_extraction)  // 权重低于阈值（不可靠）的时候，状态就沿用预测值

@@ -1,5 +1,5 @@
 input_bbox_topic: "/hummingbird0/track/bounding_box"
-input_img_topic: "/hummingbird0/camera/rgb"
+input_img_topic: "/usb_cam/image_raw"  #/DragonPro1/image_publisher/image_raw
 input_imu_topic: "/hummingbird0/imu"
 
 init_pos_self_x: 0.0
@@ -17,7 +17,8 @@ camera_cy: 120
 camera_f: 120
 
 dt: 0.225
-  
+
+max_association_distance: 50.0  
 viz_detection_height: 240
 viz_detection_width: 320
 viz_detection_offset_x: 0

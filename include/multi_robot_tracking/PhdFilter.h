@@ -79,7 +79,7 @@ class PhdFilter
 
   //phd variables
 
-  float prob_survival = 1.0;
+  float prob_survival = 1;  //目标存在的概率   这里为什么是1.0？？？
   float prob_detection = 0.9;//1.0;
 
   float dt_cam = 0.125; //8hz
@@ -107,6 +107,10 @@ class PhdFilter
   Eigen::MatrixXf wk_bar_fixed;
   Eigen::MatrixXf Pk_bar_fixed;
 
+  Eigen::MatrixXf mk_bar_display;
+  Eigen::MatrixXf wk_bar_display;
+  Eigen::MatrixXf Pk_bar_display;
+
   Eigen::MatrixXf mk_k_minus_1_beforePrediction;
 
   Eigen::MatrixXf Z_k;
@@ -129,8 +133,12 @@ class PhdFilter
   const uint8_t n_meas = 2;
   const uint8_t n_input = 3;
 
+  std::vector<int> occluded_frame_count;  // 记录每列连续低权重帧数（需作为类成员变量）
+  const int MIN_OCCLUDED_FRAMES = 3;  // 至少连续3帧权重低才视为空列
+  bool is_occlusion_counter_init = false;  // 标记是否已初始化
  private:
-
-
+  int occlusion_counter = 0;//连续遮挡帧数计数器
+  const int OCCLUSION_THRESHOLD = 5; // 触发清零的连续遮挡帧数阈值
+  std::vector<int> empty_columns; //声明为空列列表
 };
 

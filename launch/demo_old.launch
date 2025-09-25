@@ -4,10 +4,10 @@
 
   <!--"phd" or "jpdaf" -->
   <arg name="input_bbox_topic" default="/DragonPro1/snpe_ros/detections"/> <!--/DragonPro3/snpe_ros/detections or  /hummingbird0/track/bounding_box-->
-  <arg name="input_img_topic" default="/DragonPro1/image_publisher/image_raw"/> <!-- /DragonPro3/image_publisher/image_raw or  /hummingbird0/camera/rgb -->
+  <arg name="input_img_topic" default="/DragonPro1/image_publisher/image_raw"/> <!-- /DragonPro3/image_publisher/image_raw or  /hummingbird0/camera/rgb  /usb_cam/image_raw -->
   <arg name="input_imu_topic" default="/DragonPro1/imu"/> <!-- /DragonPro3/imu or /hummingbird0/imu-->
   <arg name="input_bbox_topic_sim" default="/hummingbird0/track/bounding_box"/> <!--/DragonPro3/snpe_ros/detections or  /hummingbird0/track/bounding_box-->
-  <arg name="input_img_topic_sim" default="/hummingbird0/camera/rgb"/> <!-- /DragonPro3/image_publisher/image_raw or  /hummingbird0/camera/rgb -->
+  <arg name="input_img_topic_sim" default="/hummingbird0/camera/rgb"/> <!-- /DragonPro3/image_publisher/image_raw or  /hummingbird0/camera/rgb   /usb_cam/image_raw  /usb_cam/image_raw-->
   <arg name="input_imu_topic_sim" default="/hummingbird0/imu"/> <!-- /DragonPro3/imu or /hummingbird0/imu-->
   
   <arg name="num_drones" default="2" />
