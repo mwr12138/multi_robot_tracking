@@ -1,7 +1,8 @@
-input_bbox_topic: "/modified_detections"
-#input_bbox_topic: "/DragonPro1/snpe_ros/detections"
+#input_bbox_topic: "/modified_detections"
+input_bbox_topic: "/DragonPro1/snpe_ros/detections"
 input_img_topic: "/usb_cam/image_raw"
 input_imu_topic: "/DragonPro1/imu"
+#input_imu_topic: "/uav1/t265/imu/sample"
 
 init_pos_self_x: 0.0
 init_pos_self_y: 0.0
@@ -19,8 +20,8 @@ camera_f: 287.4  #相机焦距
 
 dt: 0.225
   
-viz_detection_height: 800
-viz_detection_width: 848
+viz_detection_height: 1080
+viz_detection_width: 1920
 viz_detection_offset_x: 0
 viz_detection_offset_y: 0
 #630  1279  480 640

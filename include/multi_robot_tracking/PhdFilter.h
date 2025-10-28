@@ -20,6 +20,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
+#include <deque> 
 
 
 #define PI 3.14159
@@ -52,6 +53,30 @@ class PhdFilter
 
 
   ros::Time startTime,endTime,processTime;
+
+
+
+// 添加速度历史记录
+    std::vector<std::deque<Eigen::Vector2f>> velocity_history;  // 每个目标的速度历史
+    std::vector<std::deque<Eigen::Vector2f>> position_history;  // 每个目标的位置历史
+    const int HISTORY_SIZE = 5;  // 保留最近5帧的历史
+    void update_velocity_history(); //更新速度历史
+    void initialize_velocity_history();
+    float calculate_velocity_consistency(int target_id, const Eigen::Vector2f& candidate_velocity); //计算速度连续性得分
+    float calculate_position_consistency(int target_id, const Eigen::Vector2f& candidate_position); //计算位置连续性得分
+    Eigen::Vector2f predict_position(int target_id);//基于历史位置预测当前位置
+    int find_target_using_id(int target_id, const Eigen::MatrixXi& newIndex, 
+                            const std::vector<std::pair<float, int>>& weighted_targets, 
+                            const std::vector<bool>& id_used);// 查找当前使用指定ID的目标索引
+    void assign_target_to_id(int source_idx, int target_id, 
+                        const Eigen::MatrixXf& wk_bar_fixed_k,
+                        const Eigen::MatrixXf& mk_bar_fixed_k,
+                        const Eigen::MatrixXf& Pk_bar_fixed_k);
+    void cleanup_memory(); // 清理内存
+    int memory_cleanup_counter;
+    static const int MEMORY_CLEANUP_INTERVAL = 100;
+    Eigen::MatrixXi id_consensus;
+
 
   geometry_msgs::PoseArray Z_current_k;
   int NUM_DRONES;
