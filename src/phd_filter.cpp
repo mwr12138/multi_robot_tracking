@@ -75,123 +75,130 @@ void PhdFilter::phd_track()
 
 
 // 初始化历史记录
-    void PhdFilter::initialize_velocity_history() {
-        velocity_history.resize(NUM_DRONES);
-        position_history.resize(NUM_DRONES);
-    }
-    
-    // 更新速度历史
-    void PhdFilter::update_velocity_history() {
-        for(int i = 0; i < NUM_DRONES; i++) {
-            if(wk_bar_display(i) > 0.3f) {  // 只有权重足够高的目标才记录历史
-                Eigen::Vector2f current_vel(mk_bar_display(1,i), mk_bar_display(3,i));
-                Eigen::Vector2f current_pos(mk_bar_display(0,i), mk_bar_display(2,i));
-                
-                velocity_history[i].push_back(current_vel);
-                position_history[i].push_back(current_pos);
-                // 保持历史长度
-                if(velocity_history[i].size() > HISTORY_SIZE) {
-                    velocity_history[i].pop_front();
-                }
-                if(position_history[i].size() > HISTORY_SIZE) {
-                    position_history[i].pop_front();
-                }
-            } else {
-                // 权重低的目标清空历史
-                velocity_history[i].clear();
-                position_history[i].clear();
-            }
-        }
-        ROS_ERROR_STREAM("velocity_history_ " << velocity_history.size() << endl);
-    }
-    
-    // 计算速度连续性得分
-    float PhdFilter::calculate_velocity_consistency(int target_id, const Eigen::Vector2f& candidate_velocity) {
-        if(velocity_history[target_id].size() < 2) {
-            return 1.0f;  // 历史不足，返回中性得分
-        }
-        
-        float angle_consistency = 0.0f;
-        float magnitude_consistency = 0.0f;
-        int count = 0;
-        
-        // 计算与历史速度的相似性
-        for(int i = 0; i < velocity_history[target_id].size(); i++) {
-            const Eigen::Vector2f& hist_vel = velocity_history[target_id][i];
+void PhdFilter::initialize_velocity_history() 
+{
+    velocity_history.resize(NUM_DRONES);
+    position_history.resize(NUM_DRONES);
+}
+
+// 更新速度历史
+void PhdFilter::update_velocity_history() 
+{
+    for(int i = 0; i < NUM_DRONES; i++) {
+        if(wk_bar_display(i) > 0.3f) {  // 只有权重足够高的目标才记录历史
+            Eigen::Vector2f current_vel(mk_bar_display(1,i), mk_bar_display(3,i));
+            Eigen::Vector2f current_pos(mk_bar_display(0,i), mk_bar_display(2,i));
             
-            if(hist_vel.norm() > 0.1f && candidate_velocity.norm() > 0.1f) {
-                // 1. 速度方向一致性（夹角余弦）
-                float cos_angle = hist_vel.dot(candidate_velocity) / 
-                                 (hist_vel.norm() * candidate_velocity.norm());
-                cos_angle = std::max(-1.0f, std::min(1.0f, cos_angle));  // 确保在[-1,1]范围内
-                angle_consistency += (cos_angle + 1.0f) / 2.0f;  // 转换为[0,1]范围
-                
-                // 2. 速度大小一致性
-                float ratio = std::min(hist_vel.norm(), candidate_velocity.norm()) / 
-                             std::max(hist_vel.norm(), candidate_velocity.norm());
-                magnitude_consistency += ratio;
-                
-                count++;
+            velocity_history[i].push_back(current_vel);
+            position_history[i].push_back(current_pos);
+            // 保持历史长度
+            if(velocity_history[i].size() > HISTORY_SIZE) {
+                velocity_history[i].pop_front();
             }
+            if(position_history[i].size() > HISTORY_SIZE) {
+                position_history[i].pop_front();
+            }
+        } else {
+            // 权重低的目标清空历史
+            velocity_history[i].clear();
+            position_history[i].clear();
         }
-        
-        if(count == 0) return 0.5f;  // 没有有效历史
-        
-        angle_consistency /= count;
-        magnitude_consistency /= count;
-        
-        // 综合得分：方向一致性权重更高
-        return 0.7f * angle_consistency + 0.3f * magnitude_consistency;
+    }
+    ROS_ERROR_STREAM("velocity_history_ " << velocity_history.size() << endl);
+}
+
+// 计算速度连续性得分
+float PhdFilter::calculate_velocity_consistency(int target_id, const Eigen::Vector2f& candidate_velocity) 
+{
+    if(velocity_history[target_id].size() < 2) {
+        return 1.0f;  // 历史不足，返回中性得分
     }
     
-    // 计算位置连续性得分
-    float PhdFilter::calculate_position_consistency(int target_id, const Eigen::Vector2f& candidate_position) {
-        if(position_history[target_id].size() < 2) {
-            return 1.0f;  // 历史不足，返回中性得分
+    float angle_consistency = 0.0f;
+    float magnitude_consistency = 0.0f;
+    int count = 0;
+    
+    // 计算与历史速度的相似性
+    for(int i = 0; i < velocity_history[target_id].size(); i++) {
+        const Eigen::Vector2f& hist_vel = velocity_history[target_id][i];
+        
+        if(hist_vel.norm() > 0.1f && candidate_velocity.norm() > 0.1f) {
+            // 1. 速度方向一致性（夹角余弦）
+            float cos_angle = hist_vel.dot(candidate_velocity) / 
+                                (hist_vel.norm() * candidate_velocity.norm());
+            cos_angle = std::max(-1.0f, std::min(1.0f, cos_angle));  // 确保在[-1,1]范围内
+            angle_consistency += (cos_angle + 1.0f) / 2.0f;  // 转换为[0,1]范围
+            
+            // 2. 速度大小一致性
+            float ratio = std::min(hist_vel.norm(), candidate_velocity.norm()) / 
+                            std::max(hist_vel.norm(), candidate_velocity.norm());
+            magnitude_consistency += ratio;
+            
+            count++;
         }
-        
-        // 基于历史位置预测当前位置
-        Eigen::Vector2f predicted_position = predict_position(target_id);
-        
-        // 计算预测位置与候选位置的差异
-        float distance = (predicted_position - candidate_position).norm();
-        
-        // 转换为得分：距离越小，得分越高
-        float max_expected_distance = 50.0f;  // 最大预期距离（像素）
-        return std::max(0.0f, 1.0f - distance / max_expected_distance);
+    }
+    
+    if(count == 0) return 0.5f;  // 没有有效历史
+    
+    angle_consistency /= count;
+    magnitude_consistency /= count;
+    
+    // 综合得分：方向一致性权重更高
+    return 0.7f * angle_consistency + 0.3f * magnitude_consistency;
+}
+
+// 计算位置连续性得分
+float PhdFilter::calculate_position_consistency(int target_id, const Eigen::Vector2f& candidate_position) 
+{
+    if(position_history[target_id].size() < 2) {
+        return 1.0f;  // 历史不足，返回中性得分
     }
     
     // 基于历史位置预测当前位置
-     Eigen::Vector2f PhdFilter::predict_position(int target_id) {
-        if(position_history[target_id].size() < 2) {
-            return position_history[target_id].back();  // 无法预测，返回最后位置
-        }
-        
-        // 简单线性预测：使用最后两个位置
-        const Eigen::Vector2f& last_pos = position_history[target_id].back();
-        const Eigen::Vector2f& second_last_pos = position_history[target_id][position_history[target_id].size()-2];
-        
-        Eigen::Vector2f velocity = last_pos - second_last_pos;
-        return last_pos + velocity;  // 假设匀速运动
+    Eigen::Vector2f predicted_position = predict_position(target_id);
+    
+    // 计算预测位置与候选位置的差异
+    float distance = (predicted_position - candidate_position).norm();
+    
+    // 转换为得分：距离越小，得分越高
+    float max_expected_distance = 50.0f;  // 最大预期距离（像素）
+    return std::max(0.0f, 1.0f - distance / max_expected_distance);
+}
+
+// 基于历史位置预测当前位置
+Eigen::Vector2f PhdFilter::predict_position(int target_id) 
+{
+    if(position_history[target_id].size() < 2) {
+        return position_history[target_id].back();  // 无法预测，返回最后位置
     }
+    
+    // 简单线性预测：使用最后两个位置
+    const Eigen::Vector2f& last_pos = position_history[target_id].back();
+    const Eigen::Vector2f& second_last_pos = position_history[target_id][position_history[target_id].size()-2];
+    
+    Eigen::Vector2f velocity = last_pos - second_last_pos;
+    return last_pos + velocity;  // 假设匀速运动
+}
 
 // 查找当前使用指定ID的目标索引
-    int PhdFilter::find_target_using_id(int target_id, const Eigen::MatrixXi& newIndex, 
-                            const std::vector<std::pair<float, int>>& weighted_targets, 
-                            const std::vector<bool>& id_used) {
-        for(int i = 0; i < weighted_targets.size(); i++) {
-            int source_idx = weighted_targets[i].second;
-            if(newIndex(source_idx) % NUM_DRONES == target_id) {
-                return source_idx;
-            }
+int PhdFilter::find_target_using_id(int target_id, const Eigen::MatrixXi& newIndex, 
+                        const std::vector<std::pair<float, int>>& weighted_targets, 
+                        const std::vector<bool>& id_used) 
+{
+    for(int i = 0; i < weighted_targets.size(); i++) {
+        int source_idx = weighted_targets[i].second;
+        if(newIndex(source_idx) % NUM_DRONES == target_id) {
+            return source_idx;
         }
-        return -1;
     }
+    return -1;
+}
 
 void PhdFilter::assign_target_to_id(int source_idx, int target_id, 
-                                   const Eigen::MatrixXf& wk_bar_fixed_k,
-                                   const Eigen::MatrixXf& mk_bar_fixed_k,
-                                   const Eigen::MatrixXf& Pk_bar_fixed_k) {
+                                const Eigen::MatrixXf& wk_bar_fixed_k,
+                                const Eigen::MatrixXf& mk_bar_fixed_k,
+                                const Eigen::MatrixXf& Pk_bar_fixed_k) 
+{
     wk_bar_fixed.block(0, target_id, 1, 1) = wk_bar_fixed_k.block(0, source_idx, 1, 1);
     mk_bar_fixed.block(0, target_id, n_state, 1) = mk_bar_fixed_k.block(0, source_idx, n_state, 1);
     Pk_bar_fixed.block(0, n_state*target_id, n_state, n_state) = 
@@ -203,7 +210,8 @@ void PhdFilter::assign_target_to_id(int source_idx, int target_id,
         Pk_bar_fixed_k.block(0, n_state*source_idx, n_state, n_state);
 }
 
-void PhdFilter::cleanup_memory() {
+void PhdFilter::cleanup_memory() 
+{
     static int cleanup_counter = 0;
     cleanup_counter++;
     
@@ -459,7 +467,6 @@ void PhdFilter::phd_update() //更新
     Eigen::MatrixXf associationWeights(detected_size_k, NUM_DRONES); // 关联权重矩阵
     associationWeights.setZero(); 
 
-
     thisZ = Eigen::MatrixXf(n_meas,1); //2×1：单个测量值
     meanDelta_pdf = Eigen::MatrixXf(n_meas,1); //2×1：残差（测量值 - 预测值）
     cov_pdf = Eigen::MatrixXf(n_meas,n_meas); //2×2：创新协方差块
@@ -525,7 +532,6 @@ void PhdFilter::phd_update() //更新
         //normalize weights归一化权重
         float weight_tally = 0;
         float old_weight;
-
 
         //sum weights计算当前测量对应的所有候选目标的权重总和
         for(int i = 0; i < numTargets_Jk_k_minus_1; i ++)
@@ -629,8 +635,6 @@ void PhdFilter::phd_update() //更新
         }
     }
 
-
-
     // 3. 找出真正的空列（权重低且历史状态无效）
     //std::vector<int> empty_columns;
     //std::vector<int> occluded_frame_count(NUM_DRONES, 0);  // 记录每列连续低权重帧数（需作为类成员变量）
@@ -681,82 +685,8 @@ void PhdFilter::phd_update() //更新
                    0, 0, 0, birth_vel_var;
         Pk.block(0, n_state * col, n_state, n_state) = P_birth;
 
-        ROS_INFO_STREAM("新生目标放入空列 " << col << "，测量值: " << z_meas.transpose());
+        ROS_ERROR_STREAM("NEW OBJECT!!!" << col << ",MEASUREMENT: " << z_meas.transpose());
     }
-    // const float birth_weight = 0.2f;        // 新生目标初始权重
-    // const float birth_pos_var = 1.0f;       // 位置初始不确定性
-    // const float birth_vel_var = 0.5f;       // 速度初始不确定性
-    // const float match_threshold = 0.1f;     // 关联权重阈值（低于此值视为未匹配）
-
-    // // 2. 找出未匹配的测量值（与所有现有目标关联权重都低的测量）
-    // std::vector<int> unmatched_measurements;
-    // for (int z = 0; z < detected_size_k; z++)
-    // {
-    //     bool is_matched = false;
-    //     // 检查该测量值与所有现有目标的关联权重
-    //     for (int j = 0; j < numTargets_Jk_k_minus_1; j++)
-    //     {
-    //         int index = (z + 1) * numTargets_Jk_k_minus_1 + j;  // 对应第二部分的index计算逻辑
-    //         if (index < wk.cols() && wk(index) > match_threshold)
-    //         {
-    //             is_matched = true;  // 该测量已与某个现有目标匹配
-    //             break;
-    //         }
-    //     }
-    //     cout<<"11111111111111111111111is_matched: "<<is_matched<<endl;
-    //     if (!is_matched)
-    //     {
-    //         unmatched_measurements.push_back(z);  // 记录未匹配测量的索引
-    //         cout<<"LALLLALALALALALALALALALALALALLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL"<<endl;
-    //     }
-    // }
-
-    // // 3. 为未匹配测量值生成新生目标候选
-    // if (!unmatched_measurements.empty())
-    // {
-    //     int old_size = wk.cols();  // 现有候选数量
-    //     int new_count = unmatched_measurements.size();  // 新生目标数量
-
-    //     // 扩展矩阵以容纳新生目标
-    //     wk.conservativeResize(1, old_size + new_count);
-    //     mk.conservativeResize(n_state, old_size + new_count);
-    //     Pk.conservativeResize(n_state, n_state * (old_size + new_count));
-    //     mahalDistance.conservativeResize(1, old_size + new_count);
-
-    //     // 为每个未匹配测量生成新生目标
-    //     for (int i = 0; i < new_count; i++)
-    //     {
-    //         int z_idx = unmatched_measurements[i];  // 未匹配测量的索引
-    //         int new_idx = old_size + i;             // 新生目标在矩阵中的索引
-
-    //         // （1）新生目标状态：位置基于测量值，速度初始化为0
-    //         Eigen::VectorXf z_meas = Z_k.block(0, z_idx, n_meas, 1);  // 测量值(x,y)
-    //         mk.block(0, new_idx, n_state, 1) << z_meas(0), 0, z_meas(1), 0;  // [x, vx=0, y, vy=0]
-
-    //         // （2）新生目标权重：设置为初始出生权重
-    //         wk(new_idx) = birth_weight;
-
-    //         // （3）新生目标协方差：位置和速度的初始不确定性
-    //         Eigen::MatrixXf P_birth = Eigen::MatrixXf::Zero(n_state, n_state);
-    //         P_birth << birth_pos_var, 0, 0, 0,
-    //                    0, birth_vel_var, 0, 0,
-    //                    0, 0, birth_pos_var, 0,
-    //                    0, 0, 0, birth_vel_var;
-    //         Pk.block(0, n_state * new_idx, n_state, n_state) = P_birth;
-
-    //         // （4）马氏距离设为0（无历史状态对比）
-    //         mahalDistance(new_idx) = 0;
-    //     }
-
-    //     ROS_INFO_STREAM("生成 " << new_count << " 个新生目标候选");
-    // }
-
-    // // =================================  
-
-    // ROS_INFO_STREAM("Mahalanobis Distance: " << mahalDistance);
-    // ROS_ERROR_STREAM("wk(post): " << endl << setprecision(3) << wk << endl);
-    // ROS_ERROR_STREAM("mk(post): " << endl << setprecision(3) << mk << endl);
-    //ROS_ERROR_STREAM("Pk(post): " << endl << setprecision(3) << Pk << endl);
 
 }
 
@@ -792,30 +722,6 @@ void PhdFilter::phd_prune() //剪枝
     I_copy = I;
     //ROS_ERROR_STREAM("wk is:\n" << setprecision(3) << wk << endl);
     //ROS_ERROR_STREAM("I is:\n" << I << "\nI_weights is:\n" << I_weights << endl);
-
-    // for(int i=0; i<wk.cols(); i++)
-        // {
-        //     bool is_new_birth = false;
-        //     // 检查当前目标是否是新生目标（属于空列恢复的目标）
-        //     for (int col : empty_columns) {  // empty_columns来自phd_update中的空列列表
-        //         if (i == col) {  // 新生目标的索引与空列索引一致
-        //             is_new_birth = true;
-        //             break;
-        //         }
-        //     }
-
-        //     // 保留条件：权重高于阈值 或 是新生目标（即使权重略低）
-        //     if(wk(i) > weight_threshold || is_new_birth)
-        //     {
-        //         I_counter += 1;
-        //         I.conservativeResize(1, I_counter);
-        //         I_weights.conservativeResize(1, I_counter);
-        //         I(0, I_counter-1) = i;
-        //         I_weights(0, I_counter-1) = wk(i);
-        //         ROS_INFO_STREAM("保留目标索引" << i << "（" << (is_new_birth ? "新生目标" : "高权重目标") << "，权重=" << wk(i) << "）");
-        //     }
-        // }
-        // I_copy = I;
 
     ROS_INFO_STREAM("I is:\n" << I << "\nWK is:\n" << wk);
     
@@ -970,14 +876,9 @@ void PhdFilter::phd_prune() //剪枝
     }
     ROS_ERROR_STREAM("wk_bar_fixed_k:\n" << wk_bar_fixed_k);
     ROS_ERROR_STREAM("wk_bar_fixed_k number: " << wk_bar_fixed_k.cols());
-
     // ROS_ERROR_STREAM("wk_bar_fixed_k is:\n" << wk_bar_fixed_k << "\n");
     // ROS_ERROR_STREAM("mk_bar_fixed_k is:\n" << mk_bar_fixed_k << "\n");
     // ROS_INFO_STREAM("Pk_bar_fixed_k is:\n" << Pk_bar_fixed_k << "\n");
- 
- 
- 
- 
  
     // 调整索引
     Eigen::MatrixXi newIndex = index_order;
@@ -1065,7 +966,7 @@ void PhdFilter::phd_prune() //剪枝
     // numTargets_Jk_minus_1 = wk_bar_fixed.cols();  // 更新目标数量
     // ROS_INFO_STREAM("numTargets_Jk_minus_1: " << numTargets_Jk_minus_1);
 
-        // === 简化的智能索引分配逻辑 ===
+    // === 简化的智能索引分配逻辑 ===
 
     // 1. 创建权重-索引对，用于排序
     // === 使用速度连续性的智能索引分配逻辑 ===
@@ -1287,7 +1188,7 @@ void PhdFilter::phd_state_extract() //状态提取
                 wk_minus_1.block(0, i, 1, 1) = wk_bar_fixed.block(0, i, 1, 1);
                 mk_minus_1.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
                 Pk_minus_1.block(0, n_state*i, n_state, n_state) = Pk_bar_fixed.block(0, n_state*i, n_state, n_state).cwiseAbs();
-                cout<<"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"<<endl;
+                cout<<"xx"<<endl;
             }
             else if(wk_bar_display(i) < weight_threshold_for_extraction  && wk_bar_display(i) != -1)  // 权重低于阈值（不可靠）的时候，状态就沿用预测值
             {
