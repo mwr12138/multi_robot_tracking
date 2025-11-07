@@ -84,6 +84,7 @@ void PhdFilter::initialize_velocity_history()
 // 更新速度历史
 void PhdFilter::update_velocity_history() 
 {
+    std::cout << "wk_bar_display_ " << wk_bar_display << std::endl;
     for(int i = 0; i < NUM_DRONES; i++) {
         if(wk_bar_display(i) > 0.3f) {  // 只有权重足够高的目标才记录历史
             Eigen::Vector2f current_vel(mk_bar_display(1,i), mk_bar_display(3,i));
@@ -934,7 +935,7 @@ void PhdFilter::phd_prune() //剪枝
         ROS_INFO("连续遮挡帧数不足%d，不执行清零", OCCLUSION_THRESHOLD);
     }
 
-    
+    //这里有大问题啊|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
     mk_bar_display = Eigen::MatrixXf::Constant(n_state, NUM_DRONES, -1);
     wk_bar_display = Eigen::MatrixXf::Constant(1, NUM_DRONES, -1);
     Pk_bar_display = Eigen::MatrixXf::Constant(n_state, n_state*NUM_DRONES, -1);
@@ -1269,6 +1270,11 @@ void PhdFilter::phd_state_extract() //状态提取
     Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
     X_k_previous = X_k;
     
+
+    ROS_ERROR_STREAM("mk_bar_fixed: \n" << mk_bar_fixed);
+    ROS_ERROR_STREAM("mk_bar_display: \n" << mk_bar_display);
+    ROS_ERROR_STREAM("wk_bar_fixed: \n" << wk_bar_fixed);
+    ROS_ERROR_STREAM("wk_bar_display: \n" << wk_bar_display);
 }
 
 

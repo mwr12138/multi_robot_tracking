@@ -44,6 +44,8 @@ public:
 
     void onInit(); //default init of nodelet
 
+    
+
     //callback functions
     void detection_Callback(const geometry_msgs::PoseArray& in_PoseArray); //bbox to track
 #ifdef HOST    
@@ -169,11 +171,35 @@ private:
     std::vector<Eigen::Vector2f> previous_positions_; // 上一帧的目标位置
     int next_id_=0;                                // 下一个可用的ID
     float max_association_distance_=50.0f;             // 关联的最大距离阈值
+    float boundary_threshold_ = 20.0f; //边界阈值
     void associate_ids();
     // 新增：存储有遮挡关系的ID组（每组为一个vector<int>）
     std::vector<std::vector<int>> occlusion_id_groups; 
     // 新增：记录当前使用的ID，用于限制范围
     std::unordered_set<int> used_ids; 
+
+
+    // ID状态矩阵：4 x NUM_DRONES
+    // 第0行：ID编号 (0, 1, 2, ..., NUM_DRONES-1)
+    // 第1行：状态 (0=正常, 1=离开视野)
+    // 第2行：离开时的x坐标
+    // 第3行：离开时的y坐标
+    Eigen::MatrixXf id_status_matrix_;
+    
+    // 参数
+    float return_distance_threshold_ = 80.0f;  // 回归距离阈值(像素)
+    int min_visible_frames_ = 5;               // 最小可见帧数才记录离开位置
+    
+    // 每个ID的可见帧数计数器
+    std::vector<int> id_visible_frames_;
+    
+    // 新增函数：判断是被遮挡还是离开视野
+    int determine_occlusion_or_leave(int target_id, int& occluder_id);
+    int find_returning_target(float x, float y);
+    void update_id_status_matrix();
+    int find_available_id(float x, float y);
+    void process_new_detections();
+    void update_id_consensus_from_status();
 };
 
 multi_robot_tracking_Nodelet::~multi_robot_tracking_Nodelet()
@@ -190,6 +216,296 @@ multi_robot_tracking_Nodelet::~multi_robot_tracking_Nodelet()
     }
 }
 
+
+int multi_robot_tracking_Nodelet::determine_occlusion_or_leave(int target_id, int& occluder_id) {
+    float weight = phd_filter_.wk_bar_display(target_id);
+    float current_x = phd_filter_.X_k(0, target_id);
+    float current_y = phd_filter_.X_k(2, target_id);
+    
+    // 情况1：目标在图像边界附近，且权重很低 -> 可能是离开视野
+    bool near_boundary = (current_x < boundary_threshold_ || 
+                         current_x > detection_width - boundary_threshold_ ||
+                         current_y < boundary_threshold_ || 
+                         current_y > detection_height - boundary_threshold_);
+    
+    if (near_boundary && weight < 0.2f) {
+        ROS_DEBUG("目标 %d 在边界附近且权重低，判断为离开视野", target_id);
+        return 1; // 离开视野
+    }
+    
+    // 情况2：目标在图像中央区域，但权重突然降低 -> 可能是被遮挡
+    bool in_central_area = (current_x > boundary_threshold_ * 2 && 
+                           current_x < detection_width - boundary_threshold_ * 2 &&
+                           current_y > boundary_threshold_ * 2 && 
+                           current_y < detection_height - boundary_threshold_ * 2);
+    
+    if (weight < 0.3f && in_central_area) {
+        // 进一步检查是否有其他目标在附近（检测框重叠）
+        float target_x = phd_filter_.Detections(0, target_id);
+        float target_y = phd_filter_.Detections(1, target_id);
+        float target_w = phd_filter_.Detections(2, target_id);
+        float target_h = phd_filter_.Detections(3, target_id);
+        
+        float left1 = target_x - target_w/2;
+        float right1 = target_x + target_w/2;
+        float top1 = target_y - target_h/2;
+        float bottom1 = target_y + target_h/2;
+        
+        float max_overlap = 0.0f;
+        int best_occluder = -1;
+        
+        for (int i = 0; i < num_drones; i++) {
+            if (i == target_id) continue;
+            
+            float other_x = phd_filter_.Detections(0, i);
+            float other_y = phd_filter_.Detections(1, i);
+            float other_w = phd_filter_.Detections(2, i);
+            float other_h = phd_filter_.Detections(3, i);
+            
+            float left2 = other_x - other_w/2;
+            float right2 = other_x + other_w/2;
+            float top2 = other_y - other_h/2;
+            float bottom2 = other_y + other_h/2;
+            
+            // 计算重叠区域
+            float overlap_x = std::max(0.0f, std::min(right1, right2) - std::max(left1, left2));
+            float overlap_y = std::max(0.0f, std::min(bottom1, bottom2) - std::max(top1, top2));
+            float overlap_area = overlap_x * overlap_y;
+            float target_area = target_w * target_h;
+            
+            // 计算重叠比例
+            float overlap_ratio = overlap_area / target_area;
+            
+            if (overlap_ratio > max_overlap) {
+                max_overlap = overlap_ratio;
+                best_occluder = i;
+            }
+        }
+        
+        // 如果最大重叠比例超过阈值，认为是被遮挡
+        if (max_overlap > 0.3f) {
+            occluder_id = best_occluder;
+            ROS_DEBUG("目标 %d 与目标 %d 重叠比例 %.2f，判断为被遮挡", 
+                     target_id, best_occluder, max_overlap);
+            return 2; // 被遮挡
+        }
+    }
+    
+    // 情况3：权重逐渐降低，且向边界移动 -> 离开视野
+    // 这里需要检查历史位置来判断移动趋势
+    // 暂时简化处理：如果不在中央区域且权重低，认为是离开视野
+    
+    ROS_DEBUG("目标 %d 默认判断为离开视野", target_id);
+    return 1; // 默认认为是离开视野
+}
+
+
+// void multi_robot_tracking_Nodelet::update_id_status_matrix() {   //更新ID状态矩阵的核心逻辑
+//     // 确保矩阵已初始化
+//     if (id_status_matrix_.cols() == 0) return;
+    
+//     for (int i = 0; i < num_drones; i++) {
+//         float weight = phd_filter_.wk_bar_display(i);
+//         float current_x = phd_filter_.X_k(0, i);
+//         float current_y = phd_filter_.X_k(2, i);
+        
+//         if (weight > 0.3f) {  // 目标可见
+//             id_visible_frames_[i]++;
+            
+//             // 如果目标之前是离开状态，检查是否是回归
+//             if (id_status_matrix_(1, i) == 1) {  // 之前是离开状态
+//                 float leave_x = id_status_matrix_(2, i);
+//                 float leave_y = id_status_matrix_(3, i);
+                
+//                 // 计算与离开位置的距离
+//                 float distance = std::sqrt(std::pow(current_x - leave_x, 2) + 
+//                                          std::pow(current_y - leave_y, 2));
+                
+//                 if (distance < return_distance_threshold_) {
+//                     // 目标回归！保持原有ID
+//                     id_status_matrix_(1, i) = 0;  // 状态恢复正常
+//                     id_status_matrix_(2, i) = -1; // 清除离开坐标
+//                     id_status_matrix_(3, i) = -1;
+//                     ROS_INFO("目标 %d 从离开位置回归，距离: %.1f", i, distance);
+//                 } else {
+//                     // 可能是新目标，在远处出现，暂时不处理
+//                 }
+//             } else {
+//                 // 目标正常可见，确保状态为正常
+//                 id_status_matrix_(1, i) = 0;
+//             }
+//         } else {  // 目标不可见
+//             // 如果目标之前可见且达到最小可见帧数，记录离开位置
+//             if (id_status_matrix_(1, i) == 0 && id_visible_frames_[i] >= min_visible_frames_) {
+//                 id_status_matrix_(1, i) = 1;  // 标记为离开状态
+//                 id_status_matrix_(2, i) = phd_filter_.X_k(0, i);  // 记录离开x坐标
+//                 id_status_matrix_(3, i) = phd_filter_.X_k(2, i);  // 记录离开y坐标
+//                 id_visible_frames_[i] = 0;  // 重置可见帧数
+//                 ROS_INFO("目标 %d 离开视野，位置: (%.1f, %.1f)", 
+//                         i, id_status_matrix_(2, i), id_status_matrix_(3, i));
+//             } else if (id_status_matrix_(1, i) == 0) {
+//                 // 可见帧数不足，不记录离开位置，但重置计数器
+//                 id_visible_frames_[i] = 0;
+//             }
+//         }
+//     }
+    
+// }
+
+
+void multi_robot_tracking_Nodelet::update_id_status_matrix() {
+    // 确保矩阵已初始化
+    if (id_status_matrix_.cols() == 0) {
+        id_status_matrix_ = Eigen::MatrixXf::Zero(5, num_drones);
+        id_visible_frames_.resize(num_drones, 0);
+        
+        for (int i = 0; i < num_drones; i++) {
+            id_status_matrix_(0, i) = i;  // ID编号
+            id_status_matrix_(1, i) = 0;  // 初始状态为正常
+            id_status_matrix_(2, i) = -1; // 离开/遮挡x坐标
+            id_status_matrix_(3, i) = -1; // 离开/遮挡y坐标
+            id_status_matrix_(4, i) = -1; // 遮挡者ID
+        }
+        return;
+    }
+    
+    // 确保不越界
+    int min_cols = std::min(num_drones, static_cast<int>(phd_filter_.X_k.cols()));
+    min_cols = std::min(min_cols, static_cast<int>(phd_filter_.wk_bar_display.cols()));
+    
+    for (int i = 0; i < min_cols; i++) {
+        float weight = phd_filter_.wk_bar_display(i);
+        float current_x = phd_filter_.X_k(0, i);
+        float current_y = phd_filter_.X_k(2, i);
+        
+        if (weight > 0.3f) {  // 目标可见
+            id_visible_frames_[i]++;
+            
+            // 检查是否从离开/遮挡状态回归
+            int current_state = id_status_matrix_(1, i);
+            
+            if (current_state == 1) {  // 之前是离开状态
+                float leave_x = id_status_matrix_(2, i);
+                float leave_y = id_status_matrix_(3, i);
+                
+                if (leave_x >= 0 && leave_y >= 0) {
+                    float distance = std::sqrt(std::pow(current_x - leave_x, 2) + 
+                                             std::pow(current_y - leave_y, 2));
+                    
+                    if (distance < return_distance_threshold_) {
+                        id_status_matrix_(1, i) = 0;  // 恢复为正常
+                        id_status_matrix_(2, i) = -1;
+                        id_status_matrix_(3, i) = -1;
+                        ROS_INFO("目标 %d 从离开位置回归，距离: %.1f", i, distance);
+                    }
+                }
+            } 
+            else if (current_state == 2) {  // 之前是被遮挡状态
+                // 检查遮挡是否解除（与遮挡者的重叠是否消失）
+                int occluder_id = id_status_matrix_(4, i);
+                if (occluder_id >= 0 && occluder_id < num_drones) {
+                    // 检查当前是否还与遮挡者有显著重叠
+                    float target_x = phd_filter_.Detections(0, i);
+                    float target_y = phd_filter_.Detections(1, i);
+                    float target_w = phd_filter_.Detections(2, i);
+                    float target_h = phd_filter_.Detections(3, i);
+                    
+                    float occluder_x = phd_filter_.Detections(0, occluder_id);
+                    float occluder_y = phd_filter_.Detections(1, occluder_id);
+                    float occluder_w = phd_filter_.Detections(2, occluder_id);
+                    float occluder_h = phd_filter_.Detections(3, occluder_id);
+                    
+                    // 计算当前重叠
+                    float left1 = target_x - target_w/2;
+                    float right1 = target_x + target_w/2;
+                    float top1 = target_y - target_h/2;
+                    float bottom1 = target_y + target_h/2;
+                    
+                    float left2 = occluder_x - occluder_w/2;
+                    float right2 = occluder_x + occluder_w/2;
+                    float top2 = occluder_y - occluder_h/2;
+                    float bottom2 = occluder_y + occluder_h/2;
+                    
+                    float overlap_x = std::max(0.0f, std::min(right1, right2) - std::max(left1, left2));
+                    float overlap_y = std::max(0.0f, std::min(bottom1, bottom2) - std::max(top1, top2));
+                    float overlap_area = overlap_x * overlap_y;
+                    float target_area = target_w * target_h;
+                    float overlap_ratio = overlap_area / target_area;
+                    
+                    if (overlap_ratio < 0.2f) {  // 重叠很小，遮挡解除
+                        id_status_matrix_(1, i) = 0;  // 恢复为正常
+                        id_status_matrix_(4, i) = -1; // 清除遮挡者ID
+                        ROS_INFO("目标 %d 遮挡解除", i);
+                    }
+                } else {
+                    // 遮挡者ID无效，直接恢复
+                    id_status_matrix_(1, i) = 0;
+                    id_status_matrix_(4, i) = -1;
+                }
+            }
+        } 
+        else {  // 目标不可见或权重低
+            int occluder_id = -1;
+            int new_state = determine_occlusion_or_leave(i, occluder_id);
+                
+            if (new_state != 0 && id_status_matrix_(1, i) == 0 && 
+                id_visible_frames_[i] >= min_visible_frames_) {
+                
+                id_status_matrix_(1, i) = new_state;  // 更新状态
+                id_status_matrix_(2, i) = current_x;  // 记录位置
+                id_status_matrix_(3, i) = current_y;
+                
+                if (new_state == 2) {  // 被遮挡
+                    id_status_matrix_(4, i) = occluder_id;  // 记录遮挡者
+                    ROS_INFO("目标 %d 被目标 %d 遮挡", i, occluder_id);
+                } else {  // 离开视野
+                    id_status_matrix_(4, i) = -1;  // 清除遮挡者ID
+                    ROS_INFO("目标 %d 离开视野，位置: (%.1f, %.1f)", i, current_x, current_y);
+                }
+                
+                id_visible_frames_[i] = 0;
+            } 
+            else if (id_status_matrix_(1, i) == 0) {
+                id_visible_frames_[i] = 0;
+            }
+        }
+    }
+}
+
+
+int multi_robot_tracking_Nodelet::find_available_id(float x, float y) {  //为新目标寻找可用ID
+    // 第一步：寻找完全空闲的ID（状态正常但当前不可见）
+    for (int i = 0; i < num_drones; i++) {
+        if (id_status_matrix_(1, i) == 0 && phd_filter_.wk_bar_display(i) < 0.1f) {
+            return i;
+        }
+    }
+    
+    // 第二步：寻找离开状态但位置较远的ID
+    for (int i = 0; i < num_drones; i++) {
+        if (id_status_matrix_(1, i) == 1) {  // 离开状态
+            float leave_x = id_status_matrix_(2, i);
+            float leave_y = id_status_matrix_(3, i);
+            
+            // 计算与离开位置的距离
+            float distance = std::sqrt(std::pow(x - leave_x, 2) + 
+                                     std::pow(y - leave_y, 2));
+            
+            // 如果距离足够远，可以复用这个ID
+            if (distance > return_distance_threshold_ * 2) {
+                ROS_WARN("复用离开状态的ID %d (新位置距离离开位置 %.1f)", i, distance);
+                id_status_matrix_(1, i) = 0;  // 状态恢复正常
+                id_status_matrix_(2, i) = -1; // 清除离开坐标
+                id_status_matrix_(3, i) = -1;
+                return i;
+            }
+        }
+    }
+    
+    // 第三步：如果没有可用ID，返回-1（理论上不应该发生）
+    ROS_ERROR("没有可用的ID！");
+    return -1;
+}
 
 
 void multi_robot_tracking_Nodelet::associate_ids()
@@ -362,284 +678,6 @@ void multi_robot_tracking_Nodelet::associate_ids()
 }
 
 
-
-
-
-
-
-// void multi_robot_tracking_Nodelet::associate_ids()
-// {
-//     // 获取当前帧的目标位置 (x, y)
-//     int current_num_targets = phd_filter_.X_k.cols();
-//     if (current_num_targets > num_drones) {
-//         ROS_WARN("Detected more targets (%d) than maximum drones (%d)", current_num_targets, num_drones);
-//         current_num_targets = num_drones;
-//     }
-    
-//     Eigen::MatrixXf current_positions(2, current_num_targets);
-//     for (int i = 0; i < current_num_targets; i++) {
-//         current_positions(0, i) = phd_filter_.X_k(0, i); // x
-//         current_positions(1, i) = phd_filter_.X_k(2, i); // y
-//     }
-
-//     // 初始化当前帧ID向量（固定大小为4）
-//     current_ids.resize(num_drones, -1); // 用-1表示未分配的ID槽位
-
-//     // ==== 新增：遮挡检测 ====
-//     std::vector<bool> occlusion_flags(current_num_targets, false);
-//     std::vector<std::pair<int, int>> occlusion_pairs;
-
-//     // 检测目标框交集（基于轴对齐矩形碰撞检测）
-//     for (int i = 0; i < current_num_targets; ++i) {
-//         float x1 = phd_filter_.Detections(0, i);
-//         float y1 = phd_filter_.Detections(1, i);
-//         float w1 = phd_filter_.Detections(2, i);
-//         float h1 = phd_filter_.Detections(3, i);
-        
-//         for (int j = i + 1; j < current_num_targets; ++j) {
-//             float x2 = phd_filter_.Detections(0, j);
-//             float y2 = phd_filter_.Detections(1, j);
-//             float w2 = phd_filter_.Detections(2, j); 
-//             float h2 = phd_filter_.Detections(3, j);
-
-//             // 计算重叠区域
-//             float overlap_x = std::max(0.0f, std::min(x1 + w1/2, x2 + w2/2) - std::max(x1 - w1/2, x2 - w2/2));
-//             float overlap_y = std::max(0.0f, std::min(y1 + h1/2, y2 + h2/2) - std::max(y1 - h1/2, y2 - h2/2));
-//             float overlap_area = overlap_x * overlap_y;
-//             float min_area = std::min(w1 * h1, w2 * h2);
-            
-//             // 如果重叠面积超过较小框的30%，视为遮挡
-//             bool collision = (overlap_area > 0.3 * min_area);
-
-//             if (collision) {
-//                 occlusion_flags[i] = true;
-//                 occlusion_flags[j] = true;
-//                 occlusion_pairs.emplace_back(i, j); // 存储发生遮挡的目标索引
-//             }
-//         }
-//     }
-
-//     // ==== ID关联处理 ====
-//     // 第一帧处理 - 使用共识排序或分配新ID
-//     if (previous_ids_.empty()) {
-//         if (consensus_sort_complete) {
-//             // 使用共识排序结果
-//             for (int i = 0; i < current_num_targets; i++) {
-//                 current_ids[i] = id_consensus(i);
-//             }
-//         } else {
-//             // 分配新ID (0-3)
-//             for (int i = 0; i < current_num_targets; i++) {
-//                 current_ids[i] = i;
-//             }
-//         }
-//     } 
-//     // 后续帧处理
-//     else {
-//         // 创建可用ID池 (0-3)
-//         std::set<int> available_ids = {0, 1, 2, 3};
-        
-//         // 第一步：处理非遮挡目标
-//         for (int i = 0; i < current_num_targets; i++) {
-//             if (occlusion_flags[i]) continue; // 跳过遮挡目标
-            
-//             float min_distance = std::numeric_limits<float>::max();
-//             int matched_idx = -1;
-            
-//             // 在上一帧目标中寻找最近邻
-//             for (size_t j = 0; j < previous_positions_.size(); j++) {
-//                 float distance = (current_positions.col(i) - previous_positions_[j]).norm();
-//                 if (distance < min_distance && distance < max_association_distance_) {
-//                     min_distance = distance;
-//                     matched_idx = j;
-//                 }
-//             }
-            
-//             // 如果找到匹配，使用相同的ID
-//             if (matched_idx != -1) {
-//                 current_ids[i] = previous_ids_[matched_idx];
-//                 available_ids.erase(previous_ids_[matched_idx]); // 从可用池中移除
-//             }
-//         }
-        
-//         // 第二步：处理遮挡目标
-//         for (const auto& pair : occlusion_pairs) {
-//             int idx1 = pair.first;
-//             int idx2 = pair.second;
-            
-//             // 尝试为两个遮挡目标分配ID
-//             std::vector<int> indices = {idx1, idx2};
-//             for (int idx : indices) {
-//                 if (current_ids[idx] != -1) continue; // 已分配
-                
-//                 float min_distance = std::numeric_limits<float>::max();
-//                 int matched_idx = -1;
-                
-//                 // 在上一帧目标中寻找最近邻（放宽距离阈值）
-//                 for (size_t j = 0; j < previous_positions_.size(); j++) {
-//                     float distance = (current_positions.col(idx) - previous_positions_[j]).norm();
-//                     if (distance < min_distance && distance < max_association_distance_ * 2.0) {
-//                         min_distance = distance;
-//                         matched_idx = j;
-//                     }
-//                 }
-                
-//                 // 如果找到匹配且ID可用
-//                 if (matched_idx != -1 && available_ids.count(previous_ids_[matched_idx])) {
-//                     current_ids[idx] = previous_ids_[matched_idx];
-//                     available_ids.erase(previous_ids_[matched_idx]);
-//                 }
-//             }
-//         }
-        
-//         // 第三步：处理剩余未分配的目标
-//         for (int i = 0; i < current_num_targets; i++) {
-//             if (current_ids[i] != -1) continue; // 已分配
-            
-//             // 分配可用的最小ID
-//             if (!available_ids.empty()) {
-//                 current_ids[i] = *available_ids.begin();
-//                 available_ids.erase(available_ids.begin());
-//             } 
-//             // 如果没有可用ID（理论上不应该发生），使用最后已知ID
-//             else if (!previous_ids_.empty()) {
-//                 current_ids[i] = previous_ids_.back();
-//             }
-//         }
-//     }
-
-//     // 确保ID在0-3范围内
-//     for (int i = 0; i < current_num_targets; i++) {
-//         if (current_ids[i] < 0 || current_ids[i] >= num_drones) {
-//             current_ids[i] = i % num_drones; // 强制在0-3范围内
-//         }
-//     }
-
-//     // 更新ID共识矩阵
-//     id_consensus.resize(1, current_ids.size());
-//     for (size_t i = 0; i < current_ids.size(); i++) {
-//         id_consensus(i) = current_ids[i];
-//     }
-
-//     // 保存当前状态作为下一帧的上一帧状态
-//     previous_ids_ = current_ids;
-//     previous_positions_.clear();
-//     for (int i = 0; i < current_num_targets; i++) {
-//         previous_positions_.push_back(current_positions.col(i));
-//     }
-// }
-
-
-
-
-
-// void multi_robot_tracking_Nodelet::associate_ids()
-// {
-//     // 获取当前帧的目标位置 (x, y)
-//     int current_num_targets = phd_filter_.X_k.cols();
-//     Eigen::MatrixXf current_positions(2, current_num_targets);
-//     for (int i = 0; i < current_num_targets; i++) {
-//         current_positions(0, i) = phd_filter_.X_k(0, i); // x
-//         current_positions(1, i) = phd_filter_.X_k(2, i); // y
-//     }
-
-//     // 初始化当前帧ID向量
-//     //std::vector<int> current_ids(current_num_targets, -1); // -1表示未分配ID
-//     cout<<"previous_ids_.size()="<<previous_ids_.size()<<endl;
-//     for (int i = 0; i < current_num_targets; i++) {
-//         current_ids[i] = next_id_++;
-//         }
-//     next_id_ = 0;
-//     // 第一帧处理 - 使用共识排序或分配新ID
-//     // if (previous_ids_.empty()) {
-//     //     if (consensus_sort_complete) {
-//     //         // 使用共识排序结果
-//     //         for (int i = 0; i < current_num_targets; i++) {
-//     //             current_ids[i] = id_consensus(i);
-//     //         }
-//     //     } else {
-//     //         // 分配新ID
-//     //         for (int i = 0; i < current_num_targets; i++) {
-//     //             current_ids[i] = next_id_++;
-//     //         }
-//     //     }
-//     // } 
-//     // 后续帧处理 - 使用最近邻关联
-//    // else {
-//         // 新增遮挡检测标志位和关联ID列表
-//         std::vector<bool> occlusion_flags(current_num_targets, false);
-//         std::vector<std::pair<int, int>> occlusion_pairs;
-
-//         // 检测目标框交集（基于轴对齐矩形碰撞检测）
-//         for (int i = 0; i < current_num_targets; ++i) {
-//             float x1 = phd_filter_.Detections(0,i);
-//             float y1 = phd_filter_.Detections(1,i);
-//             float w1 = phd_filter_.Detections(2,i);
-//             float h1 = phd_filter_.Detections(3,i);
-            
-//             for (int j = i+1; j < current_num_targets; ++j) {
-//                 float x2 = phd_filter_.Detections(0,j);
-//                 float y2 = phd_filter_.Detections(1,j);
-//                 float w2 = phd_filter_.Detections(2,j); 
-//                 float h2 = phd_filter_.Detections(3,j);
-
-//                 // 轴对齐矩形碰撞检测
-//                 bool collision = (x1 < x2 + w2) && (x1 + w1 > x2) &&
-//                                 (y1 < y2 + h2) && (y1 + h1 > y2);
-
-//                 if (collision) {
-//                     occlusion_flags[i] = true;
-//                     occlusion_flags[j] = true;
-//                     occlusion_pairs.emplace_back(current_ids[i], current_ids[j]);
-//                 }
-//             }
-//         }
-//     cout << "occlusion_flags====[";
-//     for (auto it = occlusion_flags.begin(); it != occlusion_flags.end(); ++it) {
-//         cout << (*it ? "1" : "0");
-//         if (it != occlusion_flags.end() - 1) cout << ",";
-//     }
-//     cout << "]" << endl;
-
-//         // // 为每个当前目标寻找最近的上一帧目标
-//         // for (int i = 0; i < current_num_targets; i++) {
-//         //     float min_distance = std::numeric_limits<float>::max();
-//         //     int matched_idx = -1;
-            
-//         //     // 在上一帧目标中寻找最近邻
-//         //     for (size_t j = 0; j < previous_positions_.size(); j++) {
-//         //         float distance = (current_positions.col(i) - previous_positions_[j]).norm();
-//         //         if (distance < min_distance && distance < max_association_distance_) {
-//         //             min_distance = distance;
-//         //             matched_idx = j;
-//         //         }
-//         //     }
-            
-//         //     // 如果找到匹配，使用相同的ID
-//         //     if (matched_idx != -1) {
-//         //         current_ids[i] = previous_ids_[matched_idx];
-//         //     } 
-//         //     // 否则分配新ID
-//         //     else {
-//         //         current_ids[i] = next_id_++;
-//         //     }
-//         // }
-//    // }
-
-//     // 更新ID共识矩阵
-//     id_consensus.resize(1,current_ids.size());
-//     for (size_t i = 0; i < current_ids.size(); i++) {
-//         id_consensus(i) = current_ids[i];
-//     }
-
-//     // 保存当前状态作为下一帧的上一帧状态
-//     previous_ids_ = current_ids;
-//     previous_positions_.clear();
-//     for (int i = 0; i < current_num_targets; i++) {
-//         previous_positions_.push_back(current_positions.col(i));
-//     }
-// }
-
 void multi_robot_tracking_Nodelet::init_matrices()
 {
     ROS_INFO("init matrix for drone num: %d",num_drones);
@@ -687,6 +725,19 @@ void multi_robot_tracking_Nodelet::init_matrices()
     rotm_world2cam(1,0) = 0;   rotm_world2cam(1,1) = 0;   rotm_world2cam(1,2) = -1;
     rotm_world2cam(2,0) = 1;   rotm_world2cam(2,1) = 0;   rotm_world2cam(2,2) =  0;
 
+
+    // 初始化ID状态矩阵
+    id_status_matrix_ = Eigen::MatrixXf::Zero(5, num_drones);
+    id_visible_frames_.resize(num_drones, 0);
+    
+    // 设置ID编号
+    for (int i = 0; i < num_drones; i++) {
+        id_status_matrix_(0, i) = i;  // ID编号
+        id_status_matrix_(1, i) = 0;  // 初始状态为正常
+        id_status_matrix_(2, i) = -1; // 离开x坐标，-1表示无效
+        id_status_matrix_(3, i) = -1; // 离开y坐标，-1表示无效
+        id_status_matrix_(4, i) = -1; // 被遮挡
+    }
 }
 
 /* use tracking data to draw onto 2D image
@@ -1113,8 +1164,17 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
             }
 
             phd_filter_.phd_track();   //运行gmphd    执行更新步骤
-            id_consensus = phd_filter_.id_consensus;
+            //id_consensus = phd_filter_.id_consensus;
+            // 更新ID状态矩阵 上边的注释掉了
+            update_id_status_matrix();
+            
+            // 处理新检测的目标
+            process_new_detections();
+            
+            // 更新id_consensus
+            update_id_consensus_from_status();
             draw_image();
+            ROS_ERROR_STREAM("id_status_matrix_: \n" << id_status_matrix_);
             // auto end_time = std::chrono::high_resolution_clock::now();
             // auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
             // auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
@@ -1314,139 +1374,7 @@ if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
 
     frame_count_++;
 }
-    //     // ===== 新增：生成跟踪CSV =====
-    //     // ... 已有代码 ...
-    // if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
-    //     // 确定目标数量
-    //     int num_targets = phd_filter_.X_k.cols();
 
-    //     // 定义缓冲区存储上一次的宽度和高度信息
-    //     static std::vector<float> prev_widths;
-    //     static std::vector<float> prev_heights;
-    //     if (prev_widths.size() < num_targets) {
-    //         prev_widths.resize(num_targets, 50);
-    //         prev_heights.resize(num_targets, 50);
-    //     }
-
-    //     for (int i = 0; i < num_targets; i++) {
-    //         // 获取目标ID
-    //         int target_id = (i < id_consensus.size()) ? id_consensus(i) : i;
-
-    //         // 获取跟踪估计的中心位置
-    //         float track_center_x = phd_filter_.X_k(0, i);
-    //         float track_center_y = phd_filter_.X_k(2, i);
-
-    //         // 获取边界框信息
-    //         float center_x = 0, center_y = 0, width = 50, height = 50;
-    //         bool valid_detection = false;
-
-    //         // 动态计算距离阈值
-    //         float distance_threshold = 0.0f;
-
-    //         // 优先使用当前帧检测，并进行筛选
-    //         if (i < in_PoseArray.poses.size()) {
-    //             center_x = in_PoseArray.poses[i].position.x;
-    //             center_y = in_PoseArray.poses[i].position.y;
-    //             width = in_PoseArray.poses[i].orientation.x;
-    //             height = in_PoseArray.poses[i].orientation.y;
-
-    //             // 计算动态距离阈值
-    //             distance_threshold = (width + height) / 2.0f;
-
-    //             // 计算检测框中心与跟踪估计中心的距离
-    //             float distance = std::hypot(center_x - track_center_x, center_y - track_center_y);
-    //             if (distance < distance_threshold) {
-    //                 valid_detection = true;
-    //                 // 更新缓冲区
-    //                 prev_widths[i] = width;
-    //                 prev_heights[i] = height;
-    //             }
-    //         }
-
-    //         // 若当前帧检测无效，使用缓冲区中的上一次宽度和高度
-    //         if (!valid_detection) {
-    //             center_x = track_center_x;
-    //             center_y = track_center_y;
-    //             width = prev_widths[i];
-    //             height = prev_heights[i];
-
-    //             // 若使用上一次信息，重新计算距离阈值
-    //             distance_threshold = (width + height) / 2.0f;
-    //         }
-
-    //         // 计算左上角坐标
-    //         float bb_left = center_x - width/2.0f;
-    //         float bb_top = center_y - height/2.0f;
-
-    //         // 写入CSV行
-    //         tracking_csv_ << frame_count_+1 << ","
-    //                       << target_id+1 << ","
-    //                       << bb_left << "," << bb_top << ","
-    //                       << width << "," << height << ","
-    //                       << 1 << ","  // 置信度，有效检测为1.0，无效为0.5
-    //                       << 1 << ","    // 类别
-    //                       << 1 << "\n"; // 可见度
-    //         // tracking_csv_ << frame_count_+1 << ","
-    //         //               << target_id+1 << ","
-    //         //               << bb_left << "," << bb_top << ","
-    //         //               << width << "," << height << ","
-    //         //               << (valid_detection ? 1.0 : 0.5) << ","  // 置信度，有效检测为1.0，无效为0.5
-    //         //               << 1 << ","    // 类别
-    //         //               << 1 << "\n"; // 可见度
-    //     }
-
-    //     frame_count_++;
-    // }
-    // ... 已有代码 ...
-    // // ===== 新增：生成跟踪CSV =====
-    // if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
-    //     // 确定目标数量
-    //     int num_targets = phd_filter_.X_k.cols();
-        
-    //     for (int i = 0; i < num_targets; i++) {
-    //         // 获取目标ID
-    //         int target_id = (i < id_consensus.size()) ? id_consensus(i) : i;
-            
-    //         // 获取边界框信息
-    //         float center_x = 0, center_y = 0, width = 50, height = 50;
-            
-    //         // 优先使用当前帧检测
-    //         if (i < in_PoseArray.poses.size()) {
-    //             center_x = in_PoseArray.poses[i].position.x;
-    //             center_y = in_PoseArray.poses[i].position.y;
-    //             width = in_PoseArray.poses[i].orientation.x;
-    //             height = in_PoseArray.poses[i].orientation.y;
-    //         }
-    //         // 其次使用滤波器状态
-    //         else if (i < phd_filter_.Detections.cols()) {
-    //             center_x = phd_filter_.Detections(0, i);
-    //             center_y = phd_filter_.Detections(1, i);
-    //             width = phd_filter_.Detections(2, i);
-    //             height = phd_filter_.Detections(3, i);
-    //         }
-    //         // 最后使用状态估计
-    //         else {
-    //             center_x = phd_filter_.X_k(0, i);
-    //             center_y = phd_filter_.X_k(2, i);
-    //             // 宽度高度使用默认值
-    //         }
-            
-    //         // 计算左上角坐标
-    //         float bb_left = center_x - width/2.0f;
-    //         float bb_top = center_y - height/2.0f;
-            
-    //         // 写入CSV行
-    //         tracking_csv_ << frame_count_+1 << ","
-    //                       << target_id+1 << ","
-    //                       << bb_left << "," << bb_top << ","
-    //                       << width << "," << height << ","
-    //                       << 1.0 << ","  // 置信度
-    //                       << 1 << ","    // 类别
-    //                       << 1 << "\n"; // 可见度
-    //     }
-        
-    //     frame_count_++;
-    // }
 auto end_time = std::chrono::high_resolution_clock::now();
             auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
             auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
@@ -1454,6 +1382,28 @@ auto end_time = std::chrono::high_resolution_clock::now();
             std::cout << duration_ms.count() << " 毫秒\n"; 
             std::cout << duration_us.count() << " 微秒\n";
 }
+
+
+void multi_robot_tracking_Nodelet::process_new_detections() {
+    // 这里可以添加逻辑来处理新检测到的目标
+    // 比如当检测到新目标时，调用find_available_id来分配ID
+}
+
+void multi_robot_tracking_Nodelet::update_id_consensus_from_status() {
+    // 确保id_consensus是正确类型（整数矩阵）
+    if (id_consensus.cols() != num_drones) {
+        id_consensus = Eigen::MatrixXi(1, num_drones);
+    }
+    
+    // 安全地赋值
+    for (int i = 0; i < num_drones && i < id_consensus.cols(); i++) {
+        id_consensus(i) = i;
+    }
+    
+    ROS_DEBUG("更新id_consensus完成，大小: %d", id_consensus.cols());
+}
+
+
 
 /* given known initial projected coordinated, and Left/Right ID
  * sort the id_consensus according to the estimated target

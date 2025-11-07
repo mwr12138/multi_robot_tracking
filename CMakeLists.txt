@@ -39,7 +39,7 @@ include_directories(
   include/multi_robot_tracking
 )
 
-add_library(multi_robot_tracking src/hungarian_alg.cpp src/SimpleKalman.cpp  src/track.cpp src/jpdaf_filter.cpp src/phd_filter.cpp src/kalman.cpp src/multi_robot_tracking_nodelet.cpp)
+add_library(multi_robot_tracking src/hungarian_alg.cpp src/SimpleKalman.cpp  src/track.cpp src/jpdaf_filter.cpp src/phd_filter.cpp src/kalman.cpp src/multi_robot_tracking_nodelet.cpp src/TrackManager.cpp)
 target_include_directories(multi_robot_tracking PUBLIC include ${catkin_LIBRARIES})
 
 target_link_libraries(multi_robot_tracking PUBLIC ${catkin_LIBRARIES} Eigen3::Eigen)
