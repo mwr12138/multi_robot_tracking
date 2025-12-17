@@ -740,151 +740,222 @@ void multi_robot_tracking_Nodelet::init_matrices()
     }
 }
 
-/* use tracking data to draw onto 2D image
- * input: N/A
- * output: 2D image with tracking ID
- */
-void multi_robot_tracking_Nodelet::draw_image()
-{
-#ifdef HOST
-    if(filter_to_use_.compare("jpdaf") == 0)
-    {
-        //          ROS_INFO("drawing jpdaf estimation");
-        float scaleX = input_image.cols / (float)detection_width;
-        float scaleY = input_image.rows / (float)detection_height;
-        for(int k=0; k < jpdaf_filter_.tracks_.size(); k++)
-        {
-            Eigen::Vector2f temp_center;
-            temp_center = jpdaf_filter_.tracks_[k].get_z();
-            int scaledX = floor((temp_center[0] + detection_offset_x) * scaleX);
-            int scaledY = floor((temp_center[1] + detection_offset_y) * scaleY);
-            temp_center[0] = scaledX;
-            temp_center[1] = scaledY;
-            cv::Point2f target_center(temp_center(0), temp_center(1));
-            cv::Point2f id_pos(temp_center(0),temp_center(1)+30);
-            cv::circle(input_image,target_center,4, cv::Scalar(0, 210, 255), 2);
-            putText(input_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cvScalar(0, 0, 255), 2, cv::LINE_AA);//size 1.5 --> 0.5
+// /* use tracking data to draw onto 2D image
+//  * input: N/A
+//  * output: 2D image with tracking ID
+//  */
+// void multi_robot_tracking_Nodelet::draw_image()
+// {
+// #ifdef HOST
+//     if(filter_to_use_.compare("jpdaf") == 0)
+//     {
+//         //          ROS_INFO("drawing jpdaf estimation");
+//         float scaleX = input_image.cols / (float)detection_width;
+//         float scaleY = input_image.rows / (float)detection_height;
+//         for(int k=0; k < jpdaf_filter_.tracks_.size(); k++)
+//         {
+//             Eigen::Vector2f temp_center;
+//             temp_center = jpdaf_filter_.tracks_[k].get_z();
+//             int scaledX = floor((temp_center[0] + detection_offset_x) * scaleX);
+//             int scaledY = floor((temp_center[1] + detection_offset_y) * scaleY);
+//             temp_center[0] = scaledX;
+//             temp_center[1] = scaledY;
+//             cv::Point2f target_center(temp_center(0), temp_center(1));
+//             cv::Point2f id_pos(temp_center(0),temp_center(1)+30);
+//             cv::circle(input_image,target_center,4, cv::Scalar(0, 210, 255), 2);
+//             putText(input_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cvScalar(0, 0, 255), 2, cv::LINE_AA);//size 1.5 --> 0.5
 
-            //draw cross
-            cv::Point2f det_cross_a(temp_center(0)-5, temp_center(1)-5);
-            cv::Point2f det_cross_b(temp_center(0)+5, temp_center(1)-5);
-            cv::Point2f det_cross_c(temp_center(0)-5, temp_center(1)+5);
-            cv::Point2f det_cross_d(temp_center(0)+5, temp_center(1)+5);
-            line(input_image, det_cross_a, det_cross_d, cv::Scalar(255, 20, 150), 1, 1 );
-            line(input_image, det_cross_b, det_cross_c, cv::Scalar(255, 20, 150), 1, 1 );
-        }
+//             //draw cross
+//             cv::Point2f det_cross_a(temp_center(0)-5, temp_center(1)-5);
+//             cv::Point2f det_cross_b(temp_center(0)+5, temp_center(1)-5);
+//             cv::Point2f det_cross_c(temp_center(0)-5, temp_center(1)+5);
+//             cv::Point2f det_cross_d(temp_center(0)+5, temp_center(1)+5);
+//             line(input_image, det_cross_a, det_cross_d, cv::Scalar(255, 20, 150), 1, 1 );
+//             line(input_image, det_cross_b, det_cross_c, cv::Scalar(255, 20, 150), 1, 1 );
+//         }
 
 
-    }
+//     }
 
-    else if(filter_to_use_.compare("phd") == 0) {
+//     else if(filter_to_use_.compare("phd") == 0) {
 
-        //scale 224x224 to 640x480
+//         //scale 224x224 to 640x480
 
-        float scaleX = input_image.cols / (float)detection_width;
-        float scaleY = input_image.rows / (float)detection_height;
-//        ROS_INFO("drawing phd estimation");
+//         float scaleX = input_image.cols / (float)detection_width;
+//         float scaleY = input_image.rows / (float)detection_height;
+// //        ROS_INFO("drawing phd estimation");
         
-//measured input
+// //measured input
+//         for (int k=0; k < phd_filter_.Detections.cols(); k++)
+//         {
+
+//             int scaledX = floor((phd_filter_.Detections(0,k) + detection_offset_x) * scaleX);
+//             int scaledY = floor((phd_filter_.Detections(1,k) + detection_offset_y) * scaleY);
+//             float scaledW = phd_filter_.Detections(2,k) * scaleX;
+//             float scaledH = phd_filter_.Detections(3,k) * scaleY;
+
+
+//             cv::Point2f measured_center(scaledX, scaledY);
+//             //cv::Point2f id_pos(phd_filter_.Z_k(0,k),phd_filter_.Z_k(1,k)+10);
+//             //cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 1);
+//             //              putText(previous_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
+//             cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
+//             cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
+//             cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
+
+//         }
+// // ROS_ERROR_STREAM("画图X_k is:\n" << phd_filter_.X_k << "\n");
+//         for(int k=0; k < phd_filter_.X_k.cols(); k++)
+//         {
+//             int scaledX = floor((phd_filter_.X_k(0,k) + detection_offset_x) * scaleX);
+//             int scaledY = floor((phd_filter_.X_k(2,k) + detection_offset_y) * scaleY);
+//             if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
+//             {
+//             cout << "object[" << k << "] - "
+//              << "(" << scaledX << ", " << scaledY << ")"
+//              << " ID: " << id_consensus(k) << endl;
+//             cv::Point2f target_center(scaledX,scaledY);
+//             cv::Point2f id_pos(scaledX,scaledY+20);
+//             cv::circle(input_image,target_center,2, cv::Scalar(0, 210, 255), 1);
+//             putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.4, cvScalar(0, 0, 255), 2.5, cv::LINE_AA);//size 1.5 --> 0.5
+//         cout<<""<<endl;
+//             }
+//         }
+
+        
+//         //cout<<"draw down"<<endl;
+//     }
+
+//     else if(filter_to_use_.compare("kalman") == 0) {
+
+//         //scale 224x224 to 640x480
+
+//         float scaleX = input_image.cols / (float)detection_width;
+//         float scaleY = input_image.rows / (float)detection_height;
+// //        ROS_INFO("drawing phd estimation");
+//         for(int k=0; k < num_drones; k++)
+//         {
+//             int scaledX = floor((kalman_filter_.X_k(0,k) + detection_offset_x) * scaleX);
+//             int scaledY = floor((kalman_filter_.X_k(2,k) + detection_offset_y) * scaleY);
+
+//             cv::Point2f target_center(scaledX,scaledY);
+//             cv::Point2f id_pos(scaledX,scaledY+10);
+//             cv::circle(input_image,target_center,6, cv::Scalar(0, 210, 255), 3);
+//             putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
+//         }
+
+//         //measured input
+//         for (int k=0; k < num_drones; k++)
+//         {
+
+//             int scaledX = floor((kalman_filter_.Detections(0,k) + detection_offset_x) * scaleX);
+//             int scaledY = floor((kalman_filter_.Detections(1,k) + detection_offset_y) * scaleY);
+//             float scaledW = kalman_filter_.Detections(2,k) * scaleX;
+//             float scaledH = kalman_filter_.Detections(3,k) * scaleY;
+
+
+//             cv::Point2f measured_center(scaledX, scaledY);
+//             //cv::Point2f id_pos(phd_filter_.Z_k(0,k),phd_filter_.Z_k(1,k)+10);
+//             cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 2);
+//             //              putText(previous_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
+//             cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
+//             cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
+//             cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
+
+//         }
+//     }
+
+//     //  ROS_INFO("drawing ground truth");
+//     //  for(int k=0; k < vicon_projected_2DposeArray.cols(); k++)
+//     //  {
+//     //    cv::Point2f target_center(vicon_projected_2DposeArray(0,k),vicon_projected_2DposeArray(1,k));
+//     //    cv::Point2f id_pos(vicon_projected_2DposeArray(0,k),vicon_projected_2DposeArray(1,k)+10);
+//     //    cv::circle(input_image,target_center,4, cv::Scalar(0, 255, 0), 2);
+//     //    putText(input_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, CV_AA);//size 1.5 --> 0.5
+//     //  }
+//     // cv::imwrite("/home/greend/Desktop/0.png", input_image);
+//     image_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", input_image).toImageMsg();
+//     image_msg->header.stamp = img_timestamp;
+//     image_pub_.publish(image_msg);
+
+//     //  ROS_WARN("img time: %f",prev_img_timestamp.toSec());
+//     //  ROS_WARN("bbox time: %f",bbox_timestamp.toSec());
+
+// #endif
+//     return;
+
+// }
+
+void multi_robot_tracking_Nodelet::draw_image() {
+#ifdef HOST
+    if(filter_to_use_.compare("phd") == 0) {
+        // 尺度缩放
+        float scaleX = input_image.cols / (float)detection_width;
+        float scaleY = input_image.rows / (float)detection_height;
+
+        // 绘制检测框
         for (int k=0; k < phd_filter_.Detections.cols(); k++)
         {
-
             int scaledX = floor((phd_filter_.Detections(0,k) + detection_offset_x) * scaleX);
             int scaledY = floor((phd_filter_.Detections(1,k) + detection_offset_y) * scaleY);
             float scaledW = phd_filter_.Detections(2,k) * scaleX;
             float scaledH = phd_filter_.Detections(3,k) * scaleY;
 
-
-            cv::Point2f measured_center(scaledX, scaledY);
-            //cv::Point2f id_pos(phd_filter_.Z_k(0,k),phd_filter_.Z_k(1,k)+10);
-            //cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 1);
-            //              putText(previous_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
             cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
             cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
             cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
-
         }
-// ROS_ERROR_STREAM("画图X_k is:\n" << phd_filter_.X_k << "\n");
+
+        // 绘制跟踪目标和速度箭头
         for(int k=0; k < phd_filter_.X_k.cols(); k++)
         {
             int scaledX = floor((phd_filter_.X_k(0,k) + detection_offset_x) * scaleX);
             int scaledY = floor((phd_filter_.X_k(2,k) + detection_offset_y) * scaleY);
+            
             if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
             {
-            cout << "object[" << k << "] - "
-             << "(" << scaledX << ", " << scaledY << ")"
-             << " ID: " << id_consensus(k) << endl;
-            cv::Point2f target_center(scaledX,scaledY);
-            cv::Point2f id_pos(scaledX,scaledY+20);
-            cv::circle(input_image,target_center,2, cv::Scalar(0, 210, 255), 1);
-            putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.4, cvScalar(0, 0, 255), 2.5, cv::LINE_AA);//size 1.5 --> 0.5
-        cout<<""<<endl;
+                cv::Point2f target_center(scaledX, scaledY);
+                cv::Point2f id_pos(scaledX, scaledY+20);
+                
+                // 绘制目标中心点
+                cv::circle(input_image, target_center, 3, cv::Scalar(0, 210, 255), 2);
+                
+                // 绘制ID文本
+                putText(input_image, to_string(int(id_consensus(k))), id_pos, 
+                       cv::FONT_HERSHEY_COMPLEX_SMALL, 1.1, cvScalar(0, 0, 255), 1.1, cv::LINE_AA);
+                
+                // === 简化版速度箭头（使用OpenCV内置函数）===
+                float vx = phd_filter_.X_k(1,k);
+                float vy = phd_filter_.X_k(3,k);
+                float speed = std::sqrt(vx*vx + vy*vy);
+                
+                if (speed > 0.1f) {
+                    // 计算箭头终点
+                    float arrow_scale = 1.0f;
+                    cv::Point2f arrow_end(
+                        scaledX + vx * arrow_scale,
+                        scaledY + vy * arrow_scale
+                    );
+                    
+                    // 使用OpenCV内置函数绘制箭头（黄色）
+                    cv::arrowedLine(input_image, target_center, arrow_end, 
+                                  cv::Scalar(0, 255, 255), 1, cv::LINE_AA, 0, 0.3);
+                }
             }
         }
-
-        
-        //cout<<"draw down"<<endl;
     }
-
-    else if(filter_to_use_.compare("kalman") == 0) {
-
-        //scale 224x224 to 640x480
-
-        float scaleX = input_image.cols / (float)detection_width;
-        float scaleY = input_image.rows / (float)detection_height;
-//        ROS_INFO("drawing phd estimation");
-        for(int k=0; k < num_drones; k++)
-        {
-            int scaledX = floor((kalman_filter_.X_k(0,k) + detection_offset_x) * scaleX);
-            int scaledY = floor((kalman_filter_.X_k(2,k) + detection_offset_y) * scaleY);
-
-            cv::Point2f target_center(scaledX,scaledY);
-            cv::Point2f id_pos(scaledX,scaledY+10);
-            cv::circle(input_image,target_center,6, cv::Scalar(0, 210, 255), 3);
-            putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
-        }
-
-        //measured input
-        for (int k=0; k < num_drones; k++)
-        {
-
-            int scaledX = floor((kalman_filter_.Detections(0,k) + detection_offset_x) * scaleX);
-            int scaledY = floor((kalman_filter_.Detections(1,k) + detection_offset_y) * scaleY);
-            float scaledW = kalman_filter_.Detections(2,k) * scaleX;
-            float scaledH = kalman_filter_.Detections(3,k) * scaleY;
-
-
-            cv::Point2f measured_center(scaledX, scaledY);
-            //cv::Point2f id_pos(phd_filter_.Z_k(0,k),phd_filter_.Z_k(1,k)+10);
-            cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 2);
-            //              putText(previous_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
-            cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
-            cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
-            cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
-
-        }
-    }
-
-    //  ROS_INFO("drawing ground truth");
-    //  for(int k=0; k < vicon_projected_2DposeArray.cols(); k++)
-    //  {
-    //    cv::Point2f target_center(vicon_projected_2DposeArray(0,k),vicon_projected_2DposeArray(1,k));
-    //    cv::Point2f id_pos(vicon_projected_2DposeArray(0,k),vicon_projected_2DposeArray(1,k)+10);
-    //    cv::circle(input_image,target_center,4, cv::Scalar(0, 255, 0), 2);
-    //    putText(input_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, CV_AA);//size 1.5 --> 0.5
-    //  }
-    // cv::imwrite("/home/greend/Desktop/0.png", input_image);
+    
+    // 其他滤波器类型的绘制代码...
+    
+    // 发布图像
     image_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", input_image).toImageMsg();
     image_msg->header.stamp = img_timestamp;
     image_pub_.publish(image_msg);
 
-    //  ROS_WARN("img time: %f",prev_img_timestamp.toSec());
-    //  ROS_WARN("bbox time: %f",bbox_timestamp.toSec());
-
 #endif
     return;
-
 }
+
 
 
 void multi_robot_tracking_Nodelet::ground_truth_Callback(const geometry_msgs::PoseArray &in_PoseArray)

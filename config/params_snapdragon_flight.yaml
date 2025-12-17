@@ -14,8 +14,8 @@ id_self: 0
 id_left: 1
 id_right: 2
   
-camera_cx: 416.22  #相机中心x坐标
-camera_cy: 402.1  #相机中心y坐标
+camera_cx: 960  #相机中心x坐标
+camera_cy: 540  #相机中心y坐标
 camera_f: 287.4  #相机焦距
 
 dt: 0.225

@@ -105,7 +105,7 @@ void PhdFilter::update_velocity_history()
             position_history[i].clear();
         }
     }
-    ROS_ERROR_STREAM("velocity_history_ " << velocity_history.size() << endl);
+    //ROS_ERROR_STREAM("velocity_history_ \n" << velocity_history << endl);
 }
 
 // 计算速度连续性得分
@@ -688,6 +688,42 @@ void PhdFilter::phd_update() //更新
 
         ROS_ERROR_STREAM("NEW OBJECT!!!" << col << ",MEASUREMENT: " << z_meas.transpose());
     }
+//     // 在phd_update()函数中添加局部静态变量
+// static std::vector<Eigen::Vector2f> candidate_positions;
+// static std::vector<int> candidate_counts;
+
+// // 然后在未匹配测量值处理部分：
+// for (int i = 0; i < unmatched_measurements.size(); i++) {
+//     int z_idx = unmatched_measurements[i];
+//     Eigen::Vector2f det_pos(Detections(0, z_idx), Detections(1, z_idx));
+    
+//     // 查找是否已有候选目标
+//     bool found = false;
+//     for (int j = 0; j < candidate_positions.size(); j++) {
+//         if ((candidate_positions[j] - det_pos).norm() < 30.0f) {
+//             candidate_counts[j]++;
+//             candidate_positions[j] = det_pos; // 更新到最新位置
+//             found = true;
+            
+//             // 如果达到阈值，就分配
+//             if (candidate_counts[j] >= 3 && i < empty_columns.size()) {
+//                 int col = empty_columns[i];
+//                 // ... 分配逻辑 ...
+                
+//                 // 移除已分配的候选目标
+//                 candidate_positions.erase(candidate_positions.begin() + j);
+//                 candidate_counts.erase(candidate_counts.begin() + j);
+//             }
+//             break;
+//         }
+//     }
+    
+//     if (!found) {
+//         // 新增候选目标
+//         candidate_positions.push_back(det_pos);
+//         candidate_counts.push_back(1);
+//     }
+// }
 
 }
 
@@ -1273,8 +1309,8 @@ void PhdFilter::phd_state_extract() //状态提取
 
     ROS_ERROR_STREAM("mk_bar_fixed: \n" << mk_bar_fixed);
     ROS_ERROR_STREAM("mk_bar_display: \n" << mk_bar_display);
-    ROS_ERROR_STREAM("wk_bar_fixed: \n" << wk_bar_fixed);
-    ROS_ERROR_STREAM("wk_bar_display: \n" << wk_bar_display);
+    ROS_ERROR_STREAM("wk_bar_fixed: \n" << mk_bar_fixed);
+    ROS_ERROR_STREAM("mk_bar_display: \n" << mk_bar_display);
 }
 
 
