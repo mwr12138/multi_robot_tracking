@@ -200,7 +200,7 @@ class PhdFilter
 
 
   int occlusion_counter = 0;//连续遮挡帧数计数器
-  const int OCCLUSION_THRESHOLD = 5; // 触发清零的连续遮挡帧数阈值
+  const int OCCLUSION_THRESHOLD = 20; // 触发清零的连续遮挡帧数阈值
   std::vector<int> empty_columns; //声明为空列列表
 };
 

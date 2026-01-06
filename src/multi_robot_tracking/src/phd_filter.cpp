@@ -14,7 +14,7 @@ PhdFilter::PhdFilter()
 {
     
 }
-static const float ASSOC_COST_TH = 40.5f;
+static const float ASSOC_COST_TH = 50.5f;
 
 /*cost =
     0.6 * pos_err +      当前位置误差
@@ -27,20 +27,21 @@ static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
 void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
 
 {
+    //打印 candidates 信息
     ROS_ERROR_STREAM("1111111111111111111111111111111111111111111111111");
     ROS_ERROR_STREAM("Number of candidates: " << candidates.size());
     for(int k = 0; k < candidates.size(); k++)
     {
         ROS_ERROR_STREAM("candidates[" << k << "].x is:\n" << candidates[k].x << "\n");
     }
-    //ROS_ERROR_STREAM("candidates[0].x is:\n" << candidates[0].x << "\n");
     ROS_ERROR_STREAM("Number of existing tracks: " << tracks_.size());
-
-    // 记录每个 candidate 是否已被使用
+    // candidate是新的候选，tracks_是已有的轨迹
+    // 记录每个 candidate 是否已被使用 防止同一个 Candidate 被分给两个 Track
     std::vector<bool> candidate_used(candidates.size(), false);
+    // 记录每个 track 是否已被使用 防止同一个 Track 被分给两个 Candidate
     std::vector<bool> track_used(tracks_.size(), false);
 
-    // ===== 1. 尝试用 candidate 更新已有 Track =====
+    // ===== 1. 老轨迹匹配 尝试用 candidate 更新已有 Track 标准的贪婪匹配逻辑，遍历所有活跃轨迹来寻找最佳匹配=====
     for (size_t i = 0; i < tracks_.size(); ++i) {
 
         auto& tr = tracks_[i];
@@ -107,16 +108,16 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
             tr.confidence = candidates[best_idx].w;
             tr.missed_count = 0;
 
-            candidate_used[best_idx] = true;
+            candidate_used[best_idx] = true; // 标记这个 candidate 已被使用
             track_used[i] = true;  //一个 Track 一帧只能“被续命一次”
         } 
         else {
             // 没匹配上
-            tr.missed_count++;
+            tr.missed_count++; 
         }
     }
 
-    // ===== 2. 为未使用的 candidate 创建新 Track 创建新ID=====
+    // ===== 2. 新轨迹创建 为未使用的 candidate 创建新 Track 创建新ID=====
     for (int j = 0; j < candidates.size(); ++j) {
         if (candidate_used[j]) continue;
 
@@ -150,6 +151,8 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
                 
                 tracks_.push_back(tr);
                 ROS_INFO("New Target! Assigned ID: %d", tr.id);
+                candidate_used[j] = true; // 标记这个 candidate 已被使用
+                continue; // 继续处理下一个 candidate
             }
         }
 
@@ -178,8 +181,12 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
             }
         }
 
-        if (assigned)
+        if (assigned){
+            candidate_used[j] = true;
             continue;
+        }
+
+
 
         // 4.4：真的没法用，才新建 Track
         Tracknew tr;
@@ -198,13 +205,175 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
     }
 
     // ===== 3. 关闭长期未匹配的 Track =====
-    for (auto& tr : tracks_) {
-        if (tr.missed_count > MAX_MISSED) {
-            tr.active = false;
+    // --- 修改点 5：使用迭代器进行物理删除 ---
+    auto it = tracks_.begin();
+    while (it != tracks_.end()) {
+        // 逻辑 1：标记失效
+        if (it->missed_count > MAX_MISSED) {
+            it->active = false;
         }
         
+        // 逻辑 2：彻底删除（解决 206 个轨迹的问题）
+        // 如果已经不活跃了，且丢了很久（比如 15 帧），就彻底删掉，释放 ID
+        if (!it->active && it->missed_count > 15) {
+            ROS_INFO("Deleting track ID %d to free memory", it->id);
+            it = tracks_.erase(it); // <--- 这行代码会让 tracks_.size() 降下来
+        } else {
+            ++it; // 只有没删除的时候才移动迭代器
+        }
     }
 }
+
+
+// void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
+// {
+//     // === 调试打印 ===
+//     ROS_ERROR_THROTTLE(1.0, "UpdateTracks: %lu candidates, %lu tracks", candidates.size(), tracks_.size());
+//     ROS_ERROR_STREAM("UpdateTracks: " << candidates.size() << " candidates, " << tracks_.size() << " tracks");
+//     // 记录使用状态
+//     std::vector<bool> candidate_used(candidates.size(), false);
+    
+//     // ===========================================
+//     // 1. 阶段一：维护现有活跃轨迹 (老员工续命)
+//     // ===========================================
+//     for (auto& tr : tracks_) {
+//         if (!tr.active) continue;
+//         if (tr.missed_count > OCCLUSION_THRESHOLD) continue; // 遮挡保护期外才允许匹配
+
+//         float best_cost = 1e9f;
+//         int best_idx = -1;
+
+//         // --- 寻找最佳 Candidate ---
+//         for (int j = 0; j < candidates.size(); ++j) {
+//             if (candidate_used[j]) continue;
+
+//             // 1.1 数据准备
+//             Eigen::Vector2f cand_pos;
+//             cand_pos << candidates[j].x(0), candidates[j].x(2);
+//             Eigen::Vector2f pred_pos = predict_position(tr);
+            
+//             // 1.2 计算分项误差
+//             float pos_err = (cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2))).norm();
+//             float pred_err = (cand_pos - pred_pos).norm();
+            
+//             Eigen::Vector2f cand_vel = Eigen::Vector2f::Zero();
+//             if (!tr.position_history.empty()) {
+//                 cand_vel = (cand_pos - tr.position_history.back()) / dt_cam;
+//             }
+//             float vel_consistency = calculate_velocity_consistency(tr, cand_vel);
+
+//             // 1.3 综合 Cost
+//             float cost = 0.9f * pos_err + 0.05f * pred_err + 0.05f * (1.0f - vel_consistency);
+
+//             if (cost < best_cost) {
+//                 best_cost = cost;
+//                 best_idx = j;
+//             }
+//         }
+
+//         // --- 匹配判定 ---
+//         if (best_idx >= 0 && best_cost < ASSOC_COST_TH) {
+//             // 更新轨迹状态
+//             tr.x = candidates[best_idx].x;
+//             tr.P = candidates[best_idx].P;
+//             tr.confidence = candidates[best_idx].w;
+//             tr.missed_count = 0;
+
+//             // 更新历史记录
+//             Eigen::Vector2f pos;
+//             pos << tr.x(0), tr.x(2); // 修复：添加类型定义，防止编译报错
+//             tr.position_history.push_back(pos);
+//             if (tr.position_history.size() > HISTORY_SIZE) tr.position_history.pop_front();
+
+//             if (!tr.position_history.empty()) {
+//                  // 简单的速度计算
+//                  // ... (你的速度历史代码)
+//             }
+
+//             candidate_used[best_idx] = true;
+//         } else {
+//             tr.missed_count++;
+//         }
+//     }
+
+//     // ===========================================
+//     // 2. 阶段二：处理未匹配的 Candidate (新员工入职)
+//     // ===========================================
+//     for (int j = 0; j < candidates.size(); ++j) {
+//         if (candidate_used[j]) continue; // 已经被匹配的跳过
+
+//         // 策略优先级：
+//         // 1. 尝试复活老轨迹 (可选，看你需求，这里先注释掉，专注于ID复用)
+//         // 2. 寻找空闲 ID 创建新轨迹
+        
+//         // --- 核心修复逻辑：寻找空闲 ID ---
+//         int free_id = -1;
+//         for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
+//             bool id_occupied = false;
+//             for (const auto& tr : tracks_) {
+//                 // 如果轨迹活跃 且 ID 相同，则该 ID 被占用
+//                 if (tr.active && tr.id == id_search) {
+//                     id_occupied = true;
+//                     break;
+//                 }
+//             }
+//             if (!id_occupied) {
+//                 free_id = id_search;
+//                 break; // 找到最小的空闲 ID，停止寻找
+//             }
+//         }
+
+//         // --- 创建新轨迹 ---
+//         if (free_id != -1) {
+//             Tracknew tr;
+//             tr.id = free_id; // 使用复用的 ID
+//             tr.x = candidates[j].x;
+//             tr.P = candidates[j].P;
+//             tr.confidence = candidates[j].w;
+//             tr.missed_count = 0;
+//             tr.active = true;
+
+//             Eigen::Vector2f pos;
+//             pos << tr.x(0), tr.x(2);
+//             tr.position_history.push_back(pos);
+
+//             tracks_.push_back(tr);
+            
+//             // [修复点]：必须标记已使用，防止重复处理
+//             candidate_used[j] = true; 
+            
+//             ROS_INFO("Created new track with ID: %d", free_id);
+//         } else {
+//             ROS_WARN_THROTTLE(1, "Max drones reached! Cannot assign ID to new candidate.");
+//         }
+        
+//         // 注意：我已经删除了原本后面的 "assigned" 复活逻辑和 "next_track_id++" 逻辑。
+//         // 因为只要有空闲 ID，我们就用空闲 ID。
+//         // 如果没有空闲 ID (free_id == -1)，说明满员了，那也不应该再创建新 ID 了。
+//     }
+
+//     // ===========================================
+//     // 3. 阶段三：物理清理 (解雇离职员工)
+//     // ===========================================
+//     auto it = tracks_.begin();
+//     while (it != tracks_.end()) {
+//         // 1. 标记失效
+//         if (it->missed_count > MAX_MISSED) {
+//             it->active = false;
+//         }
+
+//         // 2. 物理删除 (修复 206 个轨迹的问题)
+//         // 如果 active 为 false 且 missed_count 很大（比如超过 20 帧没看到）
+//         // 或者 刚刚 active=false 但我们想立刻释放 ID
+//         if (!it->active && it->missed_count > 15) { 
+//             // 这里的 15 给了一个缓冲期，防止刚丢就删，删了马上又回来导致 ID 闪烁
+//             ROS_INFO("Physically deleting track ID: %d", it->id);
+//             it = tracks_.erase(it); // erase 返回下一个有效的迭代器
+//         } else {
+//             ++it;
+//         }
+//     }
+// }
 
 
 // 基于历史位置预测当前位置
@@ -741,7 +910,7 @@ void PhdFilter::phd_prune() //剪枝
     I_weights = Eigen::MatrixXf(1, 0);
 
     int I_counter = 0;  // 保留的目标计数
-    float weight_threshold = 0.1;  // 权重阈值（来自配置）
+    float weight_threshold = 0.03;  // 权重阈值（来自配置）
     float mahalanobis_threshold = 4.0;  // 马氏距离阈值（来自配置）
     int l = 0;  // 合并迭代计数
 
@@ -1088,99 +1257,210 @@ void PhdFilter::phd_prune() //剪枝
 
 
 // }
-void PhdFilter::phd_state_extract() // 状态提取
-{
-    ROS_INFO("============ 5. extract ============= ");
-    Eigen::MatrixXf velocity, position;
-    velocity = Eigen::MatrixXf(2,1);
-    position = Eigen::MatrixXf(2,1);
-    float gain_fine_tuned = 1.0; 
-    float weight_threshold_for_extraction = 0.5; 
 
-    // --- 【修改 1：数据源头重定向】 ---
-    // 原本你在这里从 mk_bar_display 拿数据，这是错的，因为 display 此时还没被赋值。
-    // 应该直接从剪枝合并后的结果 mk_bar_fixed 拿数据。
+
+
+
+
+
+
+
+
+
+
+
+void PhdFilter::phd_state_extract() 
+{
+    ROS_INFO("============ 5. State Extraction & Feedback Loop =============");
+    
+    // 1. 初始化临时变量
+    Eigen::MatrixXf velocity = Eigen::MatrixXf::Zero(2,1);
+    Eigen::MatrixXf position = Eigen::MatrixXf::Zero(2,1);
+    float weight_threshold_for_extraction = 0.4f; // 提取门限调低至0.4，增加交叉时的鲁棒性
+    
+    // 2. 收集剪枝后的候选目标 (Candidates)
+    // 注意：从 mk_bar_fixed 获取，这是经过 prune 和 merge 后的干净数据
     std::vector<Candidate> candidates_for_matching;
     for (int i = 0; i < wk_bar_fixed.cols(); i++) {
-        if (wk_bar_fixed(i) > 0.3f) { // 降低门限，确保能抓到目标
+        // 只要权重不是微不足道的，都送入 ID 匹配器
+        if (wk_bar_fixed(i) > 0.1f) { 
             Candidate c;
             c.x = mk_bar_fixed.col(i);
-            c.P = Pk_bar_fixed.block(0, n_state*i, n_state, n_state);
+            c.P = Pk_bar_fixed.block(0, n_state * i, n_state, n_state);
             c.w = wk_bar_fixed(i);
             candidates_for_matching.push_back(c);
         }
     }
 
-    // --- 【修改 2：在这里执行 ID 分配】 ---
-    // 只有执行了 updateTracks，才会根据 Candidate 生成或更新带有 ID 的 tracks_
+    // 3. 执行 ID 分配 (数据关联)
+    // 这一步会将 candidates 分配给 tracks_[0...NUM_DRONES-1]
     updateTracks(candidates_for_matching);
 
-    // --- 【修改 3：根据追踪结果填充 Display 矩阵】 ---
-    // 这步保证了 mk_bar_display 不再是全 0
+    // 4. 填充 Display 矩阵并【同步反馈】给 mk_minus_1
+    // 这一步最关键：保证下一帧的“预测”是从这一帧“确认”的位置开始的
     mk_bar_display.setConstant(-1);
-    wk_bar_display.setConstant(-1);
-    for (const auto& tr : tracks_) {
-        if (tr.active && tr.id < NUM_DRONES) {
-            mk_bar_display.col(tr.id) = tr.x;
-            wk_bar_display(tr.id) = tr.confidence;
+    wk_bar_display.setConstant(0); 
+
+    for (int i = 0; i < NUM_DRONES; i++) {
+        if (tracks_[i].active) {
+            // A. 同步到展示矩阵
+            mk_bar_display.col(i) = tracks_[i].x;
+            wk_bar_display(i) = tracks_[i].confidence;
+
+            // B. 同步到滤波器内部状态 (Feedback)
+            // 即使权重不到 0.5，也要更新位置，否则预测会停在原地
+            mk_minus_1.col(i) = tracks_[i].x;
+            wk_minus_1(i) = tracks_[i].confidence;
+            Pk_minus_1.block(0, n_state * i, n_state, n_state) = tracks_[i].P;
+
+            // C. 决定最终输出给主程序的 X_k
+            if (tracks_[i].confidence > weight_threshold_for_extraction) {
+                X_k.col(i) = tracks_[i].x;
+            } else {
+                // 权重偏低（如交叉中），输出预测值保持轨迹连续
+                X_k.col(i) = tracks_[i].x; 
+            }
+        } else {
+            // 目标彻底丢失
+            X_k.col(i).setConstant(-1);
+            wk_minus_1(i) = 0.0f; // 下一帧预测时，这部分权重将近乎为0
         }
     }
 
-    // --- 【以下保留你的原逻辑，但修复内部索引】 ---
-    if(k_iteration > 3)   
-    {
-        // 注意：这里的循环上限应为 NUM_DRONES，因为我们要更新每个 ID 的状态
-        for(int i=0; i < NUM_DRONES; i++)
-        {
-            // 如果该 ID 当前没被激活
-            if(wk_bar_display(i) == -1)
-            {
-                X_k.block(0, i, n_state, 1).setConstant(-1);
-                // 此时 mk_minus_1 保持上一帧预测
-            }
-            // 权重低，沿用预测值
-            else if(wk_bar_display(i) < weight_threshold_for_extraction)
-            {
-                X_k.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
-            }
-            // 权重高，更新反馈
-            else 
-            {
-                X_k.block(0, i, n_state, 1) = mk_bar_display.col(i);
-                mk_minus_1.col(i) = mk_bar_display.col(i);
-                wk_minus_1(i) = wk_bar_display(i);
-            }
-        }
-    }
-    else // 初始化阶段
-    {
-        wk_minus_1 = wk_bar_fixed;
-        mk_minus_1 = mk_bar_fixed;
-        Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
-        X_k = mk_bar_fixed;
-    }
+    // 5. 速度差分补偿
+    // 基于 ID 对齐后的位置差计算速度，并更新回反馈矩阵 mk_minus_1
+    if (k_iteration > 5) {
+        for (int i = 0; i < NUM_DRONES; i++) {
+            // 只有当前帧和前一帧都有效时才计算速度
+            if (X_k(0, i) != -1 && X_k_previous(0, i) != -1) {
+                position(0, 0) = (X_k(0, i) - X_k_previous(0, i));
+                position(1, 0) = (X_k(2, i) - X_k_previous(2, i));
+                
+                // dt_cam 是两帧之间的时间间隔
+                velocity = position / dt_cam; 
 
-    // 速度差分逻辑（保持你的原样，但确保 X_k_previous 尺寸一致）
-    if (k_iteration > 3)
-    {
-        for (int i = 0; i < NUM_DRONES; i++)
-        {
-            if (X_k(0,i) != -1 && X_k_previous(0,i) != -1) {
-                position(0, 0) = (X_k(0,i) - X_k_previous(0,i));
-                position(1, 0) = (X_k(2,i) - X_k_previous(2,i));
-                velocity = position / (dt_cam * gain_fine_tuned);
-                // 更新反馈给下一帧的速度估计
-                mk_minus_1(1,i) = velocity(0,0);
-                mk_minus_1(3,i) = velocity(1,0);
+                // 将计算出的实时速度反馈给下一帧的预测
+                // 这样下一帧的预测位置 = 当前位置 + velocity * dt
+                mk_minus_1(1, i) = velocity(0, 0);
+                mk_minus_1(3, i) = velocity(1, 0);
+                
+                ROS_INFO("Drone %d Velocity: VX=%.2f, VY=%.2f", i, velocity(0, 0), velocity(1, 0));
             }
         }
     }
 
-    // 最终同步
+    // 6. 保存历史位置
     X_k_previous = X_k;
 
-    ROS_ERROR_STREAM("Final Display Check - mk_bar_display col 0: \n" << mk_bar_display.col(0).transpose());
+    ROS_ERROR_STREAM("Feedback Loop Complete. Valid Tracks: " << (wk_bar_display.array() > 0).count());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// void PhdFilter::phd_state_extract() // 状态提取
+// {
+//     ROS_INFO("============ 5. extract ============= ");
+//     Eigen::MatrixXf velocity, position;
+//     velocity = Eigen::MatrixXf(2,1);
+//     position = Eigen::MatrixXf(2,1);
+//     float gain_fine_tuned = 1.0; 
+//     float weight_threshold_for_extraction = 0.5; 
+
+//     // --- 【修改 1：数据源头重定向】 ---
+//     // 原本你在这里从 mk_bar_display 拿数据，这是错的，因为 display 此时还没被赋值。
+//     // 应该直接从剪枝合并后的结果 mk_bar_fixed 拿数据。
+//     std::vector<Candidate> candidates_for_matching;
+//     for (int i = 0; i < wk_bar_fixed.cols(); i++) {
+//         if (wk_bar_fixed(i) > 0.3f) { // 降低门限，确保能抓到目标
+//             Candidate c;
+//             c.x = mk_bar_fixed.col(i);
+//             c.P = Pk_bar_fixed.block(0, n_state*i, n_state, n_state);
+//             c.w = wk_bar_fixed(i);
+//             candidates_for_matching.push_back(c);
+//         }
+//     }
+
+//     // --- 【修改 2：在这里执行 ID 分配】 ---
+//     // 只有执行了 updateTracks，才会根据 Candidate 生成或更新带有 ID 的 tracks_
+//     updateTracks(candidates_for_matching);
+
+//     // --- 【修改 3：根据追踪结果填充 Display 矩阵】 ---
+//     // 这步保证了 mk_bar_display 不再是全 0
+//     mk_bar_display.setConstant(-1);
+//     wk_bar_display.setConstant(-1);
+//     for (const auto& tr : tracks_) {
+//         if (tr.active && tr.id < NUM_DRONES) {
+//             mk_bar_display.col(tr.id) = tr.x;
+//             wk_bar_display(tr.id) = tr.confidence;
+//         }
+//     }
+
+//     // --- 【以下保留你的原逻辑，但修复内部索引】 ---
+//     if(k_iteration > 3)   
+//     {
+//         // 注意：这里的循环上限应为 NUM_DRONES，因为我们要更新每个 ID 的状态
+//         for(int i=0; i < NUM_DRONES; i++)
+//         {
+//             // 如果该 ID 当前没被激活
+//             if(wk_bar_display(i) == -1)
+//             {
+//                 X_k.block(0, i, n_state, 1).setConstant(-1);
+//                 // 此时 mk_minus_1 保持上一帧预测
+//             }
+//             // 权重低，沿用预测值
+//             else if(wk_bar_display(i) < weight_threshold_for_extraction)
+//             {
+//                 X_k.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
+//             }
+//             // 权重高，更新反馈
+//             else 
+//             {
+//                 X_k.block(0, i, n_state, 1) = mk_bar_display.col(i);
+//                 mk_minus_1.col(i) = mk_bar_display.col(i);
+//                 wk_minus_1(i) = wk_bar_display(i);
+//             }
+//         }
+//     }
+//     else // 初始化阶段
+//     {
+//         wk_minus_1 = wk_bar_fixed;
+//         mk_minus_1 = mk_bar_fixed;
+//         Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
+//         X_k = mk_bar_fixed;
+//     }
+
+//     // 速度差分逻辑（保持你的原样，但确保 X_k_previous 尺寸一致）
+//     if (k_iteration > 3)
+//     {
+//         for (int i = 0; i < NUM_DRONES; i++)
+//         {
+//             if (X_k(0,i) != -1 && X_k_previous(0,i) != -1) {
+//                 position(0, 0) = (X_k(0,i) - X_k_previous(0,i));
+//                 position(1, 0) = (X_k(2,i) - X_k_previous(2,i));
+//                 velocity = position / (dt_cam * gain_fine_tuned);
+//                 // 更新反馈给下一帧的速度估计
+//                 mk_minus_1(1,i) = velocity(0,0);
+//                 mk_minus_1(3,i) = velocity(1,0);
+//             }
+//         }
+//     }
+
+//     // 最终同步
+//     X_k_previous = X_k;
+
+//     ROS_ERROR_STREAM("Final Display Check - mk_bar_display col 0: \n" << mk_bar_display.col(0).transpose());
+// }
 
 float PhdFilter::clutter_intensity(const float ZmeasureX, const float ZmeasureY) 
 {
