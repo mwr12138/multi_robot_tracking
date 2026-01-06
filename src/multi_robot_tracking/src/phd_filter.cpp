@@ -27,7 +27,7 @@ static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
 void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
 
 {
-    ROS_ERROR_STREAM("11111111111111111111111111111111111111111111111");
+    ROS_ERROR_STREAM("1111111111111111111111111111111111111111111111111");
     ROS_ERROR_STREAM("Number of candidates: " << candidates.size());
     for(int k = 0; k < candidates.size(); k++)
     {
