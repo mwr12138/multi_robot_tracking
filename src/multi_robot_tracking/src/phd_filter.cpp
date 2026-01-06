@@ -75,9 +75,9 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
 
             float vel_consistency = calculate_velocity_consistency(tr, cand_vel);
 
-            float cost =    0.6f * pos_err +
-                            0.3f * pred_err +
-                            0.1f * (1.0f - vel_consistency);
+            float cost =    0.9f * pos_err +
+                            0.05f * pred_err +
+                            0.05f * (1.0f - vel_consistency);
 
             if (cost < best_cost) {
                 best_cost = cost;
@@ -135,25 +135,25 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
                 free_id = id_search;
                 break;
             }
+        }
 
-            // 如果找到了空闲 ID，就用这个 ID 创建新轨迹
-            if (free_id != -1) {
-                Tracknew tr;
-                tr.id = free_id; // 使用找到的 0~9 之间的空闲 ID
-                tr.x = candidates[j].x;
-                tr.P = candidates[j].P;
-                tr.confidence = candidates[j].w;
-                tr.missed_count = 0;
-                tr.active = true; 
-                Eigen::Vector2f pos;                   
-                pos << tr.x(0), tr.x(2);
-                tr.position_history.push_back(pos);
-                
-                tracks_.push_back(tr);
-                ROS_INFO("New Target! Assigned ID: %d", tr.id);
-                candidate_used[j] = true; // 标记这个 candidate 已被使用
-                continue; // 继续处理下一个 candidate
-            }
+        // 如果找到了空闲 ID，就用这个 ID 创建新轨迹
+        if (free_id != -1) {
+            Tracknew tr;
+            tr.id = free_id; // 使用找到的 0~9 之间的空闲 ID
+            tr.x = candidates[j].x;
+            tr.P = candidates[j].P;
+            tr.confidence = candidates[j].w;
+            tr.missed_count = 0;
+            tr.active = true; 
+            Eigen::Vector2f pos;                   
+            pos << tr.x(0), tr.x(2);
+            tr.position_history.push_back(pos);
+            
+            tracks_.push_back(tr);
+            ROS_INFO("New Target! Assigned ID: %d", tr.id);
+            candidate_used[j] = true; // 标记这个 candidate 已被使用
+            continue; // 继续处理下一个 candidate
         }
 
         bool assigned = false;
@@ -203,6 +203,9 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
 
         tracks_.push_back(tr);
     }
+
+
+
 
     // ===== 3. 关闭长期未匹配的 Track =====
     // --- 修改点 5：使用迭代器进行物理删除 ---
