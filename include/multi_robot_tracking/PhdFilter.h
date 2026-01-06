@@ -26,6 +26,27 @@
 #define PI 3.14159
 //#define NUM_DRONES 3
 
+// ===== Tracknew definition =====
+struct Tracknew {
+    int id;                      // 唯一 ID
+    Eigen::VectorXf x;           // 状态
+    Eigen::MatrixXf P;           // 协方差
+    float confidence;            // 可信度（暂时用权重）
+    int missed_count;            // 连续未匹配帧数
+    bool active;                 // 是否仍然有效
+
+    std::deque<Eigen::Vector2f> position_history;  // 位置历史
+    std::deque<Eigen::Vector2f> velocity_history;  // 速度历史
+};
+
+//从PHD到track的候选结构体
+struct Candidate {
+    Eigen::VectorXf x;
+    Eigen::MatrixXf P;
+    float w;
+};
+
+
 class PhdFilter
 {
  public:
@@ -54,28 +75,35 @@ class PhdFilter
 
   ros::Time startTime,endTime,processTime;
 
+//新增、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\、0104新增
+  void updateTracks(const std::vector<Candidate>& candidates);
+  Eigen::Vector2f predict_position(const Tracknew& tr) const;//新 基于历史位置预测当前位置
+  float calculate_velocity_consistency(const Tracknew& tr, const Eigen::Vector2f& candidate_velocity) const; //新 计算速度连续性得分
+
+
+//新增、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\0104新增
 
 
 // 添加速度历史记录
-    std::vector<std::deque<Eigen::Vector2f>> velocity_history;  // 每个目标的速度历史
-    std::vector<std::deque<Eigen::Vector2f>> position_history;  // 每个目标的位置历史
-    const int HISTORY_SIZE = 5;  // 保留最近5帧的历史
-    void update_velocity_history(); //更新速度历史
-    void initialize_velocity_history();
-    float calculate_velocity_consistency(int target_id, const Eigen::Vector2f& candidate_velocity); //计算速度连续性得分
-    float calculate_position_consistency(int target_id, const Eigen::Vector2f& candidate_position); //计算位置连续性得分
-    Eigen::Vector2f predict_position(int target_id);//基于历史位置预测当前位置
-    int find_target_using_id(int target_id, const Eigen::MatrixXi& newIndex, 
-                            const std::vector<std::pair<float, int>>& weighted_targets, 
-                            const std::vector<bool>& id_used);// 查找当前使用指定ID的目标索引
-    void assign_target_to_id(int source_idx, int target_id, 
-                        const Eigen::MatrixXf& wk_bar_fixed_k,
-                        const Eigen::MatrixXf& mk_bar_fixed_k,
-                        const Eigen::MatrixXf& Pk_bar_fixed_k);
-    void cleanup_memory(); // 清理内存
-    int memory_cleanup_counter;
-    static const int MEMORY_CLEANUP_INTERVAL = 100;
-    Eigen::MatrixXi id_consensus;
+  std::vector<std::deque<Eigen::Vector2f>> velocity_history;  // 每个目标的速度历史
+  std::vector<std::deque<Eigen::Vector2f>> position_history;  // 每个目标的位置历史
+  const int HISTORY_SIZE = 5;  // 保留最近5帧的历史
+  //void update_velocity_history(); //更新速度历史
+  void initialize_velocity_history();
+  //float calculate_velocity_consistency(int target_id, const Eigen::Vector2f& candidate_velocity); //计算速度连续性得分===========================旧的=========
+  //float calculate_position_consistency(int target_id, const Eigen::Vector2f& candidate_position); //计算位置连续性得分
+  //Eigen::Vector2f predict_position(int target_id);//基于历史位置预测当前位置================================旧的=================
+  //int find_target_using_id(int target_id, const Eigen::MatrixXi& newIndex, 
+  //                         const std::vector<std::pair<float, int>>& weighted_targets, 
+  //                         const std::vector<bool>& id_used);// 查找当前使用指定ID的目标索引
+  //void assign_target_to_id(int source_idx, int target_id, 
+  //                     const Eigen::MatrixXf& wk_bar_fixed_k,
+  //                     const Eigen::MatrixXf& mk_bar_fixed_k,
+  //                     const Eigen::MatrixXf& Pk_bar_fixed_k);
+  //void cleanup_memory(); // 清理内存
+  int memory_cleanup_counter;
+  static const int MEMORY_CLEANUP_INTERVAL = 100;
+  Eigen::MatrixXi id_consensus;
 
 
   geometry_msgs::PoseArray Z_current_k;
@@ -107,7 +135,7 @@ class PhdFilter
   float prob_survival = 1;  //目标存在的概率   这里为什么是1.0？？？
   float prob_detection = 0.9;//1.0;
 
-  float dt_cam = 0.125; //8hz
+  float dt_cam = 0.033; //0.125; //8hz
   float dt_imu = 0.01;  //100hz
 
   Eigen::MatrixXf mk_minus_1;
@@ -161,7 +189,16 @@ class PhdFilter
   std::vector<int> occluded_frame_count;  // 记录每列连续低权重帧数（需作为类成员变量）
   const int MIN_OCCLUDED_FRAMES = 3;  // 至少连续3帧权重低才视为空列
   bool is_occlusion_counter_init = false;  // 标记是否已初始化
- private:
+  std::vector<Tracknew> tracks_; // 滤波器维护的所有轨迹的容器（包含活跃和非活跃的）
+ 
+  private:
+
+  //新增：存储所有有效跟踪
+  
+  std::vector<Candidate> candidates_;// 存储当前帧的候选跟踪
+  int next_track_id_ = 0; // 下一个可用的跟踪ID
+
+
   int occlusion_counter = 0;//连续遮挡帧数计数器
   const int OCCLUSION_THRESHOLD = 5; // 触发清零的连续遮挡帧数阈值
   std::vector<int> empty_columns; //声明为空列列表

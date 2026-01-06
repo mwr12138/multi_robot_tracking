@@ -906,39 +906,76 @@ void multi_robot_tracking_Nodelet::draw_image() {
         }
 
         // 绘制跟踪目标和速度箭头
-        for(int k=0; k < phd_filter_.X_k.cols(); k++)
-        {
-            int scaledX = floor((phd_filter_.X_k(0,k) + detection_offset_x) * scaleX);
-            int scaledY = floor((phd_filter_.X_k(2,k) + detection_offset_y) * scaleY);
+        // for(int k=0; k < phd_filter_.X_k.cols(); k++)
+        // {
+        //     int scaledX = floor((phd_filter_.X_k(0,k) + detection_offset_x) * scaleX);
+        //     int scaledY = floor((phd_filter_.X_k(2,k) + detection_offset_y) * scaleY);
             
+        //     if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
+        //     {
+        //         cv::Point2f target_center(scaledX, scaledY);
+        //         cv::Point2f id_pos(scaledX, scaledY+20);
+                
+        //         // 绘制目标中心点
+        //         cv::circle(input_image, target_center, 3, cv::Scalar(0, 210, 255), 2);
+                
+        //         // 绘制ID文本
+        //         putText(input_image, to_string(int(id_consensus(k))), id_pos, 
+        //                cv::FONT_HERSHEY_COMPLEX_SMALL, 1.1, cvScalar(0, 0, 255), 1.1, cv::LINE_AA);
+                
+        //         // === 简化版速度箭头（使用OpenCV内置函数）===
+        //         float vx = phd_filter_.X_k(1,k);
+        //         float vy = phd_filter_.X_k(3,k);
+        //         float speed = std::sqrt(vx*vx + vy*vy);
+                
+        //         if (speed > 0.1f) {
+        //             // 计算箭头终点
+        //             float arrow_scale = 1.0f;
+        //             cv::Point2f arrow_end(
+        //                 scaledX + vx * arrow_scale,
+        //                 scaledY + vy * arrow_scale
+        //             );
+                    
+        //             // 使用OpenCV内置函数绘制箭头（黄色）
+        //             cv::arrowedLine(input_image, target_center, arrow_end, 
+        //                           cv::Scalar(0, 255, 255), 1, cv::LINE_AA, 0, 0.3);
+        //         }
+        //     }
+        // }
+        // 绘制跟踪目标和速度箭头
+        // 建议直接遍历 tracks_，而不是 X_k 矩阵
+        for(const auto& tr : phd_filter_.tracks_)
+        {
+            //ROS_ERROR_STREAM("tr.confidence is: " << tr.confidence);
+            // 只绘制活跃的、且置信度足够的目标
+            if(!tr.active || tr.confidence < 0.3f) continue;
+
+            int scaledX = floor((tr.x(0) + detection_offset_x) * scaleX);
+            int scaledY = floor((tr.x(2) + detection_offset_y) * scaleY);
+            
+            // 检查是否在画面内
             if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
             {
                 cv::Point2f target_center(scaledX, scaledY);
-                cv::Point2f id_pos(scaledX, scaledY+20);
                 
-                // 绘制目标中心点
-                cv::circle(input_image, target_center, 3, cv::Scalar(0, 210, 255), 2);
+                // 1. 绘制目标中心点 (亮黄色/橙色)
+                cv::circle(input_image, target_center, 4, cv::Scalar(0, 210, 255), -1); // 实心圆
                 
-                // 绘制ID文本
-                putText(input_image, to_string(int(id_consensus(k))), id_pos, 
-                       cv::FONT_HERSHEY_COMPLEX_SMALL, 1.1, cvScalar(0, 0, 255), 1.1, cv::LINE_AA);
+                // 2. 绘制ID文本 (读取 tr.id)
+                string txt = "ID:" + to_string(tr.id);
+                cv::putText(input_image, txt, cv::Point(scaledX + 5, scaledY - 5), 
+                        cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 0, 255), 2);
                 
-                // === 简化版速度箭头（使用OpenCV内置函数）===
-                float vx = phd_filter_.X_k(1,k);
-                float vy = phd_filter_.X_k(3,k);
+                // 3. 绘制速度箭头
+                float vx = tr.x(1);
+                float vy = tr.x(3);
                 float speed = std::sqrt(vx*vx + vy*vy);
                 
-                if (speed > 0.1f) {
-                    // 计算箭头终点
-                    float arrow_scale = 1.0f;
-                    cv::Point2f arrow_end(
-                        scaledX + vx * arrow_scale,
-                        scaledY + vy * arrow_scale
-                    );
-                    
-                    // 使用OpenCV内置函数绘制箭头（黄色）
+                if (speed > 1.0f) { // 稍微调高一点阈值防止抖动
+                    float arrow_scale = 2.0f; // 根据需要放大箭头长度
+                    cv::Point2f arrow_end(scaledX + vx * arrow_scale, scaledY + vy * arrow_scale);
                     cv::arrowedLine(input_image, target_center, arrow_end, 
-                                  cv::Scalar(0, 255, 255), 1, cv::LINE_AA, 0, 0.3);
+                                cv::Scalar(0, 255, 255), 2, cv::LINE_AA, 0, 0.2);
                 }
             }
         }

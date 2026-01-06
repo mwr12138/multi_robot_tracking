@@ -14,238 +14,461 @@ PhdFilter::PhdFilter()
 {
     
 }
+static const float ASSOC_COST_TH = 40.5f;
+
+/*cost =
+    0.6 * pos_err +      当前位置误差
+    0.3 * pred_err +     预测误差
+    0.1 * (1 - vel_consistency);   0完全一致  1完全不一致
+*/
+static const float ASSOC_DIST_TH = 10.0f;   // 距离阈值，后面可以调
+static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+//新增：更新tracks_轨迹的更新应该只出现在这一步
+void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
+
+{
+    ROS_ERROR_STREAM("11111111111111111111111111111111111111111111111");
+    ROS_ERROR_STREAM("Number of candidates: " << candidates.size());
+    for(int k = 0; k < candidates.size(); k++)
+    {
+        ROS_ERROR_STREAM("candidates[" << k << "].x is:\n" << candidates[k].x << "\n");
+    }
+    //ROS_ERROR_STREAM("candidates[0].x is:\n" << candidates[0].x << "\n");
+    ROS_ERROR_STREAM("Number of existing tracks: " << tracks_.size());
+
+    // 记录每个 candidate 是否已被使用
+    std::vector<bool> candidate_used(candidates.size(), false);
+    std::vector<bool> track_used(tracks_.size(), false);
+
+    // ===== 1. 尝试用 candidate 更新已有 Track =====
+    for (size_t i = 0; i < tracks_.size(); ++i) {
+
+        auto& tr = tracks_[i];
+
+        if (!tr.active)
+            continue;
+
+        if (tr.missed_count > OCCLUSION_THRESHOLD)
+            continue;   //  关键：失去 ID 保护权
+
+        float best_cost = 1e9f;
+        int best_idx = -1;
+
+        for (int j = 0; j < candidates.size(); ++j) {
+            if (candidate_used[j])
+                continue;
+
+            Eigen::Vector2f cand_pos;
+            cand_pos << candidates[j].x(0), candidates[j].x(2);
+
+            Eigen::Vector2f pred_pos = predict_position(tr);
+
+            float pos_err = (cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2))).norm();
+
+            float pred_err = (cand_pos - pred_pos).norm();
+
+            Eigen::Vector2f cand_vel = Eigen::Vector2f::Zero();
+            if (!tr.position_history.empty()) {
+                cand_vel = (cand_pos - tr.position_history.back()) / dt_cam;
+            }
+
+            float vel_consistency = calculate_velocity_consistency(tr, cand_vel);
+
+            float cost =    0.6f * pos_err +
+                            0.3f * pred_err +
+                            0.1f * (1.0f - vel_consistency);
+
+            if (cost < best_cost) {
+                best_cost = cost;
+                best_idx = j;
+            }
+        }
+        ROS_ERROR_STREAM("Track " << tr.id << " best_idx=" << best_idx << " best_cost=" << best_cost);
+
+        if (best_idx >= 0 && best_cost < ASSOC_COST_TH) {
+
+            Eigen::Vector2f pos;
+            pos << candidates[best_idx].x(0), candidates[best_idx].x(2);
+
+            if (!tr.position_history.empty()) {
+                Eigen::Vector2f vel = (pos - tr.position_history.back()) / dt_cam;
+
+                tr.velocity_history.push_back(vel);
+                if (tr.velocity_history.size() > HISTORY_SIZE)
+                    tr.velocity_history.pop_front();
+            }
+
+            tr.position_history.push_back(pos);
+            if (tr.position_history.size() > HISTORY_SIZE)
+                tr.position_history.pop_front();
+
+            tr.x = candidates[best_idx].x;
+            tr.P = candidates[best_idx].P;
+            tr.confidence = candidates[best_idx].w;
+            tr.missed_count = 0;
+
+            candidate_used[best_idx] = true;
+            track_used[i] = true;  //一个 Track 一帧只能“被续命一次”
+        } 
+        else {
+            // 没匹配上
+            tr.missed_count++;
+        }
+    }
+
+    // ===== 2. 为未使用的 candidate 创建新 Track 创建新ID=====
+    for (int j = 0; j < candidates.size(); ++j) {
+        if (candidate_used[j]) continue;
+
+        // 寻找一个当前没有被任何 active 轨迹占用的 ID (0 到 NUM_DRONES-1)
+        int free_id = -1;
+        for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
+            bool id_occupied = false;              
+            for (const auto& tr : tracks_) {
+                if (tr.active && tr.id == id_search) {
+                    id_occupied = true;
+                    break;
+                }
+            }
+            if (!id_occupied) {
+                free_id = id_search;
+                break;
+            }
+
+            // 如果找到了空闲 ID，就用这个 ID 创建新轨迹
+            if (free_id != -1) {
+                Tracknew tr;
+                tr.id = free_id; // 使用找到的 0~9 之间的空闲 ID
+                tr.x = candidates[j].x;
+                tr.P = candidates[j].P;
+                tr.confidence = candidates[j].w;
+                tr.missed_count = 0;
+                tr.active = true; 
+                Eigen::Vector2f pos;                   
+                pos << tr.x(0), tr.x(2);
+                tr.position_history.push_back(pos);
+                
+                tracks_.push_back(tr);
+                ROS_INFO("New Target! Assigned ID: %d", tr.id);
+            }
+        }
+
+        bool assigned = false;
+
+        // 4.3：尝试复活失效 Track
+        for (size_t i = 0; i < tracks_.size(); ++i) {
+
+            auto& tr = tracks_[i];
+
+            if (tr.active)
+                continue;
+
+            float dist = (tr.x.head(2) - candidates[j].x.head(2)).norm();
+
+            if (dist < ASSOC_DIST_TH) {
+
+                tr.x = candidates[j].x;
+                tr.P = candidates[j].P;
+                tr.confidence = candidates[j].w;
+                tr.missed_count = 0;
+                tr.active = true;
+
+                assigned = true;
+                break;
+            }
+        }
+
+        if (assigned)
+            continue;
+
+        // 4.4：真的没法用，才新建 Track
+        Tracknew tr;
+        tr.id = next_track_id_++;
+        tr.x = candidates[j].x;
+        tr.P = candidates[j].P;
+        tr.confidence = candidates[j].w;
+        tr.missed_count = 0;
+        tr.active = true;
+
+        Eigen::Vector2f pos;
+        pos << tr.x(0), tr.x(2);
+        tr.position_history.push_back(pos);
+
+        tracks_.push_back(tr);
+    }
+
+    // ===== 3. 关闭长期未匹配的 Track =====
+    for (auto& tr : tracks_) {
+        if (tr.missed_count > MAX_MISSED) {
+            tr.active = false;
+        }
+        
+    }
+}
+
+
+// 基于历史位置预测当前位置
+Eigen::Vector2f PhdFilter::predict_position(const Tracknew& tr) const
+{
+    if (tr.position_history.size() < 2)
+        return tr.position_history.back();
+
+    Eigen::Vector2f last = tr.position_history.back();
+    Eigen::Vector2f prev = tr.position_history[tr.position_history.size() - 2];
+
+    Eigen::Vector2f vel = (last - prev) / dt_cam;
+    return last + vel * dt_cam;
+}
+
+// 计算速度连续性得分
+float PhdFilter::calculate_velocity_consistency(const Tracknew& tr, const Eigen::Vector2f& candidate_velocity) const
+{
+    if (tr.velocity_history.empty())
+        return 1.0f;  // 没历史，不惩罚
+
+    Eigen::Vector2f v_avg(0, 0);
+    for (const auto& v : tr.velocity_history)
+        v_avg += v;
+
+    v_avg /= tr.velocity_history.size();
+
+    float diff = (v_avg - candidate_velocity).norm();
+    return std::exp(-diff);   // [0,1]，越小差异越接近 1
+}
+
+
 
 void PhdFilter::phd_track()
 {
-#ifdef TIMING
-    auto time_start = high_resolution_clock::now();
-#endif TIMING
-    startTime = ros::Time::now();
-    k_iteration = k_iteration + 1;
-    ROS_INFO("iter: %d",k_iteration);
+    #ifdef TIMING：
+        auto time_start = high_resolution_clock::now();
+    #endif TIMING
+        startTime = ros::Time::now();
+        k_iteration = k_iteration + 1;
+        ROS_INFO("iter: %d",k_iteration);
 
-    //kalmanPredict(); // ToDo: Can be asynch ???
-#ifdef TIMING
-    auto time_endP = high_resolution_clock::now();
-    auto durationP = duration_cast<std::chrono::microseconds>(time_endP - time_start);
-    ROS_ERROR_STREAM("Time taken by function predict: " << durationP.count() << " microseconds" << endl);
-#endif
+        //kalmanPredict(); // ToDo: Can be asynch ???
+    #ifdef TIMING
+        auto time_endP = high_resolution_clock::now();
+        auto durationP = duration_cast<std::chrono::microseconds>(time_endP - time_start);
+        ROS_ERROR_STREAM("Time taken by function predict: " << durationP.count() << " microseconds" << endl);
+    #endif
 
-    phd_construct(); //滤波器构建
-#ifdef TIMING
-    auto time_endI = high_resolution_clock::now();
-    auto durationI = duration_cast<std::chrono::microseconds>(time_endI - time_endP);
-    ROS_ERROR_STREAM("Time taken by function Issue: " << durationI.count() << " microseconds" << endl);
-#endif
+        phd_construct(); //滤波器构建
+    #ifdef TIMING
+        auto time_endI = high_resolution_clock::now();
+        auto durationI = duration_cast<std::chrono::microseconds>(time_endI - time_endP);
+        ROS_ERROR_STREAM("Time taken by function Issue: " << durationI.count() << " microseconds" << endl);
+    #endif
 
-    phd_update(); //更新
-#ifdef TIMING
-    auto time_endA = high_resolution_clock::now();
-    auto durationA = duration_cast<std::chrono::microseconds>(time_endA - time_endI);
-    ROS_ERROR_STREAM("Time taken by function Associate: " << durationA.count() << " microseconds" << endl);
-#endif
+        phd_update(); //更新
+    #ifdef TIMING
+        auto time_endA = high_resolution_clock::now();
+        auto durationA = duration_cast<std::chrono::microseconds>(time_endA - time_endI);
+        ROS_ERROR_STREAM("Time taken by function Associate: " << durationA.count() << " microseconds" << endl);
+    #endif
 
-    phd_prune(); //剪枝
-#ifdef TIMING
-    auto time_endU = high_resolution_clock::now();
-    auto durationU = duration_cast<std::chrono::microseconds>(time_endU - time_endA);
-    ROS_ERROR_STREAM("Time taken by function Update: " << durationU.count() << " microseconds" << endl);
-#endif
+        phd_prune(); //剪枝
+    #ifdef TIMING
+        auto time_endU = high_resolution_clock::now();
+        auto durationU = duration_cast<std::chrono::microseconds>(time_endU - time_endA);
+        ROS_ERROR_STREAM("Time taken by function Update: " << durationU.count() << " microseconds" << endl);
+    #endif
 
-    phd_state_extract(); //状态提取
-    cleanup_memory();//清理内存
-#ifdef TIMING
-    auto time_endE = high_resolution_clock::now();
-    auto durationE = duration_cast<std::chrono::microseconds>(time_endE - time_endU);
-    ROS_ERROR_STREAM("Time taken by function Extract: " << durationE.count() << " microseconds" << endl);
+        phd_state_extract(); //状态提取
+        //cleanup_memory();//清理内存
+    #ifdef TIMING
+        auto time_endE = high_resolution_clock::now();
+        auto durationE = duration_cast<std::chrono::microseconds>(time_endE - time_endU);
+        ROS_ERROR_STREAM("Time taken by function Extract: " << durationE.count() << " microseconds" << endl);
 
-    auto time_end = high_resolution_clock::now();
-    auto duration = duration_cast<std::chrono::microseconds>(time_end - time_start);
-    ROS_ERROR_STREAM("Time taken by function: " << duration.count() << " microseconds" << endl);
-#endif
+        auto time_end = high_resolution_clock::now();
+        auto duration = duration_cast<std::chrono::microseconds>(time_end - time_start);
+        ROS_ERROR_STREAM("Time taken by function: " << duration.count() << " microseconds" << endl);
+    #endif
 
-    startTime = ros::Time::now();
-    k_iteration = k_iteration + 1;
-    ROS_INFO("iter: %d",k_iteration);
-    endTime = ros::Time::now();
-    ROS_WARN("end of track iteration");
+        startTime = ros::Time::now();
+        k_iteration = k_iteration + 1;
+        ROS_INFO("iter: %d",k_iteration);
+        endTime = ros::Time::now();
+        ROS_WARN("end of track iteration");
 
 }
 
 
 
-// 初始化历史记录
+//初始化历史记录
 void PhdFilter::initialize_velocity_history() 
 {
     velocity_history.resize(NUM_DRONES);
     position_history.resize(NUM_DRONES);
 }
 
-// 更新速度历史
-void PhdFilter::update_velocity_history() 
-{
-    std::cout << "wk_bar_display_ " << wk_bar_display << std::endl;
-    for(int i = 0; i < NUM_DRONES; i++) {
-        if(wk_bar_display(i) > 0.3f) {  // 只有权重足够高的目标才记录历史
-            Eigen::Vector2f current_vel(mk_bar_display(1,i), mk_bar_display(3,i));
-            Eigen::Vector2f current_pos(mk_bar_display(0,i), mk_bar_display(2,i));
+// //更新速度历史
+// void PhdFilter::update_velocity_history() 
+// {
+//     std::cout << "wk_bar_display_ " << wk_bar_display << std::endl;
+//     for(int i = 0; i < NUM_DRONES; i++) {
+//         if(wk_bar_display(i) > 0.3f) {  // 只有权重足够高的目标才记录历史
+//             Eigen::Vector2f current_vel(mk_bar_display(1,i), mk_bar_display(3,i));
+//             Eigen::Vector2f current_pos(mk_bar_display(0,i), mk_bar_display(2,i));
             
-            velocity_history[i].push_back(current_vel);
-            position_history[i].push_back(current_pos);
-            // 保持历史长度
-            if(velocity_history[i].size() > HISTORY_SIZE) {
-                velocity_history[i].pop_front();
-            }
-            if(position_history[i].size() > HISTORY_SIZE) {
-                position_history[i].pop_front();
-            }
-        } else {
-            // 权重低的目标清空历史
-            velocity_history[i].clear();
-            position_history[i].clear();
-        }
-    }
-    //ROS_ERROR_STREAM("velocity_history_ \n" << velocity_history << endl);
-}
+//             velocity_history[i].push_back(current_vel);
+//             position_history[i].push_back(current_pos);
+//             // 保持历史长度
+//             if(velocity_history[i].size() > HISTORY_SIZE) {
+//                 velocity_history[i].pop_front();
+//             }
+//             if(position_history[i].size() > HISTORY_SIZE) {
+//                 position_history[i].pop_front();
+//             }
+//         } else {
+//             // 权重低的目标清空历史
+//             velocity_history[i].clear();
+//             position_history[i].clear();
+//         }
+//     }
+//     //ROS_ERROR_STREAM("velocity_history_ \n" << velocity_history << endl);
+// }
 
-// 计算速度连续性得分
-float PhdFilter::calculate_velocity_consistency(int target_id, const Eigen::Vector2f& candidate_velocity) 
-{
-    if(velocity_history[target_id].size() < 2) {
-        return 1.0f;  // 历史不足，返回中性得分
-    }
+//计算速度连续性得分
+// float PhdFilter::calculate_velocity_consistency(int target_id, const Eigen::Vector2f& candidate_velocity) 
+// {
+//     if(velocity_history[target_id].size() < 2) {
+//         return 1.0f;  // 历史不足，返回中性得分
+//     }
     
-    float angle_consistency = 0.0f;
-    float magnitude_consistency = 0.0f;
-    int count = 0;
+//     float angle_consistency = 0.0f;
+//     float magnitude_consistency = 0.0f;
+//     int count = 0;
     
-    // 计算与历史速度的相似性
-    for(int i = 0; i < velocity_history[target_id].size(); i++) {
-        const Eigen::Vector2f& hist_vel = velocity_history[target_id][i];
+//     // 计算与历史速度的相似性
+//     for(int i = 0; i < velocity_history[target_id].size(); i++) {
+//         const Eigen::Vector2f& hist_vel = velocity_history[target_id][i];
         
-        if(hist_vel.norm() > 0.1f && candidate_velocity.norm() > 0.1f) {
-            // 1. 速度方向一致性（夹角余弦）
-            float cos_angle = hist_vel.dot(candidate_velocity) / 
-                                (hist_vel.norm() * candidate_velocity.norm());
-            cos_angle = std::max(-1.0f, std::min(1.0f, cos_angle));  // 确保在[-1,1]范围内
-            angle_consistency += (cos_angle + 1.0f) / 2.0f;  // 转换为[0,1]范围
+//         if(hist_vel.norm() > 0.1f && candidate_velocity.norm() > 0.1f) {
+//             // 1. 速度方向一致性（夹角余弦）
+//             float cos_angle = hist_vel.dot(candidate_velocity) / 
+//                                 (hist_vel.norm() * candidate_velocity.norm());
+//             cos_angle = std::max(-1.0f, std::min(1.0f, cos_angle));  // 确保在[-1,1]范围内
+//             angle_consistency += (cos_angle + 1.0f) / 2.0f;  // 转换为[0,1]范围
             
-            // 2. 速度大小一致性
-            float ratio = std::min(hist_vel.norm(), candidate_velocity.norm()) / 
-                            std::max(hist_vel.norm(), candidate_velocity.norm());
-            magnitude_consistency += ratio;
+//             // 2. 速度大小一致性
+//             float ratio = std::min(hist_vel.norm(), candidate_velocity.norm()) / 
+//                             std::max(hist_vel.norm(), candidate_velocity.norm());
+//             magnitude_consistency += ratio;
             
-            count++;
-        }
-    }
+//             count++;
+//         }
+//     }
     
-    if(count == 0) return 0.5f;  // 没有有效历史
+//     if(count == 0) return 0.5f;  // 没有有效历史
     
-    angle_consistency /= count;
-    magnitude_consistency /= count;
+//     angle_consistency /= count;
+//     magnitude_consistency /= count;
     
-    // 综合得分：方向一致性权重更高
-    return 0.7f * angle_consistency + 0.3f * magnitude_consistency;
-}
+//     // 综合得分：方向一致性权重更高
+//     return 0.7f * angle_consistency + 0.3f * magnitude_consistency;
+// }
 
 // 计算位置连续性得分
-float PhdFilter::calculate_position_consistency(int target_id, const Eigen::Vector2f& candidate_position) 
-{
-    if(position_history[target_id].size() < 2) {
-        return 1.0f;  // 历史不足，返回中性得分
-    }
+// float PhdFilter::calculate_position_consistency(int target_id, const Eigen::Vector2f& candidate_position) 
+// {
+//     if(position_history[target_id].size() < 2) {
+//         return 1.0f;  // 历史不足，返回中性得分
+//     }
     
-    // 基于历史位置预测当前位置
-    Eigen::Vector2f predicted_position = predict_position(target_id);
+//     // 基于历史位置预测当前位置
+//     Eigen::Vector2f predicted_position = predict_position(target_id);
     
-    // 计算预测位置与候选位置的差异
-    float distance = (predicted_position - candidate_position).norm();
+//     // 计算预测位置与候选位置的差异
+//     float distance = (predicted_position - candidate_position).norm();
     
-    // 转换为得分：距离越小，得分越高
-    float max_expected_distance = 50.0f;  // 最大预期距离（像素）
-    return std::max(0.0f, 1.0f - distance / max_expected_distance);
-}
+//     // 转换为得分：距离越小，得分越高
+//     float max_expected_distance = 50.0f;  // 最大预期距离（像素）
+//     return std::max(0.0f, 1.0f - distance / max_expected_distance);
+// }
 
-// 基于历史位置预测当前位置
-Eigen::Vector2f PhdFilter::predict_position(int target_id) 
-{
-    if(position_history[target_id].size() < 2) {
-        return position_history[target_id].back();  // 无法预测，返回最后位置
-    }
+// //基于历史位置预测当前位置
+// Eigen::Vector2f PhdFilter::predict_position(int target_id) 
+// {
+//     if(position_history[target_id].size() < 2) {
+//         return position_history[target_id].back();  // 无法预测，返回最后位置
+//     }
     
-    // 简单线性预测：使用最后两个位置
-    const Eigen::Vector2f& last_pos = position_history[target_id].back();
-    const Eigen::Vector2f& second_last_pos = position_history[target_id][position_history[target_id].size()-2];
+//     // 简单线性预测：使用最后两个位置
+//     const Eigen::Vector2f& last_pos = position_history[target_id].back();
+//     const Eigen::Vector2f& second_last_pos = position_history[target_id][position_history[target_id].size()-2];
     
-    Eigen::Vector2f velocity = last_pos - second_last_pos;
-    return last_pos + velocity;  // 假设匀速运动
-}
+//     Eigen::Vector2f velocity = last_pos - second_last_pos;
+//     return last_pos + velocity;  // 假设匀速运动
+// }
 
 // 查找当前使用指定ID的目标索引
-int PhdFilter::find_target_using_id(int target_id, const Eigen::MatrixXi& newIndex, 
-                        const std::vector<std::pair<float, int>>& weighted_targets, 
-                        const std::vector<bool>& id_used) 
-{
-    for(int i = 0; i < weighted_targets.size(); i++) {
-        int source_idx = weighted_targets[i].second;
-        if(newIndex(source_idx) % NUM_DRONES == target_id) {
-            return source_idx;
-        }
-    }
-    return -1;
-}
+// int PhdFilter::find_target_using_id(int target_id, const Eigen::MatrixXi& newIndex, 
+//                         const std::vector<std::pair<float, int>>& weighted_targets, 
+//                         const std::vector<bool>& id_used) 
+// {
+//     for(int i = 0; i < weighted_targets.size(); i++) {
+//         int source_idx = weighted_targets[i].second;
+//         if(newIndex(source_idx) % NUM_DRONES == target_id) {
+//             return source_idx;
+//         }
+//     }
+//     return -1;
+// }
 
-void PhdFilter::assign_target_to_id(int source_idx, int target_id, 
-                                const Eigen::MatrixXf& wk_bar_fixed_k,
-                                const Eigen::MatrixXf& mk_bar_fixed_k,
-                                const Eigen::MatrixXf& Pk_bar_fixed_k) 
-{
-    wk_bar_fixed.block(0, target_id, 1, 1) = wk_bar_fixed_k.block(0, source_idx, 1, 1);
-    mk_bar_fixed.block(0, target_id, n_state, 1) = mk_bar_fixed_k.block(0, source_idx, n_state, 1);
-    Pk_bar_fixed.block(0, n_state*target_id, n_state, n_state) = 
-        Pk_bar_fixed_k.block(0, n_state*source_idx, n_state, n_state);
+// void PhdFilter::assign_target_to_id(int source_idx, int target_id, 
+//                                 const Eigen::MatrixXf& wk_bar_fixed_k,
+//                                 const Eigen::MatrixXf& mk_bar_fixed_k,
+//                                 const Eigen::MatrixXf& Pk_bar_fixed_k) 
+// {
+//     wk_bar_fixed.block(0, target_id, 1, 1) = wk_bar_fixed_k.block(0, source_idx, 1, 1);
+//     mk_bar_fixed.block(0, target_id, n_state, 1) = mk_bar_fixed_k.block(0, source_idx, n_state, 1);
+//     Pk_bar_fixed.block(0, n_state*target_id, n_state, n_state) = 
+//         Pk_bar_fixed_k.block(0, n_state*source_idx, n_state, n_state);
         
-    wk_bar_display.block(0, target_id, 1, 1) = wk_bar_fixed_k.block(0, source_idx, 1, 1);
-    mk_bar_display.block(0, target_id, n_state, 1) = mk_bar_fixed_k.block(0, source_idx, n_state, 1);
-    Pk_bar_display.block(0, n_state*target_id, n_state, n_state) = 
-        Pk_bar_fixed_k.block(0, n_state*source_idx, n_state, n_state);
-}
+//     wk_bar_display.block(0, target_id, 1, 1) = wk_bar_fixed_k.block(0, source_idx, 1, 1);
+//     mk_bar_display.block(0, target_id, n_state, 1) = mk_bar_fixed_k.block(0, source_idx, n_state, 1);
+//     Pk_bar_display.block(0, n_state*target_id, n_state, n_state) = 
+//         Pk_bar_fixed_k.block(0, n_state*source_idx, n_state, n_state);
+// }
 
-void PhdFilter::cleanup_memory() 
-{
-    static int cleanup_counter = 0;
-    cleanup_counter++;
+// void PhdFilter::cleanup_memory() 
+// {
+//     static int cleanup_counter = 0;
+//     cleanup_counter++;
     
-    // 每10帧执行一次全面清理（更频繁）
-    if (cleanup_counter >= 10) {
-        cleanup_counter = 0;
+//     // 每10帧执行一次全面清理（更频繁）
+//     if (cleanup_counter >= 10) {
+//         cleanup_counter = 0;
         
-        for (int i = 0; i < NUM_DRONES; i++) {
-            // 条件1：清理无效目标
-            if (wk_bar_display(i) < 0.01f) {
-                velocity_history[i].clear();
-                position_history[i].clear();
-            }
-            // 条件2：即使目标有效，也限制历史长度
-            else if (velocity_history[i].size() > HISTORY_SIZE * 2) {
-                // 保留最近的 HISTORY_SIZE 个数据，删除旧的
-                while (velocity_history[i].size() > HISTORY_SIZE) {
-                    velocity_history[i].pop_front();
-                }
-                while (position_history[i].size() > HISTORY_SIZE) {
-                    position_history[i].pop_front();
-                }
-                ROS_WARN_STREAM("清理目标 " << i << " 的过量历史数据");
-            }
-        }
+//         for (int i = 0; i < NUM_DRONES; i++) {
+//             // 条件1：清理无效目标
+//             if (wk_bar_display(i) < 0.01f) {
+//                 velocity_history[i].clear();
+//                 position_history[i].clear();
+//             }
+//             // 条件2：即使目标有效，也限制历史长度
+//             else if (velocity_history[i].size() > HISTORY_SIZE * 2) {
+//                 // 保留最近的 HISTORY_SIZE 个数据，删除旧的
+//                 while (velocity_history[i].size() > HISTORY_SIZE) {
+//                     velocity_history[i].pop_front();
+//                 }
+//                 while (position_history[i].size() > HISTORY_SIZE) {
+//                     position_history[i].pop_front();
+//                 }
+//                 ROS_WARN_STREAM("清理目标 " << i << " 的过量历史数据");
+//             }
+//         }
         
-        // 强制内存回收
-        for (int i = 0; i < NUM_DRONES; i++) {
-            velocity_history[i].shrink_to_fit();
-            position_history[i].shrink_to_fit();
-        }
-    }
-}  
+//         // 强制内存回收
+//         for (int i = 0; i < NUM_DRONES; i++) {
+//             velocity_history[i].shrink_to_fit();
+//             position_history[i].shrink_to_fit();
+//         }
+//     }
+// }  
 
 
 
@@ -566,25 +789,7 @@ void PhdFilter::phd_update() //更新
     //const float match_threshold = 0.01f;     // 关联权重低于此值视为未匹配
     const float empty_threshold = 0.05f;    // 权重低于此值视为"空列"（可复用）
 
-    // 2. 找出未匹配的测量值（与所有现有目标关联权重都低）
-    //std::vector<int> unmatched_measurements;
-    // for (int z = 0; z < detected_size_k; z++) {
-    //     bool is_matched = false;
-    //     // 检查测量值z与所有目标的关联权重是否有一个超过阈值
-    //     for (int j = 0; j < NUM_DRONES; j++) {
-    //         // 用“测量z与目标j的关联权重”判断，而非目标j的最终权重
-    //         if (associationWeights(z, j) > 0) {
-    //             is_matched = true;
-    //             break;
-    //         }
-    //     }
-    //     if (!is_matched) {
-    //         unmatched_measurements.push_back(z);  // 这才是真正未被使用的检测结果
-    //         ROS_INFO("测量值z=%d未匹配任何目标，加入未匹配列表", z);
-    //         cout<<"((((((((((((((((((((((()))))))))))))))))))))))"<<endl;
-    //     }
-    // }
-    // 调整：1. 降低阈值，适应低权重；2. 优先匹配“全0列”；3. 基于“最大值”判断匹配
+   
     const float match_threshold = 1e-6;  // 降低阈值（如1e-6），容纳重新出现目标的低权重
     std::vector<int> unmatched_measurements;
 
@@ -688,42 +893,6 @@ void PhdFilter::phd_update() //更新
 
         ROS_ERROR_STREAM("NEW OBJECT!!!" << col << ",MEASUREMENT: " << z_meas.transpose());
     }
-//     // 在phd_update()函数中添加局部静态变量
-// static std::vector<Eigen::Vector2f> candidate_positions;
-// static std::vector<int> candidate_counts;
-
-// // 然后在未匹配测量值处理部分：
-// for (int i = 0; i < unmatched_measurements.size(); i++) {
-//     int z_idx = unmatched_measurements[i];
-//     Eigen::Vector2f det_pos(Detections(0, z_idx), Detections(1, z_idx));
-    
-//     // 查找是否已有候选目标
-//     bool found = false;
-//     for (int j = 0; j < candidate_positions.size(); j++) {
-//         if ((candidate_positions[j] - det_pos).norm() < 30.0f) {
-//             candidate_counts[j]++;
-//             candidate_positions[j] = det_pos; // 更新到最新位置
-//             found = true;
-            
-//             // 如果达到阈值，就分配
-//             if (candidate_counts[j] >= 3 && i < empty_columns.size()) {
-//                 int col = empty_columns[i];
-//                 // ... 分配逻辑 ...
-                
-//                 // 移除已分配的候选目标
-//                 candidate_positions.erase(candidate_positions.begin() + j);
-//                 candidate_counts.erase(candidate_counts.begin() + j);
-//             }
-//             break;
-//         }
-//     }
-    
-//     if (!found) {
-//         // 新增候选目标
-//         candidate_positions.push_back(det_pos);
-//         candidate_counts.push_back(1);
-//     }
-// }
 
 }
 
@@ -757,9 +926,8 @@ void PhdFilter::phd_prune() //剪枝
         }
     }
     I_copy = I;
-    //ROS_ERROR_STREAM("wk is:\n" << setprecision(3) << wk << endl);
-    //ROS_ERROR_STREAM("I is:\n" << I << "\nI_weights is:\n" << I_weights << endl);
-
+    ROS_ERROR_STREAM("wk is:\n" << setprecision(3) << wk << endl);
+    ROS_ERROR_STREAM("I is:\n" << I << "\nI_weights is:\n" << I_weights << endl);
     ROS_INFO_STREAM("I is:\n" << I << "\nWK is:\n" << wk);
     
     // 初始化修剪后的矩阵（存储合并后的目标）
@@ -942,377 +1110,554 @@ void PhdFilter::phd_prune() //剪枝
             newIndex(i) = newIndex(i) % NUM_DRONES;
         }
     }
-    cout<<"newIndex.cols()======="<<newIndex.cols()<<endl;
-    // 最终修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
-    // mk_bar_fixed = Eigen::MatrixXf::Zero(n_state,NUM_DRONES);
-    // wk_bar_fixed = Eigen::MatrixXf::Zero(1,NUM_DRONES);
-    // Pk_bar_fixed = Eigen::MatrixXf::Zero(n_state,n_state*NUM_DRONES);
-    // 步骤1：更新连续遮挡计数器
-    if (detected_size_k < NUM_DRONES) {
-        // 检测框数量少于设定值，累加连续遮挡帧数
-        occlusion_counter++;
-     ROS_INFO("当前检测框数量=%d < 设定值=%d，连续遮挡帧数=%d", 
-              detected_size_k, NUM_DRONES, occlusion_counter);
-    } else {
-     // 检测框数量足够，重置计数器（遮挡解除）
-     occlusion_counter = 0;
-      ROS_INFO("检测框数量恢复，连续遮挡计数器重置为0");
+    for(int i=0; i<newIndex.cols(); i++)
+    {
+        if(i > NUM_DRONES)
+        {
+            continue;
+        }
+
+        int sortedIndex = newIndex(i);
+        wk_bar_fixed.block(0, sortedIndex, 1, 1) = wk_bar_fixed_k.block(0, i, 1, 1);
+        mk_bar_fixed.block(0, sortedIndex, n_state, 1) = mk_bar_fixed_k.block(0, i, n_state, 1);
+        Pk_bar_fixed.block(0, n_state*sortedIndex, n_state, n_state) = Pk_bar_fixed_k.block(0, n_state*i, n_state, n_state);
     }
+    ROS_INFO_STREAM("wk_bar_fixed is:\n" << wk_bar_fixed << "\n");
+    ROS_INFO_STREAM("mk_bar_fixed is:\n" << mk_bar_fixed << "\n");
+    ROS_INFO_STREAM("Pk_bar_fixed is:\n" << Pk_bar_fixed << "\n");
 
-    // 步骤2：仅当连续遮挡达到5帧时，才执行清零
-    if (occlusion_counter >= OCCLUSION_THRESHOLD) {
-        mk_bar_fixed.setZero();  // 清零状态矩阵
-        wk_bar_fixed.setZero();  // 清零权重矩阵
-        Pk_bar_fixed.setZero();  // 清零协方差矩阵
-        ROS_INFO("连续%d帧遮挡，执行清零操作", OCCLUSION_THRESHOLD);
-    } else {
-        // 未达到阈值，保留原有状态（不清零）
-        // 若需要更新有效目标的状态，可在此处添加部分更新逻辑
-        ROS_INFO("连续遮挡帧数不足%d，不执行清零", OCCLUSION_THRESHOLD);
-    }
+    numTargets_Jk_minus_1 = wk_bar_fixed.cols();
+    ROS_INFO_STREAM("numTargets_Jk_minus_1: " << numTargets_Jk_minus_1);
+//     cout<<"newIndex.cols()======="<<newIndex.cols()<<endl;
+//     //最终修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+//     mk_bar_fixed = Eigen::MatrixXf::Zero(n_state,NUM_DRONES);
+//     wk_bar_fixed = Eigen::MatrixXf::Zero(1,NUM_DRONES);
+//     Pk_bar_fixed = Eigen::MatrixXf::Zero(n_state,n_state*NUM_DRONES);
+//     ROS_ERROR_STREAM("mk_bar_fixed is:\n" << mk_bar_fixed << "\n");
+// //     // 步骤1：更新连续遮挡计数器
+//     if (detected_size_k < NUM_DRONES) {
+//         // 检测框数量少于设定值，累加连续遮挡帧数
+//         occlusion_counter++;
+//      ROS_INFO("当前检测框数量=%d < 设定值=%d，连续遮挡帧数=%d", 
+//               detected_size_k, NUM_DRONES, occlusion_counter);
+//     } else {
+//      // 检测框数量足够，重置计数器（遮挡解除）
+//      occlusion_counter = 0;
+//       ROS_INFO("检测框数量恢复，连续遮挡计数器重置为0");
+//     }
 
-    //这里有大问题啊|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-    mk_bar_display = Eigen::MatrixXf::Constant(n_state, NUM_DRONES, -1);
-    wk_bar_display = Eigen::MatrixXf::Constant(1, NUM_DRONES, -1);
-    Pk_bar_display = Eigen::MatrixXf::Constant(n_state, n_state*NUM_DRONES, -1);
-    
-    // for(int i=0; i<newIndex.cols(); i++)
-    // {
-    //     if(i > NUM_DRONES)
-    //     {
-    //         continue;
-    //     }
-    //     //cout<<"hahahaha"<<endl;
-    //     int sortedIndex = newIndex(i);    //按新索引排序
-    //     wk_bar_fixed.block(0, sortedIndex, 1, 1) = wk_bar_fixed_k.block(0, i, 1, 1);
-    //     mk_bar_fixed.block(0, sortedIndex, n_state, 1) = mk_bar_fixed_k.block(0, i, n_state, 1);
-    //     Pk_bar_fixed.block(0, n_state*sortedIndex, n_state, n_state) = Pk_bar_fixed_k.block(0, n_state*i, n_state, n_state);
+//     // 步骤2：仅当连续遮挡达到5帧时，才执行清零
+//     if (occlusion_counter >= OCCLUSION_THRESHOLD) {
+//         mk_bar_fixed.setZero();  // 清零状态矩阵
+//         wk_bar_fixed.setZero();  // 清零权重矩阵
+//         Pk_bar_fixed.setZero();  // 清零协方差矩阵
+//         ROS_INFO("连续%d帧遮挡，执行清零操作", OCCLUSION_THRESHOLD);
+//     } else {
+//         // 未达到阈值，保留原有状态（不清零）
+//         // 若需要更新有效目标的状态，可在此处添加部分更新逻辑
+//         ROS_INFO("连续遮挡帧数不足%d，不执行清零", OCCLUSION_THRESHOLD);
+//     }
 
-    //     //这里我新定义了一组变量，用于显示，这组变量每次都会初始化成0
-    //     wk_bar_display.block(0, sortedIndex, 1, 1) = wk_bar_fixed_k.block(0, i, 1, 1);
-    //     mk_bar_display.block(0, sortedIndex, n_state, 1) = mk_bar_fixed_k.block(0, i, n_state, 1);
-    //     Pk_bar_display.block(0, n_state*sortedIndex, n_state, n_state) = Pk_bar_fixed_k.block(0, n_state*i, n_state, n_state);
-    // }
-    // // ROS_ERROR_STREAM("wk_bar_fixed is:\n" << wk_bar_fixed << "\n");
-    // // ROS_ERROR_STREAM("mk_bar_fixed is:\n" << mk_bar_fixed << "\n");
-    // // ROS_INFO_STREAM("Pk_bar_fixed is:\n" << Pk_bar_fixed << "\n");
-    // // ROS_ERROR_STREAM("wk_bar_display is:\n" << wk_bar_display << "\n");
-    // // ROS_ERROR_STREAM("mk_bar_display is:\n" << mk_bar_display << "\n");
-    // // ROS_INFO_STREAM("Pk_bar_display is:\n" << Pk_bar_display << "\n");
+//     //这里有大问题啊|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+//     mk_bar_display = Eigen::MatrixXf::Constant(n_state, NUM_DRONES, -1);
+//     wk_bar_display = Eigen::MatrixXf::Constant(1, NUM_DRONES, -1);
+//     Pk_bar_display = Eigen::MatrixXf::Constant(n_state, n_state*NUM_DRONES, -1);
 
-    // numTargets_Jk_minus_1 = wk_bar_fixed.cols();  // 更新目标数量
-    // ROS_INFO_STREAM("numTargets_Jk_minus_1: " << numTargets_Jk_minus_1);
+//     // === 简化的智能索引分配逻辑 ===
 
-    // === 简化的智能索引分配逻辑 ===
+//     // 1. 创建权重-索引对，用于排序
+//     // === 使用速度连续性的智能索引分配逻辑 ===
 
-    // 1. 创建权重-索引对，用于排序
-    // === 使用速度连续性的智能索引分配逻辑 ===
+//     // 1. 创建权重-索引对，用于排序
+//     std::vector<std::pair<float, int>> weighted_targets;
+//     for(int i = 0; i < wk_bar_fixed_k.cols(); i++) {
+//         weighted_targets.push_back(std::make_pair(wk_bar_fixed_k(i), i));
+//     }
 
-    // 1. 创建权重-索引对，用于排序
-    std::vector<std::pair<float, int>> weighted_targets;
-    for(int i = 0; i < wk_bar_fixed_k.cols(); i++) {
-        weighted_targets.push_back(std::make_pair(wk_bar_fixed_k(i), i));
-    }
+//     // 按权重降序排序
+//     std::sort(weighted_targets.begin(), weighted_targets.end(), 
+//             [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
+//                 return a.first > b.first;
+//             });
+//     ROS_ERROR_STREAM("===  weighted_targets ===");
+//     for(size_t i = 0; i < weighted_targets.size(); i++) {
+//         ROS_ERROR_STREAM("ID" << i << " weight=" << weighted_targets[i].first 
+//                         << ", original id=" << weighted_targets[i].second);
 
-    // 按权重降序排序
-    std::sort(weighted_targets.begin(), weighted_targets.end(), 
-            [](const std::pair<float, int>& a, const std::pair<float, int>& b) {
-                return a.first > b.first;
-            });
-    ROS_ERROR_STREAM("===  weighted_targets ===");
-    for(size_t i = 0; i < weighted_targets.size(); i++) {
-        ROS_ERROR_STREAM("ID" << i << " weight=" << weighted_targets[i].first 
-                        << ", original id=" << weighted_targets[i].second);
+//     }
 
-    }
+//     // 2. 记录ID使用状态和最终分配结果
+//     std::vector<bool> id_used(NUM_DRONES, false);  // 记录每个ID是否已被使用
+//     std::vector<int> final_assignment(weighted_targets.size(), -1); // 记录每个目标分配的最终ID
+//     int assigned_count = 0;
 
-    // 2. 记录ID使用状态和最终分配结果
-    std::vector<bool> id_used(NUM_DRONES, false);  // 记录每个ID是否已被使用
-    std::vector<int> final_assignment(weighted_targets.size(), -1); // 记录每个目标分配的最终ID
-    int assigned_count = 0;
-
-    // 3. 第一轮分配：按权重优先级，使用首选ID
-    for(int i = 0; i < weighted_targets.size() && assigned_count < NUM_DRONES; i++) {
-        int source_idx = weighted_targets[i].second;
-        int preferred_id = newIndex(source_idx) % NUM_DRONES;
+//     // 3. 第一轮分配：按权重优先级，使用首选ID
+//     for(int i = 0; i < weighted_targets.size() && assigned_count < NUM_DRONES; i++) {
+//         int source_idx = weighted_targets[i].second;
+//         int preferred_id = newIndex(source_idx) % NUM_DRONES;
         
-        // 确保索引在有效范围内
-        if(preferred_id < 0) preferred_id = 0;
-        if(preferred_id >= NUM_DRONES) preferred_id = NUM_DRONES - 1;
+//         // 确保索引在有效范围内
+//         if(preferred_id < 0) preferred_id = 0;
+//         if(preferred_id >= NUM_DRONES) preferred_id = NUM_DRONES - 1;
         
-        if(!id_used[preferred_id]) {
-            // 首选ID可用，直接分配
-            final_assignment[source_idx] = preferred_id;
-            id_used[preferred_id] = true;
-            assigned_count++;
-            ROS_INFO_STREAM("目标 " << source_idx << " (权重=" << weighted_targets[i].first 
-                        << ") 分配到首选ID " << preferred_id);
-        } else {
-            // 索引冲突！使用速度连续性辅助判断
-            ROS_ERROR_STREAM("检测到索引冲突: ID " << preferred_id << " 已被占用");
+//         if(!id_used[preferred_id]) {
+//             // 首选ID可用，直接分配
+//             final_assignment[source_idx] = preferred_id;
+//             id_used[preferred_id] = true;
+//             assigned_count++;
+//             ROS_INFO_STREAM("目标 " << source_idx << " (权重=" << weighted_targets[i].first 
+//                         << ") 分配到首选ID " << preferred_id);
+//         } else {
+//             // 索引冲突！使用速度连续性辅助判断
+//             ROS_ERROR_STREAM("检测到索引冲突: ID " << preferred_id << " 已被占用");
             
-            // 获取候选目标的状态
-            Eigen::Vector2f candidate_vel(mk_bar_fixed_k(1, source_idx), mk_bar_fixed_k(3, source_idx));
-            Eigen::Vector2f candidate_pos(mk_bar_fixed_k(0, source_idx), mk_bar_fixed_k(2, source_idx));
+//             // 获取候选目标的状态
+//             Eigen::Vector2f candidate_vel(mk_bar_fixed_k(1, source_idx), mk_bar_fixed_k(3, source_idx));
+//             Eigen::Vector2f candidate_pos(mk_bar_fixed_k(0, source_idx), mk_bar_fixed_k(2, source_idx));
             
-            // 计算候选目标的运动连续性得分
-            float candidate_velocity_score = calculate_velocity_consistency(preferred_id, candidate_vel);
-            float candidate_position_score = calculate_position_consistency(preferred_id, candidate_pos);
-            float candidate_motion_score = 0.7f * candidate_velocity_score + 0.3f * candidate_position_score;
+//             // 计算候选目标的运动连续性得分
+//             float candidate_velocity_score = calculate_velocity_consistency(preferred_id, candidate_vel);
+//             float candidate_position_score = calculate_position_consistency(preferred_id, candidate_pos);
+//             float candidate_motion_score = 0.7f * candidate_velocity_score + 0.3f * candidate_position_score;
             
-            // 查找当前占用该ID的目标
-            int current_occupier = -1;
-            for(int j = 0; j < i; j++) {
-                int other_idx = weighted_targets[j].second;
-                if(final_assignment[other_idx] == preferred_id) {
-                    current_occupier = other_idx;
-                    break;
-                }
-            }
+//             // 查找当前占用该ID的目标
+//             int current_occupier = -1;
+//             for(int j = 0; j < i; j++) {
+//                 int other_idx = weighted_targets[j].second;
+//                 if(final_assignment[other_idx] == preferred_id) {
+//                     current_occupier = other_idx;
+//                     break;
+//                 }
+//             }
             
-            if(current_occupier != -1) {
-                // 计算当前占用者的运动连续性得分
-                Eigen::Vector2f current_vel(mk_bar_fixed_k(1, current_occupier), mk_bar_fixed_k(3, current_occupier));
-                Eigen::Vector2f current_pos(mk_bar_fixed_k(0, current_occupier), mk_bar_fixed_k(2, current_occupier));
+//             if(current_occupier != -1) {
+//                 // 计算当前占用者的运动连续性得分
+//                 Eigen::Vector2f current_vel(mk_bar_fixed_k(1, current_occupier), mk_bar_fixed_k(3, current_occupier));
+//                 Eigen::Vector2f current_pos(mk_bar_fixed_k(0, current_occupier), mk_bar_fixed_k(2, current_occupier));
                 
-                float current_velocity_score = calculate_velocity_consistency(preferred_id, current_vel);
-                float current_position_score = calculate_position_consistency(preferred_id, current_pos);
-                float current_motion_score = 0.7f * current_velocity_score + 0.3f * current_position_score;
+//                 float current_velocity_score = calculate_velocity_consistency(preferred_id, current_vel);
+//                 float current_position_score = calculate_position_consistency(preferred_id, current_pos);
+//                 float current_motion_score = 0.7f * current_velocity_score + 0.3f * current_position_score;
                 
-                ROS_INFO_STREAM("冲突分析:");
-                ROS_INFO_STREAM("  - 候选目标 " << source_idx << ": 速度连续性=" << candidate_velocity_score 
-                            << ", 位置连续性=" << candidate_position_score << ", 综合运动得分=" << candidate_motion_score);
-                ROS_INFO_STREAM("  - 当前占用者 " << current_occupier << ": 速度连续性=" << current_velocity_score 
-                            << ", 位置连续性=" << current_position_score << ", 综合运动得分=" << current_motion_score);
+//                 ROS_INFO_STREAM("冲突分析:");
+//                 ROS_INFO_STREAM("  - 候选目标 " << source_idx << ": 速度连续性=" << candidate_velocity_score 
+//                             << ", 位置连续性=" << candidate_position_score << ", 综合运动得分=" << candidate_motion_score);
+//                 ROS_INFO_STREAM("  - 当前占用者 " << current_occupier << ": 速度连续性=" << current_velocity_score 
+//                             << ", 位置连续性=" << current_position_score << ", 综合运动得分=" << current_motion_score);
                 
-                // 如果候选目标明显更适合这个ID，进行替换
-                float replacement_threshold = 0.15f; // 替换阈值，可调整
-                if(candidate_motion_score > current_motion_score + replacement_threshold) {
-                    ROS_INFO_STREAM("替换决策: 候选目标更适合ID " << preferred_id << " (得分差异: " 
-                                << (candidate_motion_score - current_motion_score) << ")");
+//                 // 如果候选目标明显更适合这个ID，进行替换
+//                 float replacement_threshold = 0.15f; // 替换阈值，可调整
+//                 if(candidate_motion_score > current_motion_score + replacement_threshold) {
+//                     ROS_INFO_STREAM("替换决策: 候选目标更适合ID " << preferred_id << " (得分差异: " 
+//                                 << (candidate_motion_score - current_motion_score) << ")");
                     
-                    // 为当前占用者寻找新的ID
-                    bool reassigned = false;
-                    for(int new_id = 0; new_id < NUM_DRONES && !reassigned; new_id++) {
-                        if(!id_used[new_id]) {
-                            final_assignment[current_occupier] = new_id;
-                            id_used[new_id] = true;
-                            reassigned = true;
-                            ROS_INFO_STREAM("重新分配目标 " << current_occupier << " 到 ID " << new_id);
-                        }
-                    }
+//                     // 为当前占用者寻找新的ID
+//                     bool reassigned = false;
+//                     for(int new_id = 0; new_id < NUM_DRONES && !reassigned; new_id++) {
+//                         if(!id_used[new_id]) {
+//                             final_assignment[current_occupier] = new_id;
+//                             id_used[new_id] = true;
+//                             reassigned = true;
+//                             ROS_INFO_STREAM("重新分配目标 " << current_occupier << " 到 ID " << new_id);
+//                         }
+//                     }
                     
-                    if(reassigned) {
-                        // 分配候选目标到首选ID
-                        final_assignment[source_idx] = preferred_id;
-                        // id_used[preferred_id] 保持true
-                        assigned_count++;
-                        ROS_INFO_STREAM("候选目标 " << source_idx << " 分配到 ID " << preferred_id);
-                    } else {
-                        ROS_ERROR_STREAM("无法重新分配当前占用者，候选目标 " << source_idx << " 将寻找其他ID");
-                        // 继续处理，为候选目标寻找其他ID
-                    }
-                } else {
-                    ROS_INFO_STREAM("保留决策: 当前占用者更适合ID " << preferred_id << " (得分差异: " 
-                                << (current_motion_score - candidate_motion_score) << ")");
-                }
-            }
+//                     if(reassigned) {
+//                         // 分配候选目标到首选ID
+//                         final_assignment[source_idx] = preferred_id;
+//                         // id_used[preferred_id] 保持true
+//                         assigned_count++;
+//                         ROS_INFO_STREAM("候选目标 " << source_idx << " 分配到 ID " << preferred_id);
+//                     } else {
+//                         ROS_ERROR_STREAM("无法重新分配当前占用者，候选目标 " << source_idx << " 将寻找其他ID");
+//                         // 继续处理，为候选目标寻找其他ID
+//                     }
+//                 } else {
+//                     ROS_INFO_STREAM("保留决策: 当前占用者更适合ID " << preferred_id << " (得分差异: " 
+//                                 << (current_motion_score - candidate_motion_score) << ")");
+//                 }
+//             }
             
-            // 如果候选目标还没有被分配（无论是替换失败还是保留决策），为其寻找其他ID
-            if(final_assignment[source_idx] == -1) {
-                // 使用运动连续性来寻找最合适的替代ID
-                int best_alt_id = -1;
-                float best_motion_score = -1.0f;
+//             // 如果候选目标还没有被分配（无论是替换失败还是保留决策），为其寻找其他ID
+//             if(final_assignment[source_idx] == -1) {
+//                 // 使用运动连续性来寻找最合适的替代ID
+//                 int best_alt_id = -1;
+//                 float best_motion_score = -1.0f;
                 
-                for(int alt_id = 0; alt_id < NUM_DRONES; alt_id++) {
-                    if(!id_used[alt_id]) {
-                        // 计算在这个ID上的运动连续性
-                        float alt_velocity_score = calculate_velocity_consistency(alt_id, candidate_vel);
-                        float alt_position_score = calculate_position_consistency(alt_id, candidate_pos);
-                        float alt_motion_score = 0.7f * alt_velocity_score + 0.3f * alt_position_score;
+//                 for(int alt_id = 0; alt_id < NUM_DRONES; alt_id++) {
+//                     if(!id_used[alt_id]) {
+//                         // 计算在这个ID上的运动连续性
+//                         float alt_velocity_score = calculate_velocity_consistency(alt_id, candidate_vel);
+//                         float alt_position_score = calculate_position_consistency(alt_id, candidate_pos);
+//                         float alt_motion_score = 0.7f * alt_velocity_score + 0.3f * alt_position_score;
                         
-                        if(alt_motion_score > best_motion_score) {
-                            best_motion_score = alt_motion_score;
-                            best_alt_id = alt_id;
-                        }
-                    }
-                }
+//                         if(alt_motion_score > best_motion_score) {
+//                             best_motion_score = alt_motion_score;
+//                             best_alt_id = alt_id;
+//                         }
+//                     }
+//                 }
                 
-                if(best_alt_id != -1) {
-                    final_assignment[source_idx] = best_alt_id;
-                    id_used[best_alt_id] = true;
-                    assigned_count++;
-                    ROS_INFO_STREAM("候选目标 " << source_idx << " 基于运动连续性分配到替代ID " << best_alt_id 
-                                << " (运动得分: " << best_motion_score << ")");
-                } else {
-                    ROS_WARN_STREAM("无法为目标 " << source_idx << " 找到可用ID");
-                }
-            }
-        }
-    }
+//                 if(best_alt_id != -1) {
+//                     final_assignment[source_idx] = best_alt_id;
+//                     id_used[best_alt_id] = true;
+//                     assigned_count++;
+//                     ROS_INFO_STREAM("候选目标 " << source_idx << " 基于运动连续性分配到替代ID " << best_alt_id 
+//                                 << " (运动得分: " << best_motion_score << ")");
+//                 } else {
+//                     ROS_WARN_STREAM("无法为目标 " << source_idx << " 找到可用ID");
+//                 }
+//             }
+//         }
+//     }
 
-    // 4. 应用最终分配结果到输出矩阵
-    for(int i = 0; i < weighted_targets.size(); i++) {
-        int source_idx = weighted_targets[i].second;
-        if(final_assignment[source_idx] != -1) {
-            int target_id = final_assignment[source_idx];
-            assign_target_to_id(source_idx, target_id, wk_bar_fixed_k, mk_bar_fixed_k, Pk_bar_fixed_k);
-        }
-    }
+//     // 4. 应用最终分配结果到输出矩阵
+//     for(int i = 0; i < weighted_targets.size(); i++) {
+//         int source_idx = weighted_targets[i].second;
+//         if(final_assignment[source_idx] != -1) {
+//             int target_id = final_assignment[source_idx];
+//             assign_target_to_id(source_idx, target_id, wk_bar_fixed_k, mk_bar_fixed_k, Pk_bar_fixed_k);
+//         }
+//     }
 
-    ROS_INFO_STREAM("基于速度连续性的智能分配完成: " << assigned_count << " 个目标被分配");
+//     ROS_INFO_STREAM("基于速度连续性的智能分配完成: " << assigned_count << " 个目标被分配");
 
-    // 更新速度历史
-    update_velocity_history();
+//     // 更新速度历史
+//     update_velocity_history();
 
 
 
-    //id赋值
-    id_consensus.resize(1, NUM_DRONES);
-    for(int i = 0; i < NUM_DRONES; i++) {
-        id_consensus(i) = -1;  // 初始化为-1
-    }
+//     //id赋值
+//     id_consensus.resize(1, NUM_DRONES);
+//     for(int i = 0; i < NUM_DRONES; i++) {
+//         id_consensus(i) = -1;  // 初始化为-1
+//     }
     
-    for(int i = 0; i < weighted_targets.size(); i++) {
-        int source_idx = weighted_targets[i].second;
-        if(final_assignment[source_idx] != -1) {
-            int target_id = final_assignment[source_idx];
-            assign_target_to_id(source_idx, target_id, wk_bar_fixed_k, mk_bar_fixed_k, Pk_bar_fixed_k);
+//     for(int i = 0; i < weighted_targets.size(); i++) {
+//         int source_idx = weighted_targets[i].second;
+//         if(final_assignment[source_idx] != -1) {
+//             int target_id = final_assignment[source_idx];
+//             assign_target_to_id(source_idx, target_id, wk_bar_fixed_k, mk_bar_fixed_k, Pk_bar_fixed_k);
             
-            // 更新id_consensus
-            if(target_id < NUM_DRONES) {
-                id_consensus(target_id) = target_id;
-            }
-        }
-    }
+//             // 更新id_consensus
+//             if(target_id < NUM_DRONES) {
+//                 id_consensus(target_id) = target_id;
+//             }
+//         }
+//     }
     
-    // 打印调试信息
-    ROS_INFO_STREAM("PHD内部ID分配结果: " << id_consensus);
+//     // 打印调试信息
+//     ROS_INFO_STREAM("PHD内部ID分配结果: " << id_consensus);
 
+// }
+// void PhdFilter::phd_prune() 
+// {
+//     // 1. 基础筛选 (权重阈值)
+//     std::vector<int> high_weight_indices;
+//     for(int i = 0; i < wk.cols(); i++) {
+//         if(wk(i) > 0.05f) { // 稍微降低阈值，确保不丢失目标
+//             high_weight_indices.push_back(i);
+//         }
+//     }
+
+//     std::vector<Candidate> merged_results;
+
+//     // 2. 相似合并 (马氏距离)
+//     while(!high_weight_indices.empty()) {
+//         int max_w_idx = -1;
+//         float max_w = -1.0f;
+//         int list_pos = -1;
+
+//         for(int i = 0; i < high_weight_indices.size(); i++) {
+//             if(wk(high_weight_indices[i]) > max_w) {
+//                 max_w = wk(high_weight_indices[i]);
+//                 max_w_idx = high_weight_indices[i];
+//                 list_pos = i;
+//             }
+//         }
+
+//         std::vector<int> close_indices;
+//         std::vector<int> remaining_indices;
+//         for(int idx : high_weight_indices) {
+//             Eigen::VectorXf deltaM = mk.col(idx) - mk.col(max_w_idx);
+//             float dist = (deltaM.transpose() * Pk.block(0, n_state*idx, n_state, n_state).inverse() * deltaM)(0);
+//             if(dist < 4.0f) close_indices.push_back(idx);
+//             else remaining_indices.push_back(idx);
+//         }
+
+//         Candidate merged_c;
+//         float total_w = 0.0f;
+//         Eigen::VectorXf combined_m = Eigen::VectorXf::Zero(n_state);
+//         Eigen::MatrixXf combined_P = Eigen::MatrixXf::Zero(n_state, n_state);
+
+//         for(int idx : close_indices) total_w += wk(idx);
+//         for(int idx : close_indices) {
+//             combined_m += (wk(idx) / total_w) * mk.col(idx);
+//             combined_P += (wk(idx) / total_w) * (Pk.block(0, n_state*idx, n_state, n_state));
+//         }
+
+//         merged_c.x = combined_m;
+//         merged_c.P = combined_P;
+//         merged_c.w = total_w;
+//         merged_results.push_back(merged_c);
+
+//         high_weight_indices = remaining_indices;
+//     }
+
+//     // --- 【关键修正：同步回矩阵】 ---
+//     // 下一帧的预测需要基于这些合并后的列
+//     int num_merged = merged_results.size();
+
+//     // --- 关键安全检查：如果没有合并出任何目标 ---
+//     if (num_merged == 0) {
+//         ROS_WARN("No targets detected in this frame. Cleaning up matrices.");
+//         mk = Eigen::MatrixXf::Zero(n_state, 0);
+//         wk = Eigen::MatrixXf::Zero(1, 0);
+//         Pk = Eigen::MatrixXf::Zero(n_state, 0);
+        
+//         // 也要清空同步矩阵，防止后续 extract 崩溃
+//         mk_bar_fixed = Eigen::MatrixXf::Zero(n_state, NUM_DRONES);
+//         wk_bar_fixed = Eigen::MatrixXf::Zero(1, NUM_DRONES);
+        
+//         // 调用 updateTracks 传入空 vector，让它处理丢失逻辑
+//         this->updateTracks(merged_results);
+//         return; 
+//     }
+
+//     // --- 正常重写矩阵 ---
+//     mk = Eigen::MatrixXf::Zero(n_state, num_merged);
+//     wk = Eigen::MatrixXf::Zero(1, num_merged);
+//     Pk = Eigen::MatrixXf::Zero(n_state, n_state * num_merged);
+
+//     for(int i = 0; i < num_merged; i++) {
+//         mk.col(i) = merged_results[i].x;
+//         wk(i) = merged_results[i].w;
+//         // 注意这里的索引计算，确保不会越界
+//         Pk.block(0, n_state * i, n_state, n_state) = merged_results[i].P;
+//     }
+
+//     this->updateTracks(merged_results);
 }
 
+// void PhdFilter::phd_state_extract() //状态提取
+// {
+
+//     ROS_INFO("============ 5. extract ============= ");
+//     Eigen::MatrixXf velocity, position;
+//     velocity = Eigen::MatrixXf(2,1);
+//     position = Eigen::MatrixXf(2,1);
+//     float gain_fine_tuned = 1.0;  // 速度计算增益（微调）
+//     float weight_threshold_for_extraction = 0.5;  // 提取的阈值
+
+//     ROS_INFO_STREAM("DT Cam: " << dt_cam << "\n");
+//     //update state for next iterations
+    
+//     // X_k = mk_minus_1;
+//     if(k_iteration > 3)   // 迭代次数>3时（初始化完成），更新状态
+//     {
+//         //update state for next iterations
+//         // wk_minus_1 = wk_bar_fixed;
+//         // mk_minus_1 = mk_bar_fixed;
+//         // Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
+
+//         // X_k = mk_minus_1;
+//         // cout << "--- X_k: " << endl << X_k << endl;
+//         for(int i=0; i<wk_bar_display.cols(); i++)
+//         {
+//             if(wk_bar_display(i)==-1)
+//             {
+//                 X_k.block(0, i, n_state, 1).setConstant(-1);
+//                 //X_k.block(0, i, n_state, 1) = mk_bar_display.block(0, i, n_state, 1);
+//                 wk_minus_1.block(0, i, 1, 1) = wk_bar_fixed.block(0, i, 1, 1);
+//                 mk_minus_1.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
+//                 Pk_minus_1.block(0, n_state*i, n_state, n_state) = Pk_bar_fixed.block(0, n_state*i, n_state, n_state).cwiseAbs();
+//                 cout<<"xx"<<endl;
+//             }
+//             else if(wk_bar_display(i) < weight_threshold_for_extraction  && wk_bar_display(i) != -1)  // 权重低于阈值（不可靠）的时候，状态就沿用预测值
+//             {
+//                 ROS_INFO("!!11");
+//                 X_k.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
+//                 mk_bar_fixed.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
+//                 wk_bar_fixed(i) = wk_minus_1(i);
+//                 Pk_bar_fixed.block(0, n_state*i, n_state, n_state) = Pk_minus_1.block(0, n_state*i, n_state, n_state).cwiseAbs();
+//             }
+//             else  // 权重高于阈值（可靠）的时候，状态就用当前的修剪后的结果
+//             {
+//                 ROS_INFO("!!22");
+//                 candidates_.clear();
+//                 for (int i = 0; i < wk_bar_fixed.cols(); i++)
+//                 {
+//                     if (wk_bar_fixed(i) < weight_threshold_for_extraction)
+//                         continue;
+
+//                     Candidate c;
+//                     c.x = mk_bar_fixed.block(0, i, n_state, 1);
+//                     c.P = Pk_bar_fixed.block(0, n_state*i, n_state, n_state);
+//                     c.w = wk_bar_fixed(i);
+
+//                     candidates_.push_back(c);
+//                 }
+
+//                 X_k.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
+//                 ROS_INFO("!!aa");
+//                 wk_minus_1.block(0, i, 1, 1) = wk_bar_fixed.block(0, i, 1, 1);
+//                 ROS_INFO("!!bb");
+//                 mk_minus_1.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
+//                 ROS_INFO("!!cc");
+//                 Pk_minus_1.block(0, n_state*i, n_state, n_state) = Pk_bar_fixed.block(0, n_state*i, n_state, n_state).cwiseAbs();
+//                 ROS_INFO("!!33");
+//             }
+            
+//         }
+
+//         ROS_INFO_STREAM("mK in extract: \n" << mk_minus_1);
+//         ROS_INFO_STREAM("wK in extract: \n" << wk_bar_fixed);
+//         ROS_INFO_STREAM("PK in extract: \n" << Pk_bar_fixed);
+//         ROS_INFO_STREAM("XK in extract: \n" << X_k);
+//     }
+//     else  //迭代次数≤3（初始化阶段），直接采用修剪结果
+//     {
+//         wk_minus_1 = wk_bar_fixed;
+//         mk_minus_1 = mk_bar_fixed;
+//         Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
+//         X_k = mk_minus_1;
+//     }
+//     if (k_iteration > 3)
+//     {
+//         for (int i = 0; i < wk_bar_fixed.cols(); i++)
+//         {
+//             position.block<1, 1>(0, 0) = (X_k.block<1,1>(0,i) - X_k_previous.block<1,1>(0,i));
+//             position.block<1, 1>(1, 0) = (X_k.block<1,1>(2,i) - X_k_previous.block<1,1>(2,i));
+//             velocity = position/ (dt_cam*gain_fine_tuned) ;
+//             mk_minus_1.block<1,1>(1,i) = velocity.block<1,1>(0,0);
+//             mk_minus_1.block<1,1>(3,i) = velocity.block<1,1>(1,0);
+//             ROS_INFO_STREAM("--- position: " << endl << position << endl);
+//             ROS_INFO_STREAM("--- dt_cam: " << endl << dt_cam << endl);
+//             ROS_INFO_STREAM("--- dt: " << endl << dt << endl);
+//             ROS_INFO_STREAM("--- velocity: " << endl << velocity << endl);
+//         }
+
+//     }
+//     wk_minus_1 = wk_bar_fixed;
+//     mk_minus_1 = mk_bar_fixed;
+//     Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
+//     X_k_previous = X_k;
+    
+
+//     ROS_ERROR_STREAM("mk_bar_fixed: \n" << mk_bar_fixed);
+//     ROS_ERROR_STREAM("mk_bar_display: \n" << mk_bar_display);
+//     ROS_ERROR_STREAM("wk_bar_fixed: \n" << mk_bar_fixed);
+//     ROS_ERROR_STREAM("mk_bar_display: \n" << mk_bar_display);
+
+//     std::vector<Candidate> candidates;
+
+//     for (int i = 0; i < NUM_DRONES; ++i) {
+//         if (wk_bar_display(i) > 0.3f) {
+//             Candidate c;
+//             c.x = mk_bar_display.col(i);
+//             c.P = Pk_bar_display.block(0, n_state*i, n_state, n_state);
+//             c.w = wk_bar_display(i);
+//             candidates.push_back(c);
+//         }
+//     }
+    
+//     updateTracks(candidates);
 
 
-void PhdFilter::phd_state_extract() //状态提取
+// }
+void PhdFilter::phd_state_extract() // 状态提取
 {
-
     ROS_INFO("============ 5. extract ============= ");
     Eigen::MatrixXf velocity, position;
     velocity = Eigen::MatrixXf(2,1);
     position = Eigen::MatrixXf(2,1);
-    float gain_fine_tuned = 1.0;  // 速度计算增益（微调）
-    float weight_threshold_for_extraction = 0.5;  // 提取的阈值
+    float gain_fine_tuned = 1.0; 
+    float weight_threshold_for_extraction = 0.5; 
 
-    ROS_INFO_STREAM("DT Cam: " << dt_cam << "\n");
-    //update state for next iterations
-    
-    // X_k = mk_minus_1;
-    if(k_iteration > 3)   // 迭代次数>3时（初始化完成），更新状态
+    // --- 【修改 1：数据源头重定向】 ---
+    // 原本你在这里从 mk_bar_display 拿数据，这是错的，因为 display 此时还没被赋值。
+    // 应该直接从剪枝合并后的结果 mk_bar_fixed 拿数据。
+    std::vector<Candidate> candidates_for_matching;
+    for (int i = 0; i < wk_bar_fixed.cols(); i++) {
+        if (wk_bar_fixed(i) > 0.3f) { // 降低门限，确保能抓到目标
+            Candidate c;
+            c.x = mk_bar_fixed.col(i);
+            c.P = Pk_bar_fixed.block(0, n_state*i, n_state, n_state);
+            c.w = wk_bar_fixed(i);
+            candidates_for_matching.push_back(c);
+        }
+    }
+
+    // --- 【修改 2：在这里执行 ID 分配】 ---
+    // 只有执行了 updateTracks，才会根据 Candidate 生成或更新带有 ID 的 tracks_
+    updateTracks(candidates_for_matching);
+
+    // --- 【修改 3：根据追踪结果填充 Display 矩阵】 ---
+    // 这步保证了 mk_bar_display 不再是全 0
+    mk_bar_display.setConstant(-1);
+    wk_bar_display.setConstant(-1);
+    for (const auto& tr : tracks_) {
+        if (tr.active && tr.id < NUM_DRONES) {
+            mk_bar_display.col(tr.id) = tr.x;
+            wk_bar_display(tr.id) = tr.confidence;
+        }
+    }
+
+    // --- 【以下保留你的原逻辑，但修复内部索引】 ---
+    if(k_iteration > 3)   
     {
-        //update state for next iterations
-        // wk_minus_1 = wk_bar_fixed;
-        // mk_minus_1 = mk_bar_fixed;
-        // Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
-
-        // X_k = mk_minus_1;
-        // cout << "--- X_k: " << endl << X_k << endl;
-        for(int i=0; i<wk_bar_display.cols(); i++)
+        // 注意：这里的循环上限应为 NUM_DRONES，因为我们要更新每个 ID 的状态
+        for(int i=0; i < NUM_DRONES; i++)
         {
-            if(wk_bar_display(i)==-1)
+            // 如果该 ID 当前没被激活
+            if(wk_bar_display(i) == -1)
             {
                 X_k.block(0, i, n_state, 1).setConstant(-1);
-                //X_k.block(0, i, n_state, 1) = mk_bar_display.block(0, i, n_state, 1);
-                wk_minus_1.block(0, i, 1, 1) = wk_bar_fixed.block(0, i, 1, 1);
-                mk_minus_1.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
-                Pk_minus_1.block(0, n_state*i, n_state, n_state) = Pk_bar_fixed.block(0, n_state*i, n_state, n_state).cwiseAbs();
-                cout<<"xx"<<endl;
+                // 此时 mk_minus_1 保持上一帧预测
             }
-            else if(wk_bar_display(i) < weight_threshold_for_extraction  && wk_bar_display(i) != -1)  // 权重低于阈值（不可靠）的时候，状态就沿用预测值
+            // 权重低，沿用预测值
+            else if(wk_bar_display(i) < weight_threshold_for_extraction)
             {
-                ROS_INFO("!!11");
                 X_k.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
-                mk_bar_fixed.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
-                wk_bar_fixed(i) = wk_minus_1(i);
-                Pk_bar_fixed.block(0, n_state*i, n_state, n_state) = Pk_minus_1.block(0, n_state*i, n_state, n_state).cwiseAbs();
             }
-            else  // 权重高于阈值（可靠）的时候，状态就用当前的修建后的结果
+            // 权重高，更新反馈
+            else 
             {
-                ROS_INFO("!!22");
-                X_k.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
-                ROS_INFO("!!aa");
-                wk_minus_1.block(0, i, 1, 1) = wk_bar_fixed.block(0, i, 1, 1);
-                ROS_INFO("!!bb");
-                mk_minus_1.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
-                ROS_INFO("!!cc");
-                Pk_minus_1.block(0, n_state*i, n_state, n_state) = Pk_bar_fixed.block(0, n_state*i, n_state, n_state).cwiseAbs();
-                ROS_INFO("!!33");
+                X_k.block(0, i, n_state, 1) = mk_bar_display.col(i);
+                mk_minus_1.col(i) = mk_bar_display.col(i);
+                wk_minus_1(i) = wk_bar_display(i);
             }
-            
         }
-        //ROS_ERROR_STREAM("X_k is:\n" << X_k << "\n");
-        // for(int i=0; i<wk_bar_fixed.cols(); i++)
-        // {
-        //     if(wk_bar_fixed(i) < weight_threshold_for_extraction)  // 权重低于阈值（不可靠）的时候，状态就沿用预测值
-        //     {
-        //         ROS_INFO("!!11");
-        //         X_k.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
-        //         mk_bar_fixed.block(0, i, n_state, 1) = mk_minus_1.block(0, i, n_state, 1);
-        //         wk_bar_fixed(i) = wk_minus_1(i);
-        //         Pk_bar_fixed.block(0, n_state*i, n_state, n_state) = Pk_minus_1.block(0, n_state*i, n_state, n_state).cwiseAbs();
-        //     }
-        //     else  // 权重高于阈值（可靠）的时候，状态就用当前的修建后的结果
-        //     {
-        //         ROS_INFO("!!22");
-        //         X_k.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
-        //         ROS_INFO("!!aa");
-        //         wk_minus_1.block(0, i, 1, 1) = wk_bar_fixed.block(0, i, 1, 1);
-        //         ROS_INFO("!!bb");
-        //         mk_minus_1.block(0, i, n_state, 1) = mk_bar_fixed.block(0, i, n_state, 1);
-        //         ROS_INFO("!!cc");
-        //         Pk_minus_1.block(0, n_state*i, n_state, n_state) = Pk_bar_fixed.block(0, n_state*i, n_state, n_state).cwiseAbs();
-        //         ROS_INFO("!!33");
-        //     }
-        // }
-        ROS_INFO_STREAM("mK in extract: \n" << mk_minus_1);
-        ROS_INFO_STREAM("wK in extract: \n" << wk_bar_fixed);
-        ROS_INFO_STREAM("PK in extract: \n" << Pk_bar_fixed);
-        ROS_INFO_STREAM("XK in extract: \n" << X_k);
     }
-    else  //迭代次数≤3（初始化阶段），直接采用修剪结果
+    else // 初始化阶段
     {
         wk_minus_1 = wk_bar_fixed;
         mk_minus_1 = mk_bar_fixed;
         Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
-        X_k = mk_minus_1;
+        X_k = mk_bar_fixed;
     }
+
+    // 速度差分逻辑（保持你的原样，但确保 X_k_previous 尺寸一致）
     if (k_iteration > 3)
     {
-        for (int i = 0; i < wk_bar_fixed.cols(); i++)
+        for (int i = 0; i < NUM_DRONES; i++)
         {
-            position.block<1, 1>(0, 0) = (X_k.block<1,1>(0,i) - X_k_previous.block<1,1>(0,i));
-            position.block<1, 1>(1, 0) = (X_k.block<1,1>(2,i) - X_k_previous.block<1,1>(2,i));
-            velocity = position/ (dt_cam*gain_fine_tuned) ;
-            mk_minus_1.block<1,1>(1,i) = velocity.block<1,1>(0,0);
-            mk_minus_1.block<1,1>(3,i) = velocity.block<1,1>(1,0);
-            ROS_INFO_STREAM("--- position: " << endl << position << endl);
-            ROS_INFO_STREAM("--- dt_cam: " << endl << dt_cam << endl);
-            ROS_INFO_STREAM("--- dt: " << endl << dt << endl);
-            ROS_INFO_STREAM("--- velocity: " << endl << velocity << endl);
+            if (X_k(0,i) != -1 && X_k_previous(0,i) != -1) {
+                position(0, 0) = (X_k(0,i) - X_k_previous(0,i));
+                position(1, 0) = (X_k(2,i) - X_k_previous(2,i));
+                velocity = position / (dt_cam * gain_fine_tuned);
+                // 更新反馈给下一帧的速度估计
+                mk_minus_1(1,i) = velocity(0,0);
+                mk_minus_1(3,i) = velocity(1,0);
+            }
         }
-
     }
-    wk_minus_1 = wk_bar_fixed;
-    mk_minus_1 = mk_bar_fixed;
-    Pk_minus_1 = Pk_bar_fixed.cwiseAbs();
+
+    // 最终同步
     X_k_previous = X_k;
-    
 
-    ROS_ERROR_STREAM("mk_bar_fixed: \n" << mk_bar_fixed);
-    ROS_ERROR_STREAM("mk_bar_display: \n" << mk_bar_display);
-    ROS_ERROR_STREAM("wk_bar_fixed: \n" << mk_bar_fixed);
-    ROS_ERROR_STREAM("mk_bar_display: \n" << mk_bar_display);
+    ROS_ERROR_STREAM("Final Display Check - mk_bar_display col 0: \n" << mk_bar_display.col(0).transpose());
 }
-
 
 float PhdFilter::clutter_intensity(const float ZmeasureX, const float ZmeasureY) 
 {
