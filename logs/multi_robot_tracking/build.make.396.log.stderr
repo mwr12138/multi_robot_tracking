@@ -1,0 +1,463 @@
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2_ros.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libactionlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcv_bridge.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_video.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_face.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_text.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libimage_transport.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libmessage_filters.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libclass_loader.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libPocoFoundation.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libdl.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpthread.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_log4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_backend_interface.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/liblog4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libxmlrpcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroslib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librospack.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpython3.8.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libtinyxml2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp_serialization.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librostime.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcpp_common.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:219:14:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #ifdef directive
+ #ifdef TIMING[01;35m[K�[m[K��
+              [01;35m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:221:8:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
+ #endif [01;35m[KTIMING[m[K
+        [01;35m[K^~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:1:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+ [01;31m[K�[m[K��新速度历史
+ [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:2:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\233[m[K’ in program
+ �[01;31m[K�[m[K�新速度历史
+  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:3:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\264[m[K’ in program
+ �[01;31m[K�[m[K新速度历史
+   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:4:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+ 更[01;31m[K�[m[K��速度历史
+    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:5:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\226[m[K’ in program
+ 更�[01;31m[K�[m[K�速度历史
+     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:6:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\260[m[K’ in program
+ 更�[01;31m[K�[m[K速度历史
+      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:7:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+ 更新[01;31m[K�[m[K��度历史
+       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:8:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+ 更新�[01;31m[K�[m[K�度历史
+        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:9:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\237[m[K’ in program
+ 更新�[01;31m[K�[m[K度历史
+         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:10:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 更新速[01;31m[K�[m[K��历史
+          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:11:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+ 更新速�[01;31m[K�[m[K�历史
+           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:12:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\246[m[K’ in program
+ 更新速�[01;31m[K�[m[K历史
+            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:13:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 更新速度[01;31m[K�[m[K��史
+             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:14:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\216[m[K’ in program
+ 更新速度�[01;31m[K�[m[K�史
+              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:15:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\206[m[K’ in program
+ 更新速度�[01;31m[K�[m[K史
+               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:16:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 更新速度历[01;31m[K�[m[K��
+                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:17:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\217[m[K’ in program
+ 更新速度历�[01;31m[K�[m[K�
+                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:283:18:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\262[m[K’ in program
+ 更新速度历�[01;31m[K�[m[K
+                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:1:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\350[m[K’ in program
+ [01;31m[K�[m[K��算速度连续性得分
+ [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:2:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\256[m[K’ in program
+ �[01;31m[K�[m[K�算速度连续性得分
+  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:3:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\241[m[K’ in program
+ �[01;31m[K�[m[K算速度连续性得分
+   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:4:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+ 计[01;31m[K�[m[K��速度连续性得分
+    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:5:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\256[m[K’ in program
+ 计�[01;31m[K�[m[K�速度连续性得分
+     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:6:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\227[m[K’ in program
+ 计�[01;31m[K�[m[K速度连续性得分
+      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:7:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+ 计算[01;31m[K�[m[K��度连续性得分
+       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:8:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+ 计算�[01;31m[K�[m[K�度连续性得分
+        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:9:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\237[m[K’ in program
+ 计算�[01;31m[K�[m[K度连续性得分
+         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:10:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 计算速[01;31m[K�[m[K��连续性得分
+          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:11:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+ 计算速�[01;31m[K�[m[K�连续性得分
+           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:12:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\246[m[K’ in program
+ 计算速�[01;31m[K�[m[K连续性得分
+            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:13:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\350[m[K’ in program
+ 计算速度[01;31m[K�[m[K��续性得分
+             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:14:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\277[m[K’ in program
+ 计算速度�[01;31m[K�[m[K�续性得分
+              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:15:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\236[m[K’ in program
+ 计算速度�[01;31m[K�[m[K续性得分
+               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:16:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+ 计算速度连[01;31m[K�[m[K��性得分
+                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:17:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\273[m[K’ in program
+ 计算速度连�[01;31m[K�[m[K�性得分
+                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:18:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\255[m[K’ in program
+ 计算速度连�[01;31m[K�[m[K性得分
+                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:19:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+ 计算速度连续[01;31m[K�[m[K��得分
+                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:20:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+ 计算速度连续�[01;31m[K�[m[K�得分
+                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:21:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\247[m[K’ in program
+ 计算速度连续�[01;31m[K�[m[K得分
+                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:22:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 计算速度连续性[01;31m[K�[m[K��分
+                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:23:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\276[m[K’ in program
+ 计算速度连续性�[01;31m[K�[m[K�分
+                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:24:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\227[m[K’ in program
+ 计算速度连续性�[01;31m[K�[m[K分
+                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:25:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 计算速度连续性得[01;31m[K�[m[K��
+                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:26:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\210[m[K’ in program
+ 计算速度连续性得�[01;31m[K�[m[K�
+                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:310:27:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\206[m[K’ in program
+ 计算速度连续性得�[01;31m[K�[m[K
+                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:1:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ [01;31m[K�[m[K��于历史位置预测当前位置
+ [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:2:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\237[m[K’ in program
+ �[01;31m[K�[m[K�于历史位置预测当前位置
+  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:3:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+ �[01;31m[K�[m[K于历史位置预测当前位置
+   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:4:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+ 基[01;31m[K�[m[K��历史位置预测当前位置
+    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:5:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+ 基�[01;31m[K�[m[K�历史位置预测当前位置
+     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:6:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\216[m[K’ in program
+ 基�[01;31m[K�[m[K历史位置预测当前位置
+      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:7:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 基于[01;31m[K�[m[K��史位置预测当前位置
+       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:8:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\216[m[K’ in program
+ 基于�[01;31m[K�[m[K�史位置预测当前位置
+        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:9:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\206[m[K’ in program
+ 基于�[01;31m[K�[m[K史位置预测当前位置
+         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:10:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 基于历[01;31m[K�[m[K��位置预测当前位置
+          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:11:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\217[m[K’ in program
+ 基于历�[01;31m[K�[m[K�位置预测当前位置
+           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:12:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\262[m[K’ in program
+ 基于历�[01;31m[K�[m[K位置预测当前位置
+            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:13:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+ 基于历史[01;31m[K�[m[K��置预测当前位置
+             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:14:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\275[m[K’ in program
+ 基于历史�[01;31m[K�[m[K�置预测当前位置
+              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:15:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\215[m[K’ in program
+ 基于历史�[01;31m[K�[m[K置预测当前位置
+               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:16:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+ 基于历史位[01;31m[K�[m[K��预测当前位置
+                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:17:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\275[m[K’ in program
+ 基于历史位�[01;31m[K�[m[K�预测当前位置
+                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:18:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\256[m[K’ in program
+ 基于历史位�[01;31m[K�[m[K预测当前位置
+                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:19:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+ 基于历史位置[01;31m[K�[m[K��测当前位置
+                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:20:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\242[m[K’ in program
+ 基于历史位置�[01;31m[K�[m[K�测当前位置
+                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:21:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\204[m[K’ in program
+ 基于历史位置�[01;31m[K�[m[K测当前位置
+                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:22:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+ 基于历史位置预[01;31m[K�[m[K��当前位置
+                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:23:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\265[m[K’ in program
+ 基于历史位置预�[01;31m[K�[m[K�当前位置
+                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:24:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\213[m[K’ in program
+ 基于历史位置预�[01;31m[K�[m[K当前位置
+                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:25:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 基于历史位置预测[01;31m[K�[m[K��前位置
+                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:26:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\275[m[K’ in program
+ 基于历史位置预测�[01;31m[K�[m[K�前位置
+                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:27:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\223[m[K’ in program
+ 基于历史位置预测�[01;31m[K�[m[K前位置
+                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:28:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+ 基于历史位置预测当[01;31m[K�[m[K��位置
+                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:29:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\211[m[K’ in program
+ 基于历史位置预测当�[01;31m[K�[m[K�位置
+                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:30:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\215[m[K’ in program
+ 基于历史位置预测当�[01;31m[K�[m[K位置
+                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:31:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+ 基于历史位置预测当前[01;31m[K�[m[K��置
+                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:32:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\275[m[K’ in program
+ 基于历史位置预测当前�[01;31m[K�[m[K�置
+                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:33:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\215[m[K’ in program
+ 基于历史位置预测当前�[01;31m[K�[m[K置
+                                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:34:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+ 基于历史位置预测当前位[01;31m[K�[m[K��
+                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:35:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\275[m[K’ in program
+ 基于历史位置预测当前位�[01;31m[K�[m[K�
+                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:368:36:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\256[m[K’ in program
+ 基于历史位置预测当前位�[01;31m[K�[m[K
+                                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:9:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     === [01;31m[K�[m[K��化的智能索引分配逻辑 ===
+         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:10:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\256[m[K’ in program
+     === �[01;31m[K�[m[K�化的智能索引分配逻辑 ===
+          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:11:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+     === �[01;31m[K�[m[K化的智能索引分配逻辑 ===
+           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:12:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+     === 简[01;31m[K�[m[K��的智能索引分配逻辑 ===
+            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:13:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\214[m[K’ in program
+     === 简�[01;31m[K�[m[K�的智能索引分配逻辑 ===
+             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:14:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\226[m[K’ in program
+     === 简�[01;31m[K�[m[K的智能索引分配逻辑 ===
+              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:15:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     === 简化[01;31m[K�[m[K��智能索引分配逻辑 ===
+               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:16:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\232[m[K’ in program
+     === 简化�[01;31m[K�[m[K�智能索引分配逻辑 ===
+                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:17:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\204[m[K’ in program
+     === 简化�[01;31m[K�[m[K智能索引分配逻辑 ===
+                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:18:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+     === 简化的[01;31m[K�[m[K��能索引分配逻辑 ===
+                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:19:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\231[m[K’ in program
+     === 简化的�[01;31m[K�[m[K�能索引分配逻辑 ===
+                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:20:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+     === 简化的�[01;31m[K�[m[K能索引分配逻辑 ===
+                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:21:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\350[m[K’ in program
+     === 简化的智[01;31m[K�[m[K��索引分配逻辑 ===
+                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:22:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\203[m[K’ in program
+     === 简化的智�[01;31m[K�[m[K�索引分配逻辑 ===
+                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:23:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\275[m[K’ in program
+     === 简化的智�[01;31m[K�[m[K索引分配逻辑 ===
+                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:24:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     === 简化的智能[01;31m[K�[m[K��引分配逻辑 ===
+                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:25:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\264[m[K’ in program
+     === 简化的智能�[01;31m[K�[m[K�引分配逻辑 ===
+                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:26:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\242[m[K’ in program
+     === 简化的智能�[01;31m[K�[m[K引分配逻辑 ===
+                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:27:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+     === 简化的智能索[01;31m[K�[m[K��分配逻辑 ===
+                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:28:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\274[m[K’ in program
+     === 简化的智能索�[01;31m[K�[m[K�分配逻辑 ===
+                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:29:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\225[m[K’ in program
+     === 简化的智能索�[01;31m[K�[m[K分配逻辑 ===
+                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:30:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+     === 简化的智能索引[01;31m[K�[m[K��配逻辑 ===
+                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:31:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\210[m[K’ in program
+     === 简化的智能索引�[01;31m[K�[m[K�配逻辑 ===
+                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:32:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\206[m[K’ in program
+     === 简化的智能索引�[01;31m[K�[m[K配逻辑 ===
+                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:33:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+     === 简化的智能索引分[01;31m[K�[m[K��逻辑 ===
+                                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:34:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\205[m[K’ in program
+     === 简化的智能索引分�[01;31m[K�[m[K�逻辑 ===
+                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:35:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\215[m[K’ in program
+     === 简化的智能索引分�[01;31m[K�[m[K逻辑 ===
+                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:36:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+     === 简化的智能索引分配[01;31m[K�[m[K��辑 ===
+                                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:37:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+     === 简化的智能索引分配�[01;31m[K�[m[K�辑 ===
+                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:38:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\273[m[K’ in program
+     === 简化的智能索引分配�[01;31m[K�[m[K辑 ===
+                                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:39:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\350[m[K’ in program
+     === 简化的智能索引分配逻[01;31m[K�[m[K�� ===
+                                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:40:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\276[m[K’ in program
+     === 简化的智能索引分配逻�[01;31m[K�[m[K� ===
+                                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:41:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\221[m[K’ in program
+     === 简化的智能索引分配逻�[01;31m[K�[m[K ===
+                                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:[m[K In member function ‘[01m[Kvoid PhdFilter::phd_prune()[m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:5:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K==[m[K’ token
+     [01;31m[K==[m[K= 简化的智能索引分配逻辑 ===
+     [01;31m[K^~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:7:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K=[m[K’ token
+     ==[01;31m[K=[m[K 简化的智能索引分配逻辑 ===
+       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:43:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K==[m[K’ token
+     === 简化的智能索引分配逻辑 [01;31m[K==[m[K=
+                                           [01;31m[K^~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1268:45:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[K=[m[K’ token
+     === 简化的智能索引分配逻辑 ==[01;31m[K=[m[K
+                                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1274:40:[m[K [01;31m[Kerror: [m[Kexpected primary-expression before ‘[01m[Kweighted_targets[m[K’
+     std::vector<std::pair<float, int>> [01;31m[Kweighted_targets[m[K;
+                                        [01;31m[K^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1276:9:[m[K [01;31m[Kerror: [m[K‘[01m[Kweighted_targets[m[K’ was not declared in this scope
+         [01;31m[Kweighted_targets[m[K.push_back(std::make_pair(wk_bar_fixed_k(i), i));
+         [01;31m[K^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1280:15:[m[K [01;31m[Kerror: [m[K‘[01m[Kweighted_targets[m[K’ was not declared in this scope
+     std::sort([01;31m[Kweighted_targets[m[K.begin(), weighted_targets.end(),
+               [01;31m[K^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1396:28:[m[K [01;31m[Kerror: [m[K‘[01m[Kalt_motion_score[m[K’ was not declared in this scope
+                         if([01;31m[Kalt_motion_score[m[K > best_motion_score) {
+                            [01;31m[K^~~~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1396:28:[m[K [01;36m[Knote: [m[Ksuggested alternative: ‘[01m[Kbest_motion_score[m[K’
+                         if([01;36m[Kalt_motion_score[m[K > best_motion_score) {
+                            [01;36m[K^~~~~~~~~~~~~~~~[m[K
+                            [32m[Kbest_motion_score[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:132：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:1949：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:146：all] 错误 2

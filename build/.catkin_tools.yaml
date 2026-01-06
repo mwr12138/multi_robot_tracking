@@ -1,0 +1,6 @@
+devel_space: /home/mwr/tracking/devel
+install: false
+install_space: /home/mwr/tracking/install
+profile: default
+source_space: /home/mwr/tracking/src
+workspace: /home/mwr/tracking

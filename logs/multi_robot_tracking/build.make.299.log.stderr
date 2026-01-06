@@ -1,0 +1,382 @@
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2_ros.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libactionlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcv_bridge.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_video.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_face.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_text.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libimage_transport.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libmessage_filters.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libclass_loader.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libPocoFoundation.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libdl.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpthread.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_log4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_backend_interface.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/liblog4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libxmlrpcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroslib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librospack.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpython3.8.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libtinyxml2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp_serialization.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librostime.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcpp_common.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:22:8:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
+ #endif [01;35m[KTIMING[m[K
+        [01;35m[K^~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:[m[K In member function ‘[01m[Kvoid PhdFilter::update_velocity_history()[m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:29:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator<<[m[K’ (operand types are ‘[01m[Kconst char [17][m[K’ and ‘[01m[KEigen::MatrixXf[m[K’ {aka ‘[01m[KEigen::Matrix<float, -1, -1>[m[K’})
+     cout([01;31m[K"wk_bar_display_ " << wk_bar_display[m[K << endl);
+          [01;31m[K~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~[m[K
+In file included from [01m[K/opt/ros/noetic/include/ros/node_handle.h:52[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/ros.h:45[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:7[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:3[m[K:
+[01m[K/opt/ros/noetic/include/xmlrpcpp/XmlRpcValue.h:216:29:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Kstd::ostream& operator<<(std::ostream&, const XmlRpc::XmlRpcValue&)[m[K’
+ XMLRPCPP_DECL std::ostream& [01;36m[Koperator[m[K<<(std::ostream& os, const XmlRpc::XmlRpcValue& v);
+                             [01;36m[K^~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/xmlrpcpp/XmlRpcValue.h:216:29:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kconst char [17][m[K’ to ‘[01m[Kstd::ostream&[m[K’ {aka ‘[01m[Kstd::basic_ostream<char>&[m[K’}
+In file included from [01m[K/usr/include/c++/8/string:52[m[K,
+                 from [01m[K/usr/include/c++/8/bits/locale_classes.h:40[m[K,
+                 from [01m[K/usr/include/c++/8/bits/ios_base.h:41[m[K,
+                 from [01m[K/usr/include/c++/8/ios:42[m[K,
+                 from [01m[K/usr/include/c++/8/istream:38[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/bits/basic_string.h:6323:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits, class _Alloc> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const std::__cxx11::basic_string<_CharT, _Traits, _Alloc>&)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os,
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/bits/basic_string.h:6323:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/bits/ios_base.h:46[m[K,
+                 from [01m[K/usr/include/c++/8/ios:42[m[K,
+                 from [01m[K/usr/include/c++/8/istream:38[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/system_error:217:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const std::error_code&)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, const error_code& __e)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/system_error:217:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:500:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, _CharT)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __out, _CharT __c)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:500:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:505:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, char)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __out, char __c)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:505:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:511:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Traits> std::basic_ostream<char, _Traits>& std::operator<<(std::basic_ostream<char, _Traits>&, char)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<char, _Traits>& __out, char __c)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:511:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<char, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:517:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Traits> std::basic_ostream<char, _Traits>& std::operator<<(std::basic_ostream<char, _Traits>&, signed char)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<char, _Traits>& __out, signed char __c)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:517:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<char, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:522:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Traits> std::basic_ostream<char, _Traits>& std::operator<<(std::basic_ostream<char, _Traits>&, unsigned char)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<char, _Traits>& __out, unsigned char __c)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:522:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<char, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:542:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const _CharT*)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __out, const _CharT* __s)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:542:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/ostream:696[m[K,
+                 from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/bits/ostream.tcc:321:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const char*)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __out, const char* __s)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/bits/ostream.tcc:321:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:559:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Traits> std::basic_ostream<char, _Traits>& std::operator<<(std::basic_ostream<char, _Traits>&, const char*)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<char, _Traits>& __out, const char* __s)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:559:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<char, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:572:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Traits> std::basic_ostream<char, _Traits>& std::operator<<(std::basic_ostream<char, _Traits>&, const signed char*)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<char, _Traits>& __out, const signed char* __s)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:572:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<char, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:577:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Traits> std::basic_ostream<char, _Traits>& std::operator<<(std::basic_ostream<char, _Traits>&, const unsigned char*)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<char, _Traits>& __out, const unsigned char* __s)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:577:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<char, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/istream:39[m[K,
+                 from [01m[K/usr/include/c++/8/sstream:38[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:38[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/ostream:685:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Ostream, class _Tp> typename std::enable_if<std::__and_<std::__not_<std::is_lvalue_reference<_Tp> >, std::__is_convertible_to_basic_ostream<_Ostream>, std::__is_insertable<typename std::__is_convertible_to_basic_ostream<_Tp>::__ostream_type, const _Tp&, void> >::value, typename std::__is_convertible_to_basic_ostream<_Tp>::__ostream_type>::type std::operator<<(_Ostream&&, const _Tp&)[m[K’
+     [01;36m[Koperator[m[K<<(_Ostream&& __os, const _Tp& __x)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/ostream:685:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+/usr/include/c++/8/ostream: In substitution of ‘[01m[Ktemplate<class _Ostream, class _Tp> typename std::enable_if<std::__and_<std::__not_<std::is_lvalue_reference<_Tp> >, std::__is_convertible_to_basic_ostream<_Ostream>, std::__is_insertable<typename std::__is_convertible_to_basic_ostream<_Tp>::__ostream_type, const _Tp&, void> >::value, typename std::__is_convertible_to_basic_ostream<_Tp>::__ostream_type>::type std::operator<<(_Ostream&&, const _Tp&) [with _Ostream = const char (&)[17]; _Tp = Eigen::Matrix<float, -1, -1>][m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K   required from here
+[01m[K/usr/include/c++/8/ostream:685:5:[m[K [01;31m[Kerror: [m[Kno type named ‘[01m[Ktype[m[K’ in ‘[01m[Kstruct std::enable_if<false, void>[m[K’
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:79:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Resetiosflags)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Resetiosflags __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:79:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:109:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Setiosflags)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Setiosflags __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:109:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:143:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Setbase)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Setbase __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:143:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:178:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Setfill<_CharT>)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Setfill<_CharT> __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:178:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:208:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Setprecision)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Setprecision __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:208:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:238:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Setw)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Setw __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:238:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:311:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits, class _MoneyT> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Put_money<_MoneyT>)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Put_money<_MoneyT> __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:311:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/math/policies/error_handling.hpp:12[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/iomanip:363:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, std::_Put_time<_CharT>)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, _Put_time<_CharT> __f)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/iomanip:363:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/boost/config/no_tr1/complex.hpp:21[m[K,
+                 from [01m[K/usr/include/boost/math/policies/error_handling.hpp:17[m[K,
+                 from [01m[K/usr/include/boost/math/special_functions/round.hpp:14[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/time.h:58[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/console.h:39[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/usr/include/c++/8/complex:547:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Tp, class _CharT, class _Traits> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const std::complex<_Tp>&)[m[K’
+     [01;36m[Koperator[m[K<<(basic_ostream<_CharT, _Traits>& __os, const complex<_Tp>& __x)
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/complex:547:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/c++/8/memory:81[m[K,
+                 from [01m[K/opt/ros/noetic/include/geometry_msgs/PointStamped.h:11[m[K,
+                 from [01m[K/opt/ros/noetic/include/tf/transform_datatypes.h:36[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:2[m[K:
+[01m[K/usr/include/c++/8/bits/shared_ptr.h:66:5:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class _Ch, class _Tr, class _Tp, __gnu_cxx::_Lock_policy _Lp> std::basic_ostream<_CharT, _Traits>& std::operator<<(std::basic_ostream<_CharT, _Traits>&, const std::__shared_ptr<_Tp, _Lp>&)[m[K’
+     [01;36m[Koperator[m[K<<(std::basic_ostream<_Ch, _Tr>& __os,
+     [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/c++/8/bits/shared_ptr.h:66:5:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kstd::basic_ostream<_CharT, _Traits>[m[K’ and ‘[01m[Kconst char [17][m[K’
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:433[m[K,
+                 from [01m[K/usr/include/eigen3/Eigen/Geometry:11[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:1[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:3[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/IO.h:216:16:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class Derived> std::ostream& Eigen::operator<<(std::ostream&, const Eigen::DenseBase<Derived>&)[m[K’
+ std::ostream & [01;36m[Koperator[m[K <<
+                [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/IO.h:216:16:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:87:32:[m[K [01;36m[Knote: [m[K  cannot convert ‘[01m[K"wk_bar_display_ "[m[K’ (type ‘[01m[Kconst char [17][m[K’) to type ‘[01m[Kstd::ostream&[m[K’ {aka ‘[01m[Kstd::basic_ostream<char>&[m[K’}
+     cout("wk_bar_display_ " << [01;36m[Kwk_bar_display[m[K << endl);
+                                [01;36m[K^~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:132：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:1949：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:146：all] 错误 2

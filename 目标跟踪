@@ -1,0 +1,16 @@
+①安装
+$ mkdir -p ~/tracking/src
+$ cd ~/tracking/src
+$ git clone https://github.com/arplaboratory/multi_robot_tracking.git
+$ cd ..
+$ catkin build
+$ source ~/tracking/devel/setup.bash
+
+②roslaunch multi_robot_tracking demo.launch 启动，该launch文件如下：
+--filter-----------------指定使用的跟踪滤波器算法，默认是 phd
+--sim--------------------是否为仿真模式，默认 false (真实硬件模式)
+--num_drones-------------要跟踪的无人机数量，默认 2 架 
+--config_file------------配置文件名称，默认为params_snapdragon_flight.yaml
+--start_nodelet_manager--是否启动 Nodelet 管理器，默认启动
+--nodelet_manager_name---Nodelet 管理器名称，默认 nodelet_manager_multi_tracking
+

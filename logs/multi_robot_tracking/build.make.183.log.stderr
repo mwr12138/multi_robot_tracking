@@ -1,0 +1,222 @@
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2_ros.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2_ros.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libactionlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libactionlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcv_bridge.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcv_bridge.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_video.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_video.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_face.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_face.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_text.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_text.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libimage_transport.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libimage_transport.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libmessage_filters.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libmessage_filters.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libclass_loader.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libclass_loader.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libPocoFoundation.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libPocoFoundation.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libdl.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libdl.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpthread.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpthread.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_log4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_log4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_backend_interface.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_backend_interface.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/liblog4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/liblog4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libxmlrpcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libxmlrpcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroslib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroslib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librospack.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librospack.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpython3.8.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpython3.8.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libtinyxml2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libtinyxml2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp_serialization.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp_serialization.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librostime.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librostime.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcpp_common.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcpp_common.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:21:8:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
+ #endif [01;35m[KTIMING[m[K
+        [01;35m[K^~~~~~[m[K
+In file included from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:3[m[K:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:136:41:[m[K [01;31m[Kerror: [m[K‘[01m[KNUM_DRONES[m[K’ is not a type
+   std::vector<int> occluded_frame_count([01;31m[KNUM_DRONES[m[K, 0);  // 记录每列连续低权重帧数（需作为类成员变量）
+                                         [01;31m[K^~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:136:53:[m[K [01;31m[Kerror: [m[Kexpected identifier before numeric constant
+   std::vector<int> occluded_frame_count(NUM_DRONES, [01;31m[K0[m[K);  // 记录每列连续低权重帧数（需作为类成员变量）
+                                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:136:53:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K,[m[K’ or ‘[01m[K...[m[K’ before numeric constant
+In file included from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/multi_robot_tracking_nodelet.cpp:18[m[K:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:136:41:[m[K [01;31m[Kerror: [m[K‘[01m[KNUM_DRONES[m[K’ is not a type
+   std::vector<int> occluded_frame_count([01;31m[KNUM_DRONES[m[K, 0);  // 记录每列连续低权重帧数（需作为类成员变量）
+                                         [01;31m[K^~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:136:53:[m[K [01;31m[Kerror: [m[Kexpected identifier before numeric constant
+   std::vector<int> occluded_frame_count(NUM_DRONES, [01;31m[K0[m[K);  // 记录每列连续低权重帧数（需作为类成员变量）
+                                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:136:53:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K,[m[K’ or ‘[01m[K...[m[K’ before numeric constant
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:[m[K In member function ‘[01m[Kvoid PhdFilter::phd_update()[m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:474:31:[m[K [01;31m[Kerror: [m[Kinvalid types ‘[01m[K<unresolved overloaded function type>[int][m[K’ for array subscript
+         occluded_frame_count[j[01;31m[K][m[K++;
+                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:475:109:[m[K [01;31m[Kerror: [m[Kinvalid types ‘[01m[K<unresolved overloaded function type>[int][m[K’ for array subscript
+         cout<<"lalalalaadd---------------------------------------------------------"<<occluded_frame_count[j[01;31m[K][m[K<<endl;
+                                                                                                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:477:31:[m[K [01;31m[Kerror: [m[Kinvalid types ‘[01m[K<unresolved overloaded function type>[int][m[K’ for array subscript
+         occluded_frame_count[j[01;31m[K][m[K = 0;  // 权重恢复，重置计数
+                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:481:31:[m[K [01;31m[Kerror: [m[Kinvalid types ‘[01m[K<unresolved overloaded function type>[int][m[K’ for array subscript
+     if (occluded_frame_count[j[01;31m[K][m[K >= MIN_OCCLUDED_FRAMES) {
+                               [01;31m[K^[m[K
+In file included from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:484:110:[m[K [01;31m[Kerror: [m[Kinvalid types ‘[01m[K<unresolved overloaded function type>[int][m[K’ for array subscript
+         ROS_INFO("目标列%d连续%d帧权重低，视为空列（权重=%.6f）", j, occluded_frame_count[j[01;31m[K][m[K, wk(j));
+                                                                                                              [01;31m[K^[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:351:165:[m[K [01;36m[Knote: [m[Kin definition of macro ‘[01m[KROSCONSOLE_PRINT_AT_LOCATION_WITH_FILTER[m[K’
+     ::ros::console::print(filter, __rosconsole_define_location__loc.logger_, __rosconsole_define_location__loc.level_, __FILE__, __LINE__, __ROSCONSOLE_FUNCTION__, [01;36m[K__VA_ARGS__[m[K)
+                                                                                                                                                                     [01;36m[K^~~~~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:390:7:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROSCONSOLE_PRINT_AT_LOCATION[m[K’
+       [01;36m[KROSCONSOLE_PRINT_AT_LOCATION[m[K(__VA_ARGS__); \
+       [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:575:35:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_LOG_COND[m[K’
+ #define ROS_LOG(level, name, ...) [01;36m[KROS_LOG_COND[m[K(true, level, name, __VA_ARGS__)
+                                   [01;36m[K^~~~~~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/rosconsole/macros_generated.h:110:23:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_LOG[m[K’
+ #define ROS_INFO(...) [01;36m[KROS_LOG[m[K(::ros::console::levels::Info, ROSCONSOLE_DEFAULT_NAME, __VA_ARGS__)
+                       [01;36m[K^~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:484:9:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_INFO[m[K’
+         [01;36m[KROS_INFO[m[K("目标列%d连续%d帧权重低，视为空列（权重=%.6f）", j, occluded_frame_count[j], wk(j));
+         [01;36m[K^~~~~~~~[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:115：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[2]: *** 正在等待未完成的任务....
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:141：CMakeFiles/multi_robot_tracking.dir/src/multi_robot_tracking_nodelet.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:261：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:141：all] 错误 2

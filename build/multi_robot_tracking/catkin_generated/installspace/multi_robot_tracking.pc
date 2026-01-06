@@ -1,0 +1,8 @@
+prefix=/home/mwr/tracking/install
+
+Name: multi_robot_tracking
+Description: Description of multi_robot_tracking
+Version: 0.0.0
+Cflags: -I/usr/include/eigen3
+Libs: -L${prefix}/lib 
+Requires: geometry_msgs nodelet roscpp std_msgs tf

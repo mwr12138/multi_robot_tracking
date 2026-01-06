@@ -1,0 +1,148 @@
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2_ros.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libactionlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcv_bridge.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_video.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_face.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_text.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libimage_transport.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libmessage_filters.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libclass_loader.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libPocoFoundation.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libdl.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpthread.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_log4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_backend_interface.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/liblog4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libxmlrpcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroslib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librospack.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpython3.8.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libtinyxml2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp_serialization.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librostime.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcpp_common.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:21:8:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
+ #endif [01;35m[KTIMING[m[K
+        [01;35m[K^~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:[m[K In member function ‘[01m[Kvoid PhdFilter::phd_update()[m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:322:79:[m[K [01;31m[Kerror: [m[Kcannot convert ‘[01m[Kconst Eigen::Product<Eigen::Product<Eigen::Transpose<Eigen::Matrix<float, -1, -1> >, Eigen::Inverse<Eigen::Matrix<float, -1, -1> >, 0>, Eigen::Matrix<float, -1, -1>, 0>[m[K’ to ‘[01m[Kfloat[m[K’ in initialization
+             float d_squared = meanDelta_pdf.transpose() * cov_pdf.inverse() * [01;31m[KmeanDelta_pdf[m[K;
+                                                                               [01;31m[K^~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:323:37:[m[K [01;31m[Kerror: [m[Kno match for ‘[01m[Koperator=[m[K’ (operand types are ‘[01m[KEigen::MatrixXf[m[K’ {aka ‘[01m[KEigen::Matrix<float, -1, -1>[m[K’} and ‘[01m[Kdouble[m[K’)
+             w_new_exponent = -0.5 * [01;31m[Kd_squared[m[K;
+                                     [01;31m[K^~~~~~~~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:458[m[K,
+                 from [01m[K/usr/include/eigen3/Eigen/Geometry:11[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:1[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:3[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[KEigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&) [with _Scalar = float; int _Rows = -1; int _Cols = -1; int _Options = 0; int _MaxRows = -1; int _MaxCols = -1][m[K’
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const Matrix& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:206:33:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kdouble[m[K’ to ‘[01m[Kconst Eigen::Matrix<float, -1, -1>&[m[K’
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::DenseBase<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = float; int _Rows = -1; int _Cols = -1; int _Options = 0; int _MaxRows = -1; int _MaxCols = -1][m[K’
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const DenseBase<OtherDerived>& other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:223:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:323:37:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kconst Eigen::DenseBase<Derived>[m[K’ and ‘[01m[Kdouble[m[K’
+             w_new_exponent = -0.5 * [01;36m[Kd_squared[m[K;
+                                     [01;36m[K^~~~~~~~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:458[m[K,
+                 from [01m[K/usr/include/eigen3/Eigen/Geometry:11[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:1[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:3[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::EigenBase<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = float; int _Rows = -1; int _Cols = -1; int _Options = 0; int _MaxRows = -1; int _MaxCols = -1][m[K’
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const EigenBase<OtherDerived> &other)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:236:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:323:37:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kconst Eigen::EigenBase<Derived>[m[K’ and ‘[01m[Kdouble[m[K’
+             w_new_exponent = -0.5 * [01;36m[Kd_squared[m[K;
+                                     [01;36m[K^~~~~~~~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:458[m[K,
+                 from [01m[K/usr/include/eigen3/Eigen/Geometry:11[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:1[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:3[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::ReturnByValue<OtherDerived>&) [with OtherDerived = OtherDerived; _Scalar = float; int _Rows = -1; int _Cols = -1; int _Options = 0; int _MaxRows = -1; int _MaxCols = -1][m[K’
+     EIGEN_STRONG_INLINE Matrix& [01;36m[Koperator[m[K=(const ReturnByValue<OtherDerived>& func)
+                                 [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:243:33:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:323:37:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kconst Eigen::ReturnByValue<Derived>[m[K’ and ‘[01m[Kdouble[m[K’
+             w_new_exponent = -0.5 * [01;36m[Kd_squared[m[K;
+                                     [01;36m[K^~~~~~~~~[m[K
+In file included from [01m[K/usr/include/eigen3/Eigen/Core:458[m[K,
+                 from [01m[K/usr/include/eigen3/Eigen/Geometry:11[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/include/multi_robot_tracking/PhdFilter.h:1[m[K,
+                 from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:3[m[K:
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:279:13:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[KEigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>&&) [with _Scalar = float; int _Rows = -1; int _Cols = -1; int _Options = 0; int _MaxRows = -1; int _MaxCols = -1][m[K’
+     Matrix& [01;36m[Koperator[m[K=(Matrix&& other) EIGEN_NOEXCEPT_IF(std::is_nothrow_move_assignable<Scalar>::value)
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:279:13:[m[K [01;36m[Knote: [m[K  no known conversion for argument 1 from ‘[01m[Kdouble[m[K’ to ‘[01m[KEigen::Matrix<float, -1, -1>&&[m[K’
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:390:13:[m[K [01;36m[Knote: [m[Kcandidate: ‘[01m[Ktemplate<class OtherDerived> Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>& Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols>::operator=(const Eigen::RotationBase<OtherDerived, ColsAtCompileTime>&) [with OtherDerived = OtherDerived; _Scalar = float; int _Rows = -1; int _Cols = -1; int _Options = 0; int _MaxRows = -1; int _MaxCols = -1][m[K’
+     Matrix& [01;36m[Koperator[m[K=(const RotationBase<OtherDerived,ColsAtCompileTime>& r);
+             [01;36m[K^~~~~~~~[m[K
+[01m[K/usr/include/eigen3/Eigen/src/Core/Matrix.h:390:13:[m[K [01;36m[Knote: [m[K  template argument deduction/substitution failed:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:323:37:[m[K [01;36m[Knote: [m[K  mismatched types ‘[01m[Kconst Eigen::RotationBase<OtherDerived, -1>[m[K’ and ‘[01m[Kdouble[m[K’
+             w_new_exponent = -0.5 * [01;36m[Kd_squared[m[K;
+                                     [01;36m[K^~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:115：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:261：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:141：all] 错误 2

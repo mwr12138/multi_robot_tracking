@@ -1,0 +1,6 @@
+/usr/bin/ld: /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/libmulti_robot_tracking.so: undefined reference to `PhdFilter::predict_position(int)'
+/usr/bin/ld: /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/libmulti_robot_tracking.so: undefined reference to `PhdFilter::calculate_velocity_consistency(int, Eigen::Matrix<float, 2, 1, 0, 2, 1> const&)'
+collect2: error: ld returned 1 exit status
+make[2]: *** [CMakeFiles/multi_robot_tracking_node.dir/build.make:181：/home/mwr/tracking/devel/.private/multi_robot_tracking/lib/multi_robot_tracking/multi_robot_tracking_node] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:2035：CMakeFiles/multi_robot_tracking_node.dir/all] 错误 2
+make: *** [Makefile:146：all] 错误 2

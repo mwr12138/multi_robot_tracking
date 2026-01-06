@@ -1,0 +1,1414 @@
+#include <std_msgs/Bool.h>
+#include <Eigen/Geometry>
+#include <unordered_set>
+#include <map>
+#include <algorithm>
+
+//cv image
+#include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
+
+//ros
+#include <ros/ros.h>
+#include <nodelet/nodelet.h>
+#include <geometry_msgs/PoseArray.h>
+#include <sensor_msgs/Image.h>
+#include <sensor_msgs/Imu.h>
+#include <nav_msgs/Odometry.h>
+#include <tf/transform_datatypes.h>
+
+//phd filter class
+#include <multi_robot_tracking/PhdFilter.h>
+
+//jpdaf filter class
+#include <multi_robot_tracking/JpdafFilter.h>
+
+//Simple Kalman filter class
+#include <multi_robot_tracking/SimpleKalman.h>
+
+//export and store csv
+#include <iostream>
+#include <fstream>
+
+#define HOST
+
+using namespace std;
+
+bool want_export_toCSV = false;
+struct TrackedObject;
+
+class multi_robot_tracking_Nodelet : public nodelet::Nodelet
+{
+public:
+    multi_robot_tracking_Nodelet() {}
+    ~multi_robot_tracking_Nodelet();
+
+    void onInit(); //default init of nodelet
+
+    //callback functions
+    void detection_Callback(const geometry_msgs::PoseArray& in_PoseArray); //bbox to track
+#ifdef HOST    
+    void image_Callback(const sensor_msgs::ImageConstPtr &img_msg); //rgb raw
+#endif
+    void imu_Callback(const sensor_msgs::ImuConstPtr &imu_msg); //rgb raw
+    void ground_truth_Callback(const geometry_msgs::PoseArray& in_PoseArray); //bbox projection from ground truth
+
+    Eigen::MatrixXf get_B_ang_vel_matrix(float x, float y); //return B matrix for each measurement
+
+
+    //extra helper functions
+    void draw_image();
+    void init_matrices();
+    void publish_tracks();
+    void associate_consensus();
+    Eigen::MatrixXf project_2d_to_3d(Eigen::MatrixXf position);
+    void consensus_sort();
+
+    std::string filter_to_use_; //choose between phd or jpdaf
+    std::string input_bbox_topic; //choose between /hummingbird1/track/bounding_box or /image_processor/objects_center
+    std::string input_img_topic; //choose between /hummingbird1/track/bounding_box or /image_processor/objects_center
+    std::string input_imu_topic;
+    int num_drones;
+
+    float init_pos_x_left =0; //init position to read from rosparam for consensus
+    float init_pos_y_left =0;
+    float init_pos_x_right = 0;
+    float init_pos_y_right = 0;
+    float init_pos_self_x = 0;
+    float init_pos_self_y = 0;
+    int id_left = 0;
+    int id_right = 0;
+
+
+    bool consensus_sort_complete = true;
+
+    ros::Time img_timestamp; //当前图像消息的时间戳
+    ros::Time prev_img_timestamp; //上一帧图像的时间戳
+    ros::Time bbox_timestamp; //目标检测结果（bounding box）的时间戳
+    ros::Time imu_timestamp; //IMU消息的时间戳
+    double previous_timestamp = 0; //t-1  上一次检测回调的时间（用于计算时间间隔）
+    double current_timestamp = 0;  //t    当前检测回调的时间
+    double delta_timestamp = 0;    //dt   当前与上一次检测之间的时间差（`current_timestamp - previous_timestamp`）
+    double imu_time = 0;
+    int detection_seq = 0;
+
+    bool first_track_flag = false; //flag after 1st track update, use to update asynchronous prediction
+
+    std::vector<sensor_msgs::ImageConstPtr> image_buffer_; //存储未处理的图像消息（`sensor_msgs::ImageConstPtr`），用于与检测结果的时间同步
+    std::vector<sensor_msgs::Imu> sensor_imu_buffer_;  //存储IMU消息（代码中声明但未使用）
+    std::ofstream tracking_csv_; //////
+    int frame_count_ = 0; ///////
+
+    //filters initialize
+    PhdFilter phd_filter_;
+    JpdafFilter jpdaf_filter_;
+    KalmanFilter kalman_filter_;
+
+    //sub and pub
+    image_transport::Publisher image_pub_;
+    ros::Publisher pose_glass2drone_pub_;
+    ros::Publisher pose_glass2drone_proj_pub_;
+    ros::Publisher tracked_pose_pub_;
+    ros::Publisher tracked_velocity_pub_;
+
+    ros::Subscriber detection_sub_;
+    ros::Subscriber image_sub_;
+    ros::Subscriber imu_sub_;
+    ros::Subscriber groundtruth_sub_;
+
+    //output RGB data, pose data
+#ifdef HOST
+    cv::Mat input_image;
+    cv::Mat previous_image;
+    sensor_msgs::ImagePtr image_msg;
+#endif
+    sensor_msgs::Imu imu_;
+
+
+    //3D matrices for transform
+    Eigen::MatrixXf rotm_world2cam;
+    Eigen::MatrixXf Hmatfiller1x4;
+    Eigen::MatrixXf k_matrix3x3;
+    Eigen::MatrixXf k_matrix3x3_inv;
+
+    //init world coordinates for consensus
+    Eigen::MatrixXf positions_world_coordinate;
+    Eigen::MatrixXf positions_cam_coordinate;
+    Eigen::MatrixXf projected_2d_initial_coord;
+
+    Eigen::MatrixXd id_consensus;
+    Eigen::MatrixXd id_array_init;
+
+
+    //B matrix constants for ang velocity
+    float cx, cy, f;
+
+    float filter_dt;
+
+    bool enable_async_pdf;
+
+    //Detection image frame 
+    int detection_height, detection_width;
+    int detection_offset_x, detection_offset_y;
+
+    //Camera frame size
+    int image_height, image_width;
+
+    //phd_filter_parameters
+    float q_pos, q_vel, r_meas;
+    float p_pos_init, p_vel_init;
+    float phd_prune_weight_threshold;
+    float phd_prune_mahalanobis_dist_threshold;
+    float phd_extract_weight_threshold;
+
+    //output csv file
+    ofstream outputFile;
+private:
+    struct TrackedObject {
+    int id;                     // 目标ID
+    Eigen::Vector2f position;   // 当前位置
+    Eigen::Vector2f velocity;   // 当前速度
+    Eigen::Vector2f last_known_position; // 最后已知位置（消失前）
+    Eigen::Vector2f last_known_velocity; // 最后已知速度
+    int consecutive_occluded;   // 连续被遮挡帧数
+    bool is_occluded;           // 是否被遮挡
+    bool is_partially_occluded; // 是否部分遮挡
+    bool is_fully_occluded;     // 是否完全遮挡
+    bool is_active;             // 是否活跃（可见）
+    int occluder_id;            // 遮挡者ID
+    
+    TrackedObject() : id(-1), consecutive_occluded(0), 
+                     is_occluded(false), is_partially_occluded(false),
+                     is_fully_occluded(false), is_active(false), 
+                     occluder_id(-1) {}
+    TrackedObject(int id) : id(id), consecutive_occluded(0),
+                          is_occluded(false), is_partially_occluded(false),
+                          is_fully_occluded(false), is_active(true),
+                          occluder_id(-1) {}
+};
+    // ID关联相关成员变量
+    std::vector<int> previous_ids_;              // 上一帧的目标ID
+    std::vector<int> current_ids;                // 当前帧的目标ID
+    std::vector<Eigen::Vector2f> previous_positions_; // 上一帧的目标位置
+    std::vector<Eigen::Vector2f> previous_velocities_; // 上一帧的目标速度
+    int next_id_=0;                              // 下一个可用的ID
+    float max_association_distance_=50.0f;       // 关联的最大距离阈值
+    void associate_ids();
+    // 遮挡标志位：存在任何遮挡时为true
+    bool is_occlusion = false;
+    // 存储当前存在交集的目标ID对
+    std::vector<std::pair<int, int>> occluding_pairs;
+    // 存储完全遮挡且暂时消失的目标ID及其最后状态
+    std::map<int, TrackedObject> temporarily_lost_objects;
+    // 完全遮挡判断阈值（IOU）
+    float full_occlusion_iou_threshold = 0.9f;
+    // 目标重新出现时的匹配阈值（位置距离）
+    float reappearance_match_threshold = 30.0f;
+    
+    // 遮挡处理相关变量
+    std::vector<std::pair<int, int>> occlusion_relationships; // 存储遮挡关系 (遮挡者, 被遮挡者)
+    std::unordered_set<int> used_ids;  // 记录当前使用的ID
+    std::unordered_set<int> occluded_ids;  // 专门记录被遮挡的ID，确保不被重用
+    
+    // 目标状态跟踪结构体
+    
+    
+    std::map<int, TrackedObject> tracked_objects_;  // 所有被跟踪的目标
+    int max_occlusion_frames_ = 15;  // 最大允许被遮挡的帧数
+    float occlusion_direction_threshold_ = 0.7f;  // 判断主要遮挡方向的阈值
+    
+    // 判断两个目标的遮挡方向（谁遮挡谁）
+    std::pair<int, int> determine_occlusion_direction(int idx1, int idx2);
+};
+
+multi_robot_tracking_Nodelet::~multi_robot_tracking_Nodelet()
+{
+    if (tracking_csv_.is_open()) {
+        tracking_csv_.close();
+        ROS_INFO("Tracking CSV file closed");
+    }
+    
+    if (outputFile.is_open()) {  // 原CSV文件
+        outputFile.close();
+        ROS_INFO("Ground truth CSV file closed");
+    }
+}
+
+// 完善遮挡方向判断方法，区分部分/完全遮挡
+std::pair<int, int> multi_robot_tracking_Nodelet::determine_occlusion_direction(int idx1, int idx2)
+{
+    // 获取两个目标的边界框
+    float x1 = phd_filter_.Detections(0, idx1);
+    float y1 = phd_filter_.Detections(1, idx1);
+    float w1 = phd_filter_.Detections(2, idx1);
+    float h1 = phd_filter_.Detections(3, idx1);
+    
+    float x2 = phd_filter_.Detections(0, idx2);
+    float y2 = phd_filter_.Detections(1, idx2);
+    float w2 = phd_filter_.Detections(2, idx2);
+    float h2 = phd_filter_.Detections(3, idx2);
+    
+    // 计算边界框坐标
+    float left1 = x1 - w1 / 2.0f;
+    float right1 = x1 + w1 / 2.0f;
+    float top1 = y1 - h1 / 2.0f;
+    float bottom1 = y1 + h1 / 2.0f;
+    
+    float left2 = x2 - w2 / 2.0f;
+    float right2 = x2 + w2 / 2.0f;
+    float top2 = y2 - h2 / 2.0f;
+    float bottom2 = y2 + h2 / 2.0f;
+    
+    // 计算交并比(IOU)
+    float inter_left = max(left1, left2);
+    float inter_right = min(right1, right2);
+    float inter_top = max(top1, top2);
+    float inter_bottom = min(bottom1, bottom2);
+    
+    float inter_area = max(0.0f, inter_right - inter_left) * max(0.0f, inter_bottom - inter_top);
+    float area1 = (right1 - left1) * (bottom1 - top1);
+    float area2 = (right2 - left2) * (bottom2 - top2);
+    float union_area = area1 + area2 - inter_area;
+    float iou = union_area > 0 ? inter_area / union_area : 0;
+    
+    // 计算每个目标被遮挡的比例
+    float occlusion_ratio1 = area1 > 0 ? inter_area / area1 : 0;
+    float occlusion_ratio2 = area2 > 0 ? inter_area / area2 : 0;
+    
+    // 判断是否为完全遮挡
+    bool fully_occluded1 = occlusion_ratio1 > full_occlusion_iou_threshold;
+    bool fully_occluded2 = occlusion_ratio2 > full_occlusion_iou_threshold;
+    
+    // 更新目标状态
+    if (idx1 < previous_ids_.size() && previous_ids_[idx1] != -1) {
+        int id1 = previous_ids_[idx1];
+        tracked_objects_[id1].is_fully_occluded = fully_occluded1;
+        tracked_objects_[id1].is_partially_occluded = !fully_occluded1 && occlusion_ratio1 > 0.1f;
+    }
+    if (idx2 < previous_ids_.size() && previous_ids_[idx2] != -1) {
+        int id2 = previous_ids_[idx2];
+        tracked_objects_[id2].is_fully_occluded = fully_occluded2;
+        tracked_objects_[id2].is_partially_occluded = !fully_occluded2 && occlusion_ratio2 > 0.1f;
+    }
+    
+    // 设置全局遮挡标志位
+    is_occlusion = true;
+    
+    // 尝试获取实际ID
+    int occluder_id = (idx1 < previous_ids_.size()) ? previous_ids_[idx1] : -1;
+    int occluded_id = (idx2 < previous_ids_.size()) ? previous_ids_[idx2] : -1;
+
+    // 记录有交集的ID对（仅记录实际ID，非索引）
+    if (occluder_id != -1 && occluded_id != -1) {
+        occluding_pairs.emplace_back(occluder_id, occluded_id);
+    }
+
+    ROS_INFO("检测到遮挡: 索引 %d->%d (ID: %d->%d)", 
+             idx1, idx2, occluder_id, occluded_id);
+    cout << "检测到遮挡: 索引 " << idx1 << "->" << idx2 
+         << " (ID: " << occluder_id << "->" << occluded_id << ")" << endl;
+    
+    // 确定遮挡方向（谁遮挡谁）
+    if (occlusion_ratio1 > occlusion_ratio2 && occlusion_ratio1 > occlusion_direction_threshold_) {
+        return {idx2, idx1};  // 目标2遮挡目标1
+    } else if (occlusion_ratio2 > occlusion_ratio1 && occlusion_ratio2 > occlusion_direction_threshold_) {
+        return {idx1, idx2};  // 目标1遮挡目标2
+    }
+    
+    // 面积较大的目标更可能是遮挡者
+    if (area1 > area2 * 1.2f) {
+        return {idx1, idx2};
+    } else if (area2 > area1 * 1.2f) {
+        return {idx2, idx1};
+    }
+    
+    // 基于y坐标判断前后关系（假设y越大越靠后）
+    return (y1 > y2) ? std::make_pair(idx1, idx2) : std::make_pair(idx2, idx1);
+}
+
+void multi_robot_tracking_Nodelet::associate_ids()
+{
+    // 重置遮挡相关标志和数组
+    is_occlusion = false;
+    occluding_pairs.clear();
+    std::vector<int> currently_visible_ids;
+    std::vector<std::pair<int, int>> raw_occlusion_pairs;
+
+    // 获取当前帧的目标位置和数量
+    int current_num_targets = phd_filter_.X_k.cols();
+    Eigen::MatrixXf current_positions(2, current_num_targets);
+    Eigen::MatrixXf current_velocities(2, current_num_targets);
+    
+    for (int i = 0; i < current_num_targets; i++) {
+        current_positions(0, i) = phd_filter_.X_k(0, i); // x坐标
+        current_positions(1, i) = phd_filter_.X_k(2, i); // y坐标
+        current_velocities(0, i) = phd_filter_.X_k(1, i); // x方向速度
+        current_velocities(1, i) = phd_filter_.X_k(3, i); // y方向速度
+    }
+
+    // 初始化当前帧ID向量
+    current_ids.resize(current_num_targets, -1);
+    
+    // 遮挡检测变量
+    std::vector<bool> occlusion_flags(current_num_targets, false);
+    occlusion_relationships.clear();  // 清空遮挡关系
+    occluded_ids.clear();  // 清空被遮挡ID集合
+    used_ids.clear();      // 清空已使用ID集合
+
+    // ==== 1. 遮挡检测与遮挡方向判断 ====
+    for (int i = 0; i < current_num_targets; ++i) {
+        for (int j = i + 1; j < current_num_targets; ++j) {
+            // 目标i和j的边界框
+            float x1 = phd_filter_.Detections(0, i);
+            float y1 = phd_filter_.Detections(1, i);
+            float w1 = phd_filter_.Detections(2, i);
+            float h1 = phd_filter_.Detections(3, i);
+            float left1 = x1 - w1 / 2.0f;
+            float right1 = x1 + w1 / 2.0f;
+            float top1 = y1 - h1 / 2.0f;
+            float bottom1 = y1 + h1 / 2.0f;
+
+            float x2 = phd_filter_.Detections(0, j);
+            float y2 = phd_filter_.Detections(1, j);
+            float w2 = phd_filter_.Detections(2, j);
+            float h2 = phd_filter_.Detections(3, j);
+            float left2 = x2 - w2 / 2.0f;
+            float right2 = x2 + w2 / 2.0f;
+            float top2 = y2 - h2 / 2.0f;
+            float bottom2 = y2 + h2 / 2.0f;
+
+            // 检查是否有交集（存在遮挡）
+            bool collision = (left1 < right2) && (right1 > left2) &&
+                             (top1 < bottom2) && (bottom1 > top2);
+
+            if (collision) {
+                raw_occlusion_pairs.emplace_back(i, j);
+                occlusion_flags[i] = true;
+                occlusion_flags[j] = true;
+                
+                // 判断遮挡方向并记录关系
+                std::pair<int, int> occlusion_result = determine_occlusion_direction(i, j);
+                int occluder_idx = occlusion_result.first;
+                int occluded_idx = occlusion_result.second;
+                occlusion_relationships.emplace_back(occluder_idx, occluded_idx);
+                
+                // 记录被遮挡的目标索引
+                int occluded_id = (previous_ids_.size() > occluded_idx) ? previous_ids_[occluded_idx] : -1;
+                if (occluded_id != -1) {
+                    occluded_ids.insert(occluded_id);
+                    ROS_INFO("检测到遮挡: %d 遮挡 %d (ID: %d)", 
+                             occluder_idx, occluded_idx, occluded_id);
+                    //cout << "检测到遮挡: 目标 " << occluder_id 
+                     //       << " 遮挡 目标 " << occluded_id << std::endl;
+                }
+            }
+        }
+    }
+
+    // ==== 2. 更新所有跟踪目标的状态为不活跃 ====
+    for (auto& pair : tracked_objects_) {
+        pair.second.is_active = false;
+        pair.second.is_occluded = false;
+        pair.second.occluder_id = -1;
+        pair.second.is_partially_occluded = false;
+        pair.second.is_fully_occluded = false;
+    }
+
+    // ==== 3. 处理完全遮挡导致目标消失的情况 ====
+    for (const auto& pair : tracked_objects_) {
+        int id = pair.first;
+        const TrackedObject& obj = pair.second;
+        
+        // 检查该目标是否在上一帧存在但当前帧不存在
+        bool is_present_in_current = false;
+        for (int prev_idx = 0; prev_idx < previous_ids_.size(); prev_idx++) {
+            if (previous_ids_[prev_idx] == id) {
+                // 检查该ID对应的目标是否在当前帧中仍有检测
+                bool found = false;
+                for (int curr_idx = 0; curr_idx < current_num_targets; curr_idx++) {
+                    // 通过位置距离判断是否为同一目标
+                    Eigen::Vector2f prev_pos = previous_positions_[prev_idx];
+                    Eigen::Vector2f curr_pos = current_positions.col(curr_idx);
+                    float dist = (prev_pos - curr_pos).norm();
+                    if (dist < max_association_distance_) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    // 目标消失，检查是否因完全遮挡
+                    if (obj.is_fully_occluded || obj.is_occluded) {
+                        temporarily_lost_objects[id] = obj;
+                        temporarily_lost_objects[id].consecutive_occluded++;
+                        ROS_INFO("目标 %d 因完全遮挡消失，保存ID (连续遮挡帧数: %d)", 
+                                 id, temporarily_lost_objects[id].consecutive_occluded);
+                        cout << "目标 " << id << " 因完全遮挡消失，已保存ID" 
+                                  << " (连续遮挡帧数: " << temporarily_lost_objects[id].consecutive_occluded << ")" << std::endl;
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    // ==== 4. 处理目标重新出现的情况 ====
+    for (int i = 0; i < current_num_targets; ++i) {
+        if (current_ids[i] != -1) continue;  // 已分配ID的目标跳过
+        
+        Eigen::Vector2f current_pos = current_positions.col(i);
+        
+        // 检查是否与临时消失的目标匹配（使用map的正确遍历方式）
+        for (auto it = temporarily_lost_objects.begin(); it != temporarily_lost_objects.end(); ) {
+            int lost_id = it->first;
+            const TrackedObject& lost_obj = it->second;
+            
+            // 预测消失目标当前应在的位置（基于最后已知速度和时间差）
+            Eigen::Vector2f predicted_pos = lost_obj.last_known_position + 
+                                           lost_obj.last_known_velocity * delta_timestamp;
+            
+            // 计算当前检测位置与预测位置的距离
+            float dist = (current_pos - predicted_pos).norm();
+            
+            if (dist < reappearance_match_threshold) {
+                // 匹配成功，恢复原有ID
+                current_ids[i] = lost_id;
+                used_ids.insert(lost_id);
+                
+                // 恢复目标状态并更新
+                tracked_objects_[lost_id] = lost_obj;
+                tracked_objects_[lost_id].is_active = true;
+                tracked_objects_[lost_id].is_fully_occluded = false;
+                tracked_objects_[lost_id].is_partially_occluded = false;
+                tracked_objects_[lost_id].consecutive_occluded = 0;
+                tracked_objects_[lost_id].position = current_pos;
+                tracked_objects_[lost_id].velocity = current_velocities.col(i);
+                tracked_objects_[lost_id].last_known_position = current_pos;
+                tracked_objects_[lost_id].last_known_velocity = current_velocities.col(i);
+                
+                // 从临时消失列表中移除（正确的map迭代器删除方式）
+                it = temporarily_lost_objects.erase(it);
+                ROS_INFO("目标 %d 重新出现，恢复其ID", lost_id);
+                cout << "目标 " << lost_id << " 重新出现，已恢复ID" << std::endl;
+                break;
+            } else {
+                ++it;
+            }
+        }
+    }
+
+    // ==== 5. ID关联（优先处理非遮挡目标，再处理遮挡者，最后处理被遮挡者）====
+    // 5.1 先处理非遮挡目标
+    for (int i = 0; i < current_num_targets; ++i) {
+        if (current_ids[i] != -1) continue;  // 已分配ID
+        if (occlusion_flags[i]) continue;    // 跳过遮挡目标
+        
+        // 计算与上一帧目标的预测位置距离
+        float min_dist = std::numeric_limits<float>::max();
+        int matched_idx = -1;
+        
+        for (size_t j = 0; j < previous_positions_.size(); ++j) {
+            // 预测位置 = 上一帧位置 + 速度 * 时间差
+            Eigen::Vector2f predicted_pos = previous_positions_[j] + 
+                                           previous_velocities_[j] * delta_timestamp;
+            
+            float dist = (current_positions.col(i) - predicted_pos).norm();
+            if (dist < min_dist && dist < max_association_distance_ && 
+                !used_ids.count(previous_ids_[j])) {
+                min_dist = dist;
+                matched_idx = j;
+            }
+        }
+
+        if (matched_idx != -1) {
+            // 关联到上一帧ID
+            current_ids[i] = previous_ids_[matched_idx];
+            used_ids.insert(current_ids[i]);
+            
+            // 更新跟踪状态
+            tracked_objects_[current_ids[i]].position = current_positions.col(i);
+            tracked_objects_[current_ids[i]].velocity = current_velocities.col(i);
+            tracked_objects_[current_ids[i]].is_active = true;
+            tracked_objects_[current_ids[i]].consecutive_occluded = 0;
+            tracked_objects_[current_ids[i]].last_known_position = current_positions.col(i);
+            tracked_objects_[current_ids[i]].last_known_velocity = current_velocities.col(i);
+        }
+    }
+
+    // 5.2 处理遮挡者（可见目标）
+    for (const auto& rel : occlusion_relationships) {
+        int occluder_idx = rel.first;
+        if (current_ids[occluder_idx] != -1) continue;  // 已处理
+        
+        // 为遮挡者关联ID
+        float min_dist = std::numeric_limits<float>::max();
+        int matched_idx = -1;
+        
+        for (size_t j = 0; j < previous_positions_.size(); ++j) {
+            Eigen::Vector2f predicted_pos = previous_positions_[j] + 
+                                           previous_velocities_[j] * delta_timestamp;
+            
+            float dist = (current_positions.col(occluder_idx) - predicted_pos).norm();
+            if (dist < min_dist && dist < max_association_distance_ &&
+                !used_ids.count(previous_ids_[j])) {
+                min_dist = dist;
+                matched_idx = j;
+            }
+        }
+
+        if (matched_idx != -1) {
+            current_ids[occluder_idx] = previous_ids_[matched_idx];
+            // 确保不与被遮挡ID冲突
+            if (occluded_ids.count(current_ids[occluder_idx])) {
+                // 如果冲突，找一个新的可用ID
+                for (int id = 0; id < num_drones; ++id) {
+                    if (!used_ids.count(id) && !occluded_ids.count(id)) {
+                        current_ids[occluder_idx] = id;
+                        break;
+                    }
+                }
+            }
+            used_ids.insert(current_ids[occluder_idx]);
+            
+            // 更新跟踪状态
+            tracked_objects_[current_ids[occluder_idx]].position = current_positions.col(occluder_idx);
+            tracked_objects_[current_ids[occluder_idx]].velocity = current_velocities.col(occluder_idx);
+            tracked_objects_[current_ids[occluder_idx]].is_active = true;
+            tracked_objects_[current_ids[occluder_idx]].consecutive_occluded = 0;
+            tracked_objects_[current_ids[occluder_idx]].last_known_position = current_positions.col(occluder_idx);
+            tracked_objects_[current_ids[occluder_idx]].last_known_velocity = current_velocities.col(occluder_idx);
+        }
+    }
+
+    // 5.3 处理被遮挡目标（尝试保留其原始ID）
+    for (const auto& rel : occlusion_relationships) {
+        int occluded_idx = rel.second;
+        if (current_ids[occluded_idx] != -1) continue;  // 已处理
+        
+        // 尝试使用上一帧的ID
+        if (occluded_idx < previous_ids_.size() && previous_ids_[occluded_idx] != -1) {
+            int original_id = previous_ids_[occluded_idx];
+            // 检查该ID是否仍被标记为被遮挡
+            if (occluded_ids.count(original_id) && !used_ids.count(original_id)) {
+                current_ids[occluded_idx] = original_id;
+                used_ids.insert(original_id);
+                
+                // 更新跟踪状态
+                tracked_objects_[original_id].position = current_positions.col(occluded_idx);
+                tracked_objects_[original_id].velocity = current_velocities.col(occluded_idx);
+                tracked_objects_[original_id].is_active = true;
+                tracked_objects_[original_id].is_occluded = true;
+                tracked_objects_[original_id].consecutive_occluded++;
+                tracked_objects_[original_id].last_known_position = current_positions.col(occluded_idx);
+                tracked_objects_[original_id].last_known_velocity = current_velocities.col(occluded_idx);
+                
+                ROS_INFO("保留被遮挡目标ID: %d (连续遮挡帧数: %d)", 
+                         original_id, tracked_objects_[original_id].consecutive_occluded);
+                cout << "保留被遮挡目标ID: " << original_id 
+                          << " (连续遮挡帧数: " << tracked_objects_[original_id].consecutive_occluded << ")" << std::endl;
+            }
+        }
+    }
+
+    // 5.4 处理仍未分配的索引（新目标）
+    for (int i = 0; i < current_num_targets; ++i) {
+        if (current_ids[i] == -1) {
+            // 找一个未使用且未被标记为被遮挡的ID
+            int new_id = -1;
+            for (int id = 0; id < num_drones; ++id) {
+                if (!used_ids.count(id) && !occluded_ids.count(id)) {
+                    new_id = id;
+                    break;
+                }
+            }
+            
+            // 如果找不到可用ID，检查是否有被遮挡但可以临时分配的ID
+            if (new_id == -1) {
+                // 首先检查是否有被遮挡但已超过一半保留时间的ID
+                for (const auto& pair : tracked_objects_) {
+                    if (pair.second.is_occluded && 
+                        pair.second.consecutive_occluded > max_occlusion_frames_ / 2 &&
+                        !used_ids.count(pair.first)) {
+                        new_id = pair.first;
+                        break;
+                    }
+                }
+            }
+            
+            // 如果仍然找不到，使用下一个ID
+            if (new_id == -1) {
+                // 确保新ID不与现有ID冲突
+                while (used_ids.count(next_id_) || occluded_ids.count(next_id_)) {
+                    next_id_++;
+                }
+                new_id = next_id_++;
+                ROS_INFO("创建新目标ID: %d", new_id);
+            }
+            
+            current_ids[i] = new_id;
+            used_ids.insert(new_id);
+            
+            // 添加或更新跟踪目标
+            if (tracked_objects_.count(new_id)) {
+                // 重新激活的目标
+                tracked_objects_[new_id].position = current_positions.col(i);
+                tracked_objects_[new_id].velocity = current_velocities.col(i);
+                tracked_objects_[new_id].is_active = true;
+                tracked_objects_[new_id].is_occluded = occlusion_flags[i];
+                tracked_objects_[new_id].is_fully_occluded = false;
+                tracked_objects_[new_id].consecutive_occluded = 0;
+                tracked_objects_[new_id].last_known_position = current_positions.col(i);
+                tracked_objects_[new_id].last_known_velocity = current_velocities.col(i);
+            } else {
+                // 全新目标
+                tracked_objects_[new_id] = TrackedObject(new_id);
+                tracked_objects_[new_id].position = current_positions.col(i);
+                tracked_objects_[new_id].velocity = current_velocities.col(i);
+                tracked_objects_[new_id].is_active = true;
+                tracked_objects_[new_id].is_occluded = occlusion_flags[i];
+                tracked_objects_[new_id].last_known_position = current_positions.col(i);
+                tracked_objects_[new_id].last_known_velocity = current_velocities.col(i);
+            }
+        }
+    }
+
+    // ==== 6. 清理长时间被遮挡的目标 ====
+    std::vector<int> to_remove;
+    for (const auto& pair : tracked_objects_) {
+        if (pair.second.consecutive_occluded >= max_occlusion_frames_ && !pair.second.is_active) {
+            to_remove.push_back(pair.first);
+            occluded_ids.erase(pair.first);
+            ROS_INFO("目标 %d 超过最大遮挡帧数(%d)，移除其ID", 
+                     pair.first, max_occlusion_frames_);
+            cout << "目标 " << pair.first << " 超过最大遮挡帧数(" << max_occlusion_frames_ 
+                      << ")，已移除其ID" << std::endl;
+        }
+    }
+    for (int id : to_remove) {
+        tracked_objects_.erase(id);
+        temporarily_lost_objects.erase(id);  // 现在这行代码可以正常工作了
+    }
+    // ==== 7. 记录当前可见目标ID ====
+    for (int i = 0; i < current_num_targets; ++i) {
+        if (current_ids[i] != -1) {
+            currently_visible_ids.push_back(current_ids[i]);
+        }
+    }
+
+    // ==== 8. 更新历史状态 ====
+    id_consensus.resize(1, current_ids.size());
+    for (size_t i = 0; i < current_ids.size(); ++i) {
+        id_consensus(i) = current_ids[i];
+    }
+
+    previous_ids_ = current_ids;
+    previous_positions_.clear();
+    previous_velocities_.clear();
+    
+    for (int i = 0; i < current_num_targets; ++i) {
+        previous_positions_.push_back(current_positions.col(i));
+        previous_velocities_.push_back(current_velocities.col(i));
+    }
+
+    // 输出调试信息
+    ROS_DEBUG("完成ID关联 - 当前帧ID: ");
+    for (int id : current_ids) {
+        ROS_DEBUG("%d ", id);
+    }
+    ROS_DEBUG("\n");
+}
+
+// 以下为其他函数，保持不变
+void multi_robot_tracking_Nodelet::init_matrices()
+{
+    ROS_INFO("init matrix for drone num: %d",num_drones);
+    ROS_WARN("nodelet start init matrix... verify cam K matrix for simulation or snapdragon pro!");
+    k_matrix3x3 = Eigen::MatrixXf(3,3);
+    k_matrix3x3_inv = Eigen::MatrixXf(3,3);
+
+    positions_world_coordinate =  Eigen::MatrixXf(3,num_drones);
+    positions_cam_coordinate =  Eigen::MatrixXf(3,num_drones);
+    projected_2d_initial_coord = Eigen::MatrixXf(2,num_drones);
+
+
+    id_consensus = Eigen::MatrixXd(1,num_drones);
+    id_array_init = Eigen::MatrixXd(1,num_drones);
+    for(int i=0; i<num_drones; i++)
+    {
+        id_consensus(i) = i;
+        id_array_init(i) = i;
+    }
+
+    rotm_world2cam = Eigen::MatrixXf(3,3);
+
+    k_matrix3x3(0,0) = f; k_matrix3x3(0,1) = 0;   k_matrix3x3(0,2) = cx;
+    k_matrix3x3(1,0) = 0;   k_matrix3x3(1,1) = f; k_matrix3x3(1,2) = cy;
+    k_matrix3x3(2,0) = 0;   k_matrix3x3(2,1) = 0;   k_matrix3x3(2,2) = 1;
+
+    k_matrix3x3_inv = k_matrix3x3.inverse();
+
+    /* [0 -1  0]
+     * [0  0 -1]
+     * [1  0  0]
+     */
+    rotm_world2cam(0,0) = 0;   rotm_world2cam(0,1) =-1;   rotm_world2cam(0,2) =  0;
+    rotm_world2cam(1,0) = 0;   rotm_world2cam(1,1) = 0;   rotm_world2cam(1,2) = -1;
+    rotm_world2cam(2,0) = 1;   rotm_world2cam(2,1) = 0;   rotm_world2cam(2,2) =  0;
+
+}
+
+void multi_robot_tracking_Nodelet::draw_image()
+{
+#ifdef HOST
+    if(filter_to_use_.compare("jpdaf") == 0)
+    {
+        float scaleX = input_image.cols / (float)detection_width;
+        float scaleY = input_image.rows / (float)detection_height;
+        for(int k=0; k < jpdaf_filter_.tracks_.size(); k++)
+        {
+            Eigen::Vector2f temp_center;
+            temp_center = jpdaf_filter_.tracks_[k].get_z();
+            int scaledX = floor((temp_center[0] + detection_offset_x) * scaleX);
+            int scaledY = floor((temp_center[1] + detection_offset_y) * scaleY);
+            temp_center[0] = scaledX;
+            temp_center[1] = scaledY;
+            cv::Point2f target_center(temp_center(0), temp_center(1));
+            cv::Point2f id_pos(temp_center(0),temp_center(1)+10);
+            cv::circle(input_image,target_center,4, cv::Scalar(0, 210, 255), 2);
+            putText(input_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);
+
+            //draw cross
+            cv::Point2f det_cross_a(temp_center(0)-5, temp_center(1)-5);
+            cv::Point2f det_cross_b(temp_center(0)+5, temp_center(1)-5);
+            cv::Point2f det_cross_c(temp_center(0)-5, temp_center(1)+5);
+            cv::Point2f det_cross_d(temp_center(0)+5, temp_center(1)+5);
+            line(input_image, det_cross_a, det_cross_d, cv::Scalar(255, 20, 150), 1, 1 );
+            line(input_image, det_cross_b, det_cross_c, cv::Scalar(255, 20, 150), 1, 1 );
+        }
+    }
+
+    else if(filter_to_use_.compare("phd") == 0) {
+
+        float scaleX = input_image.cols / (float)detection_width;
+        float scaleY = input_image.rows / (float)detection_height;
+        for(int k=0; k < phd_filter_.X_k.cols(); k++)
+        {
+            int scaledX = floor((phd_filter_.X_k(0,k) + detection_offset_x) * scaleX);
+            int scaledY = floor((phd_filter_.X_k(2,k) + detection_offset_y) * scaleY);
+            //cout << "object[" << k << "] - "
+            //     << "(" << scaledX << ", " << scaledY << ")"
+            //     << " ID: " << id_consensus(k) << endl;
+            cv::Point2f target_center(scaledX,scaledY);
+            cv::Point2f id_pos(scaledX,scaledY+10);
+            
+            // 不同状态用不同颜色标记
+            auto it = tracked_objects_.find((int)id_consensus(k));
+            if (it != tracked_objects_.end()) {
+                if (it->second.is_occluded) {
+                    // 被遮挡目标 - 红色
+                    cv::circle(input_image, target_center, 6, cv::Scalar(0, 0, 255), 3);
+                    // 显示遮挡关系
+                    if (it->second.occluder_id != -1) {
+                        std::string text = "by " + std::to_string(it->second.occluder_id);
+                        cv::Point2f rel_pos(scaledX, scaledY+25);
+                        putText(input_image, text, rel_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cvScalar(0, 0, 255), 1, cv::LINE_AA);
+                    }
+                } else {
+                    // 正常目标 - 黄色
+                    cv::circle(input_image, target_center, 6, cv::Scalar(0, 210, 255), 3);
+                }
+            } else {
+                // 未识别状态 - 蓝色
+                cv::circle(input_image, target_center, 6, cv::Scalar(255, 0, 0), 3);
+            }
+            
+            putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);
+        cout<<""<<endl;
+        }
+
+        //measured input
+        for (int k=0; k < phd_filter_.Detections.cols(); k++)
+        {
+
+            int scaledX = floor((phd_filter_.Detections(0,k) + detection_offset_x) * scaleX);
+            int scaledY = floor((phd_filter_.Detections(1,k) + detection_offset_y) * scaleY);
+            float scaledW = phd_filter_.Detections(2,k) * scaleX;
+            float scaledH = phd_filter_.Detections(3,k) * scaleY;
+
+
+            cv::Point2f measured_center(scaledX, scaledY);
+            cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 2);
+            cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
+            cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
+            cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
+
+        }
+    }
+
+    else if(filter_to_use_.compare("kalman") == 0) {
+
+        float scaleX = input_image.cols / (float)detection_width;
+        float scaleY = input_image.rows / (float)detection_height;
+        for(int k=0; k < num_drones; k++)
+        {
+            int scaledX = floor((kalman_filter_.X_k(0,k) + detection_offset_x) * scaleX);
+            int scaledY = floor((kalman_filter_.X_k(2,k) + detection_offset_y) * scaleY);
+
+            cv::Point2f target_center(scaledX,scaledY);
+            cv::Point2f id_pos(scaledX,scaledY+10);
+            cv::circle(input_image,target_center,6, cv::Scalar(0, 210, 255), 3);
+            putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);
+        }
+
+        //measured input
+        for (int k=0; k < num_drones; k++)
+        {
+
+            int scaledX = floor((kalman_filter_.Detections(0,k) + detection_offset_x) * scaleX);
+            int scaledY = floor((kalman_filter_.Detections(1,k) + detection_offset_y) * scaleY);
+            float scaledW = kalman_filter_.Detections(2,k) * scaleX;
+            float scaledH = kalman_filter_.Detections(3,k) * scaleY;
+
+
+            cv::Point2f measured_center(scaledX, scaledY);
+            cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 2);
+            cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
+            cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
+            cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
+
+        }
+    }
+
+    image_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", input_image).toImageMsg();
+    image_msg->header.stamp = img_timestamp;
+    image_pub_.publish(image_msg);
+#endif
+    return;
+
+}
+
+
+void multi_robot_tracking_Nodelet::ground_truth_Callback(const geometry_msgs::PoseArray &in_PoseArray)
+{
+    if(want_export_toCSV)
+    {
+        if(first_track_flag)
+        {
+            cout<<"~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
+            Eigen::MatrixXf temp_groundtruth, temp_estimation;
+            temp_groundtruth = Eigen::MatrixXf::Zero(2,num_drones);
+            temp_estimation = Eigen::MatrixXf::Zero(2,num_drones);
+
+            //store ground truth value
+            for(int i =0; i < in_PoseArray.poses.size(); i++)
+            {
+                temp_groundtruth(0,i) = in_PoseArray.poses[i].position.x;
+                temp_groundtruth(1,i) = in_PoseArray.poses[i].position.y;
+            }
+
+            //store X_k value
+            for(int i =0; i < phd_filter_.detected_size_k; i++)
+            {
+                temp_estimation(0,i) = phd_filter_.X_k(0,i);
+                temp_estimation(1,i) = phd_filter_.X_k(1,i);
+            }
+
+            outputFile << ros::Time::now().toSec() << "," <<  temp_groundtruth(0,0) << "," << temp_groundtruth(1,0)<< "," <<
+                          temp_groundtruth(0,1) << "," << temp_groundtruth(1,1) << "," << temp_estimation(0,0)  << "," <<
+                          temp_estimation(1,0)  << "," << temp_estimation(0,1) << "," << temp_estimation(1,1) << "," << endl;
+        }
+    }
+}
+
+
+#ifdef HOST
+void multi_robot_tracking_Nodelet::image_Callback(const sensor_msgs::ImageConstPtr &img_msg)
+{
+    image_buffer_.push_back(img_msg);
+
+    for(int i = 0; i < image_buffer_.size(); i++)
+    {
+        if(image_buffer_[i]->header.stamp.toSec() >= current_timestamp)
+        {
+            auto sync_image_ptr = image_buffer_[i];
+            img_timestamp = image_buffer_[i]->header.stamp;
+            cv_bridge::CvImageConstPtr im_ptr_ = cv_bridge::toCvShare(sync_image_ptr, "rgb8");
+            input_image = im_ptr_->image;
+
+            draw_image();
+
+            image_buffer_.erase(image_buffer_.begin() + i);
+            break;
+        }
+    }
+}
+#endif
+
+void multi_robot_tracking_Nodelet::imu_Callback(const sensor_msgs::ImuConstPtr &imu_msg)
+{
+    ros::Duration timeDifIMU = imu_msg->header.stamp - imu_timestamp;
+    phd_filter_.dt_imu = timeDifIMU.toSec();
+    ROS_WARN("imu time: %f", phd_filter_.dt_imu);
+    imu_.angular_velocity = imu_msg->angular_velocity;
+    imu_.angular_velocity_covariance = imu_msg->angular_velocity_covariance;
+    imu_.header = imu_msg->header;
+    imu_.linear_acceleration = imu_msg->linear_acceleration;
+    imu_.linear_acceleration_covariance = imu_msg->linear_acceleration_covariance;
+    imu_.orientation = imu_msg->orientation;
+    imu_.orientation_covariance = imu_msg->orientation_covariance;
+    if(phd_filter_.first_callback == false)
+    {
+        phd_filter_.ang_vel_k(0) = imu_msg->angular_velocity.x;
+        phd_filter_.ang_vel_k(1) = imu_msg->angular_velocity.y;
+        phd_filter_.ang_vel_k(2) = imu_msg->angular_velocity.z;
+
+        phd_filter_.ang_vel_k.block<3,1>(0,0) = rotm_world2cam *  phd_filter_.ang_vel_k;
+
+        if(first_track_flag)
+        {
+            phd_filter_.asynchronous_predict_existing();
+            publish_tracks();
+        }
+    }
+    imu_timestamp = imu_msg->header.stamp;
+}
+
+Eigen::MatrixXf multi_robot_tracking_Nodelet::get_B_ang_vel_matrix(float x, float y)
+{
+    Eigen::MatrixXf temp_B_matrix;
+    temp_B_matrix = Eigen::MatrixXf::Zero(4,3);
+
+    temp_B_matrix(0,0) = (x-cx)*(y-cy)/f;       temp_B_matrix(0,1) = -(pow((x-cx),2)/f)-f;  temp_B_matrix(0,2) = (y-cy);
+    temp_B_matrix(1,0) = 0;                     temp_B_matrix(1,1) = 0;                     temp_B_matrix(1,2) = 0;
+    temp_B_matrix(2,0) = f+(pow((y-cy),2))/f;   temp_B_matrix(2,1) = (x-cx)*(y-cy)/f;       temp_B_matrix(2,2) = -x+cx;
+    temp_B_matrix(3,0) = 0;                     temp_B_matrix(3,1) = 0;                     temp_B_matrix(3,2) = 0;
+
+    temp_B_matrix = temp_B_matrix * phd_filter_.dt_imu;
+    return temp_B_matrix;
+
+}
+
+
+void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseArray& in_PoseArray)
+{
+    static int callback_count = 0;
+    ros::Time current_time = ros::Time::now();
+    if(in_PoseArray.poses.size() > num_drones)
+    {
+        ROS_ERROR("MORE DETECTIONS THAN NO OF DRONES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+        return;
+    }
+
+    bbox_timestamp = in_PoseArray.header.stamp;
+    current_timestamp = bbox_timestamp.toSec();
+
+    ROS_WARN("bbox time: %f, dt: %f, imu time: %f",current_timestamp, delta_timestamp, imu_time);
+
+    jpdaf_filter_.last_timestamp_synchronized = in_PoseArray.header.stamp.toSec();
+
+    if(filter_to_use_.compare("jpdaf") == 0)
+    {
+        jpdaf_filter_.detected_size_k = in_PoseArray.poses.size();
+        jpdaf_filter_.flightmare_bounding_boxes_msgs_buffer_.push_back(in_PoseArray);
+        jpdaf_filter_.imu_buffer_.push_back(imu_);
+        jpdaf_filter_.track(true);
+    }
+
+    else if(filter_to_use_.compare("phd") == 0)
+    {
+        if(phd_filter_.first_callback)
+        {
+            phd_filter_.set_num_drones(num_drones);
+            phd_filter_.initialize_matrix(cx, cy, f, filter_dt);
+        }
+
+        phd_filter_.Detections.setZero();
+        phd_filter_.detected_size_k = in_PoseArray.poses.size();  //赋值
+
+        for(int i =0; i < phd_filter_.detected_size_k; i++)
+        {
+            phd_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
+            phd_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
+
+            phd_filter_.Detections(0,i) = in_PoseArray.poses[i].position.x;
+            phd_filter_.Detections(1,i) = in_PoseArray.poses[i].position.y;
+            phd_filter_.Detections(2,i) = in_PoseArray.poses[i].orientation.x;
+            phd_filter_.Detections(3,i) = in_PoseArray.poses[i].orientation.y;
+        }
+        ROS_INFO_STREAM("Num Meas: " << phd_filter_.detected_size_k << "\n");
+        ROS_INFO_STREAM("Z_k_CB: " << endl << phd_filter_.Z_k << "\n");
+        ROS_INFO_STREAM("WK-1: " << phd_filter_.wk << "\n");
+        if(phd_filter_.first_callback)
+        {
+            delta_timestamp =0.033;
+            phd_filter_.dt_cam = delta_timestamp;
+            phd_filter_.initialize(q_pos, q_vel, r_meas, p_pos_init, p_vel_init,
+                                phd_prune_weight_threshold,
+                                phd_prune_mahalanobis_dist_threshold,
+                                phd_extract_weight_threshold);
+            phd_filter_.first_callback = false;
+            previous_timestamp = current_timestamp;
+        }
+        else 
+        {
+            delta_timestamp = current_timestamp - previous_timestamp;
+            phd_filter_.dt_cam = delta_timestamp;
+            previous_timestamp = current_timestamp;
+            for(int i =0; i < phd_filter_.X_k.cols(); i++)
+            {
+                phd_filter_.B.block<4,3>(0,3*i) = get_B_ang_vel_matrix(phd_filter_.X_k(0,i),phd_filter_.X_k(2,i));
+            }
+
+            phd_filter_.phd_track();
+            first_track_flag = true;
+            associate_ids();
+
+            for(int i =0; i < phd_filter_.detected_size_k; i++)
+            {
+                phd_filter_.Z_k_previous(0,i) = in_PoseArray.poses[i].position.x;
+                phd_filter_.Z_k_previous(1,i) = in_PoseArray.poses[i].position.y;
+            }
+
+            phd_filter_.B = Eigen::MatrixXf::Zero(4,3*num_drones);
+        }
+    }
+
+    else if(filter_to_use_.compare("kalman") == 0)
+    {
+        if(kalman_filter_.first_callback)
+        {
+            kalman_filter_.setNumDrones(num_drones);
+            kalman_filter_.initializeMatrix(cx, cy, f, filter_dt);
+        }
+
+        kalman_filter_.detected_size_k = in_PoseArray.poses.size();
+
+        for(int i =0; i < kalman_filter_.detected_size_k; i++)
+        {
+            kalman_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
+            kalman_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
+
+            kalman_filter_.Detections(0,i) = in_PoseArray.poses[i].position.x;
+            kalman_filter_.Detections(1,i) = in_PoseArray.poses[i].position.y;
+            kalman_filter_.Detections(2,i) = in_PoseArray.poses[i].orientation.x;
+            kalman_filter_.Detections(3,i) = in_PoseArray.poses[i].orientation.y;
+        }
+        ROS_INFO_STREAM("Num Meas: " << kalman_filter_.detected_size_k << "\n");
+        ROS_INFO_STREAM("Z_k_CB: " << endl << kalman_filter_.Z_k << "\n");
+        ROS_INFO_STREAM("WK-1: " << kalman_filter_.wk << "\n");
+        if(kalman_filter_.first_callback)
+        {
+            delta_timestamp = 0.125;
+            kalman_filter_.dt_cam = delta_timestamp;
+            kalman_filter_.initialize(q_pos, q_vel, r_meas, p_pos_init, p_vel_init,
+                                phd_prune_weight_threshold,
+                                phd_prune_mahalanobis_dist_threshold,
+                                phd_extract_weight_threshold);
+            kalman_filter_.first_callback = false;
+            previous_timestamp = current_timestamp;
+        }
+        else
+        {
+            delta_timestamp = current_timestamp - previous_timestamp;
+            kalman_filter_.dt_cam = delta_timestamp;
+            previous_timestamp = current_timestamp;
+            for(int i =0; i < phd_filter_.X_k.cols(); i++)
+            {
+                kalman_filter_.B.block<4,3>(0,3*i) = get_B_ang_vel_matrix(phd_filter_.X_k(0,i),phd_filter_.X_k(2,i));
+            }
+
+            kalman_filter_.kalmanTrack();
+            ROS_INFO_STREAM("Finished track");
+            first_track_flag = true;
+            kalman_filter_.B = Eigen::MatrixXf::Zero(4,3*num_drones);
+        }
+    }
+
+    ROS_INFO_STREAM("Pub track");
+    publish_tracks();
+
+if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
+    int num_targets = phd_filter_.X_k.cols();
+    
+    static std::vector<float> prev_widths;
+    static std::vector<float> prev_heights;
+    if (prev_widths.size() < num_targets) {
+        prev_widths.resize(num_targets, 50);
+        prev_heights.resize(num_targets, 50);
+    }
+
+    for (int i = 0; i < num_targets; i++) {
+        int target_id = (i < id_consensus.size()) ? id_consensus(i) : i;
+        float track_center_x = phd_filter_.X_k(0, i);
+        float track_center_y = phd_filter_.X_k(2, i);
+
+        float center_x = 0, center_y = 0, width = 50, height = 50;
+        bool valid_detection = false;
+        float distance_threshold = 0.0f;
+
+        if (i < in_PoseArray.poses.size()) {
+            center_x = in_PoseArray.poses[i].position.x;
+            center_y = in_PoseArray.poses[i].position.y;
+            width = in_PoseArray.poses[i].orientation.x;
+            height = in_PoseArray.poses[i].orientation.y;
+            distance_threshold = (width + height) / 2.0f;
+            float distance = std::hypot(center_x - track_center_x, center_y - track_center_y);
+            if (distance < distance_threshold) {
+                valid_detection = true;
+                prev_widths[i] = width;
+                prev_heights[i] = height;
+            }
+        }
+
+        if (!valid_detection) {
+            center_x = track_center_x;
+            center_y = track_center_y;
+            width = prev_widths[i];
+            height = prev_heights[i];
+        }
+
+        int bb_left = static_cast<int>(std::round(center_x - width/2.0f));
+        int bb_top = static_cast<int>(std::round(center_y - height/2.0f));
+        int bb_width = static_cast<int>(std::round(width));
+        int bb_height = static_cast<int>(std::round(height));
+        
+        tracking_csv_ << frame_count_+1 << ","
+                      << target_id+1 << ","
+                      << bb_left << "," << bb_top << ","
+                      << bb_width << "," << bb_height << ","
+                      << 1 << ","
+                      << 1 << ","
+                      << 1 << "\n";
+    }
+
+    frame_count_++;
+}
+}
+
+void multi_robot_tracking_Nodelet::consensus_sort()
+{
+    if(!consensus_sort_complete)
+    {
+        float euclidian_distance = 0;
+        float min_distance = 1000000;
+        int min_index = 0;
+
+        for (int z = 0; z < phd_filter_.X_k.cols(); z++)
+        {
+            min_index = 0;
+            min_distance = 100000;
+
+            for(int index = 0; index < num_drones; index++)
+            {
+                cout << "X_k: " << phd_filter_.X_k(0,z) << "projX: " << projected_2d_initial_coord(0,index) << endl;
+                euclidian_distance = abs(phd_filter_.X_k(0,z) - projected_2d_initial_coord(0,index)) + abs(phd_filter_.X_k(1,z) - projected_2d_initial_coord(1,index)) ;
+                if(euclidian_distance < min_distance)
+                {
+                    min_distance = euclidian_distance;
+                    min_index = index;
+                }
+            }
+            id_consensus(z) = int(id_array_init(min_index));
+        }
+
+        consensus_sort_complete = true;
+        cout << " **************** consensus ID: " << id_consensus  << "**************** " << endl;
+    }
+}
+
+
+void multi_robot_tracking_Nodelet::associate_consensus()
+{
+    Eigen::MatrixXf delta_left_to_self, delta_right_to_self;
+    Eigen::MatrixXf projected_2d_padding;
+    delta_left_to_self = Eigen::MatrixXf::Zero(3,1);
+    delta_right_to_self = Eigen::MatrixXf::Zero(3,1);
+    projected_2d_padding = Eigen::MatrixXf::Zero(3,num_drones);
+
+    delta_left_to_self(0) = 3.4641;
+    delta_left_to_self(1) = 2;
+    delta_left_to_self(2) = 0;
+
+    delta_right_to_self(0) = 3.4641;
+    delta_right_to_self(1) = -2;
+    delta_right_to_self(2) = 0;
+
+    cout << "deltaL: " << endl << delta_left_to_self << endl;
+    cout << "deltaR: " << endl << delta_right_to_self << endl;
+
+    positions_world_coordinate.block<3,1>(0,0) = delta_left_to_self;
+    positions_world_coordinate.block<3,1>(0,1) = delta_right_to_self;
+
+    positions_cam_coordinate.block<3,1>(0,0) = rotm_world2cam * positions_world_coordinate.block<3,1>(0,0) ;
+    positions_cam_coordinate.block<3,1>(0,1) = rotm_world2cam * positions_world_coordinate.block<3,1>(0,1) ;
+
+    cout << "positions_cam_coordinate: " << endl << positions_cam_coordinate << endl;
+
+    for(int i =0; i < num_drones;i++)
+    {
+        projected_2d_padding.block<3,1>(0,i) = k_matrix3x3 * positions_cam_coordinate.block<3,1>(0,i);
+        projected_2d_padding.block<3,1>(0,i) = projected_2d_padding.block<3,1>(0,i) / projected_2d_padding(2,i);
+        projected_2d_initial_coord.block<2,1>(0,i) = projected_2d_padding.block<2,1>(0,i);
+    }
+
+    cout << "projected_2d_initial_coord: " << endl << projected_2d_initial_coord << endl;
+}
+
+
+void multi_robot_tracking_Nodelet::publish_tracks()
+{
+    geometry_msgs::PoseArray tracked_output_pose, tracked_velocity_pose;
+    geometry_msgs::Pose temp_pose, temp_velocity;
+
+    if(filter_to_use_.compare("jpdaf") == 0)
+    {
+        //TO DO fill in publishing for jpdaf as well
+    }
+    else
+    {
+        for(int i =0; i < phd_filter_.X_k.cols(); i++) {
+            temp_pose.position.x = phd_filter_.X_k(0,i);
+            temp_pose.position.y = phd_filter_.X_k(2,i);
+            tracked_output_pose.poses.push_back(temp_pose);
+
+            temp_velocity.position.x = phd_filter_.X_k(1,i);
+            temp_velocity.position.y = phd_filter_.X_k(3,i);
+            tracked_velocity_pose.poses.push_back(temp_velocity);
+        }
+    }
+
+    tracked_output_pose.header.stamp = bbox_timestamp;
+    tracked_velocity_pose.header.stamp = bbox_timestamp;
+    tracked_pose_pub_.publish(tracked_output_pose);
+    tracked_velocity_pub_.publish(tracked_velocity_pose);
+
+    while(!tracked_output_pose.poses.empty()) {
+        tracked_output_pose.poses.pop_back();
+    }
+
+    while(!tracked_velocity_pose.poses.empty()) {
+        tracked_velocity_pose.poses.pop_back();
+    }
+}
+
+void multi_robot_tracking_Nodelet::onInit(void)
+{
+    ros::NodeHandle nh = getNodeHandle();
+    ros::NodeHandle priv_nh(getPrivateNodeHandle());
+    
+    if( ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Error) ) {
+        ros::console::notifyLoggerLevelsChanged();
+    }
+
+    image_transport::ImageTransport it(nh);
+
+    priv_nh.param<std::string>("filter",filter_to_use_,"phd");
+    priv_nh.param<std::string>("input_bbox_topic",input_bbox_topic,"/DragonPro1/snpe_ros/detections");
+    priv_nh.param<std::string>("input_img_topic",input_img_topic,"/usb_cam/image_raw");
+    priv_nh.param<std::string>("input_imu_topic",input_imu_topic,"/DragonPro1/imu");
+
+    priv_nh.param<int>("num_drones",num_drones,2);
+
+    priv_nh.param<float>("max_association_distance", max_association_distance_, 50.0f);
+    priv_nh.param<int>("max_occlusion_frames", max_occlusion_frames_, 15);
+    priv_nh.param<float>("occlusion_direction_threshold", occlusion_direction_threshold_, 0.7f);
+
+    priv_nh.param<float>("init_pos_self_x",init_pos_self_x,0);
+    priv_nh.param<float>("init_pos_self_y",init_pos_self_y,0);
+    priv_nh.param<float>("init_pos_x_left",init_pos_x_left,0);
+    priv_nh.param<float>("init_pos_y_left",init_pos_y_left,0);
+    priv_nh.param<float>("init_pos_x_right",init_pos_x_right,0);
+    priv_nh.param<float>("init_pos_y_right",init_pos_y_right,0);
+
+    priv_nh.param<int>("id_left",id_left,0);
+    priv_nh.param<int>("id_right",id_right,1);  // 确保初始ID不重复
+
+    priv_nh.param<float>("camera_cx", cx, 0);
+    priv_nh.param<float>("camera_cy", cy, 0);
+    priv_nh.param<float>("camera_f", f, 0);
+    priv_nh.param<float>("dt", filter_dt, 0.225);
+
+    priv_nh.param<int>("viz_detection_height", detection_height, 168);
+    priv_nh.param<int>("viz_detection_width", detection_width, 224);
+    priv_nh.param<int>("viz_detection_offset_x", detection_offset_x, 0);
+    priv_nh.param<int>("viz_detection_offset_y", detection_offset_y, 28);
+    priv_nh.param<bool>("use_generated_id", consensus_sort_complete,0);
+
+    priv_nh.param<float>("phd/q_pos", q_pos, 6.25);
+    priv_nh.param<float>("phd/q_vel", q_vel, 12.5);
+    priv_nh.param<float>("phd/p_pos_init", p_pos_init, 5.0);
+    priv_nh.param<float>("phd/p_vel_init", p_vel_init, 2.0);
+    priv_nh.param<float>("phd/r_meas", r_meas, 45);
+    priv_nh.param<float>("phd/prune_weight_threshold", phd_prune_weight_threshold, 1e-1);
+    priv_nh.param<float>("phd/prune_mahalanobis_threshold_", phd_prune_mahalanobis_dist_threshold, 4.0);
+    priv_nh.param<float>("phd/extract_weight_threshold", phd_extract_weight_threshold, 5e-1);
+
+    priv_nh.param<float>("jpdaf/q_pos", q_pos, 6.25);
+    priv_nh.param<float>("jpdaf/q_vel", q_vel, 12.5);
+    priv_nh.param<float>("jpdaf/p_pos_init", p_pos_init, 5.0);
+    priv_nh.param<float>("jpdaf/p_vel_init", p_vel_init, 2.0);
+    priv_nh.param<float>("jpdaf/r_meas", r_meas, 45);
+    priv_nh.param<float>("jpdaf/alpha_0_threshold", jpdaf_filter_.params.alpha_0_threshold); 
+    priv_nh.param<float>("jpdaf/alpha_cam", jpdaf_filter_.params.alpha_cam);
+    priv_nh.param<float>("jpdaf/associaiton_cost", jpdaf_filter_.params.assoc_cost);
+    priv_nh.param<float>("jpdaf/beta_0_threshold", jpdaf_filter_.params.beta_0_threshold);
+    priv_nh.param<float>("jpdaf/false_measurements_density", jpdaf_filter_.params.false_measurements_density);
+    priv_nh.param<float>("jpdaf/gamma", jpdaf_filter_.params.gamma);
+    priv_nh.param<float>("jpdaf/max_missed_rate",jpdaf_filter_.params.max_missed_rate);
+    priv_nh.param<float>("jpdaf/min_acceptance_rate", jpdaf_filter_.params.min_acceptance_rate);
+    priv_nh.param<float>("jpdaf/probability_detection", jpdaf_filter_.params.pd);
+
+    ROS_INFO_STREAM("Consensus sort during init " << consensus_sort_complete);
+
+    if(filter_to_use_.compare("phd") == 0)
+    {
+        ROS_WARN("will be using: %s", filter_to_use_.c_str());
+        init_matrices();
+    }
+    else if(filter_to_use_.compare("kalman") == 0)
+    {
+        ROS_WARN("will be using: %s", filter_to_use_.c_str());
+        init_matrices();
+    }
+    else if (filter_to_use_.compare("jpdaf") == 0) 
+    {
+        jpdaf_filter_.params.focal_length = f;
+        jpdaf_filter_.params.nb_drones = num_drones;
+        jpdaf_filter_.params.P_0 << p_pos_init, 0, 0, 0,
+                                    0, p_vel_init, 0, 0,
+                                    0, 0, p_pos_init, 0,
+                                    0, 0, 0, p_vel_init;
+        jpdaf_filter_.params.principal_point << cx, cy;
+        jpdaf_filter_.params.R <<   r_meas, 0,
+                                    0, r_meas;
+        ROS_WARN("will be using: %s", filter_to_use_.c_str());
+    }
+    else 
+    {
+        ROS_ERROR("wrong filter param input");
+        return;
+    }
+
+    detection_sub_ = priv_nh.subscribe(input_bbox_topic, 10, &multi_robot_tracking_Nodelet::detection_Callback, this);
+#ifdef HOST
+    image_sub_ = priv_nh.subscribe(input_img_topic, 10, &multi_robot_tracking_Nodelet::image_Callback, this);
+#endif
+    imu_sub_ = priv_nh.subscribe(input_imu_topic, 10, &multi_robot_tracking_Nodelet::imu_Callback, this);
+    groundtruth_sub_ = priv_nh.subscribe("/DragonPro1/snpe_ros/detections", 10, &multi_robot_tracking_Nodelet::ground_truth_Callback, this);
+
+    image_pub_ = it.advertise("tracked_image",1);
+    tracked_pose_pub_ = nh.advertise<geometry_msgs::PoseArray>("tracked_pose_output",1);
+    tracked_velocity_pub_ = nh.advertise<geometry_msgs::PoseArray>("tracked_velocity_output",1);
+
+    outputFile.open("/home/mwr/tracking/src/multi_robot_tracking/out.csv");
+
+    std::string csv_path = "/home/mwr/tracking/src/multi_robot_tracking/tracking_results.csv";
+    tracking_csv_.open(csv_path);
+    if (tracking_csv_.is_open()) {
+        ROS_INFO("Tracking CSV opened: %s", csv_path.c_str());
+    } else {
+        ROS_ERROR("Failed to open tracking CSV: %s", csv_path.c_str());
+    }
+}
+
+#include <pluginlib/class_list_macros.h>
+PLUGINLIB_EXPORT_CLASS(multi_robot_tracking_Nodelet, nodelet::Nodelet);

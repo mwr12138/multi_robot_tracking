@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/mwr/tracking/devel/.private/multi_robot_tracking/setup.sh

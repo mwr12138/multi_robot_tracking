@@ -1,0 +1,12 @@
+Symlinking /home/mwr/tracking/devel/./local_setup.zsh
+Symlinking /home/mwr/tracking/devel/./env.sh
+Symlinking /home/mwr/tracking/devel/./setup.bash
+Symlinking /home/mwr/tracking/devel/./_setup_util.py
+Symlinking /home/mwr/tracking/devel/./local_setup.sh
+Symlinking /home/mwr/tracking/devel/./local_setup.bash
+Symlinking /home/mwr/tracking/devel/./cmake.lock
+Symlinking /home/mwr/tracking/devel/./setup.zsh
+Symlinking /home/mwr/tracking/devel/./setup.sh
+Symlinking /home/mwr/tracking/devel/lib/pkgconfig/catkin_tools_prebuild.pc
+Symlinking /home/mwr/tracking/devel/share/catkin_tools_prebuild/cmake/catkin_tools_prebuildConfig.cmake
+Symlinking /home/mwr/tracking/devel/share/catkin_tools_prebuild/cmake/catkin_tools_prebuildConfig-version.cmake

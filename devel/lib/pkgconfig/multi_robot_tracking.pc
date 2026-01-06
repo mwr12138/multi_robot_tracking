@@ -1,0 +1,1 @@
+/home/mwr/tracking/devel/.private/multi_robot_tracking/lib/pkgconfig/multi_robot_tracking.pc

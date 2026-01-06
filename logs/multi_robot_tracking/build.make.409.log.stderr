@@ -1,0 +1,297 @@
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2_ros.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libactionlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcv_bridge.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_video.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_face.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_text.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libimage_transport.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libmessage_filters.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libclass_loader.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libPocoFoundation.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libdl.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpthread.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_log4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_backend_interface.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/liblog4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libxmlrpcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroslib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librospack.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpython3.8.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libtinyxml2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp_serialization.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librostime.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcpp_common.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:219:14:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #ifdef directive
+ #ifdef TIMING[01;35m[K�[m[K��
+              [01;35m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:221:8:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
+ #endif [01;35m[KTIMING[m[K
+        [01;35m[K^~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:5:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+     [01;31m[K�[m[K��终修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:6:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\234[m[K’ in program
+     �[01;31m[K�[m[K�终修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:7:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+     �[01;31m[K�[m[K终修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:8:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     最[01;31m[K�[m[K��修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:9:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\273[m[K’ in program
+     最�[01;31m[K�[m[K�修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:10:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\210[m[K’ in program
+     最�[01;31m[K�[m[K修剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:11:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+     最终[01;31m[K�[m[K��剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:12:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\277[m[K’ in program
+     最终�[01;31m[K�[m[K�剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:13:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\256[m[K’ in program
+     最终�[01;31m[K�[m[K剪结果存入mk_bar_fixed等矩阵（用于状态提取）
+             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:14:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+     最终修[01;31m[K�[m[K��结果存入mk_bar_fixed等矩阵（用于状态提取）
+              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:15:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\211[m[K’ in program
+     最终修�[01;31m[K�[m[K�结果存入mk_bar_fixed等矩阵（用于状态提取）
+               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:16:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\252[m[K’ in program
+     最终修�[01;31m[K�[m[K结果存入mk_bar_fixed等矩阵（用于状态提取）
+                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:17:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     最终修剪[01;31m[K�[m[K��果存入mk_bar_fixed等矩阵（用于状态提取）
+                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:18:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\273[m[K’ in program
+     最终修剪�[01;31m[K�[m[K�果存入mk_bar_fixed等矩阵（用于状态提取）
+                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:19:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\223[m[K’ in program
+     最终修剪�[01;31m[K�[m[K果存入mk_bar_fixed等矩阵（用于状态提取）
+                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:20:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+     最终修剪结[01;31m[K�[m[K��存入mk_bar_fixed等矩阵（用于状态提取）
+                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:21:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\236[m[K’ in program
+     最终修剪结�[01;31m[K�[m[K�存入mk_bar_fixed等矩阵（用于状态提取）
+                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:22:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\234[m[K’ in program
+     最终修剪结�[01;31m[K�[m[K存入mk_bar_fixed等矩阵（用于状态提取）
+                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:23:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+     最终修剪结果[01;31m[K�[m[K��入mk_bar_fixed等矩阵（用于状态提取）
+                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:24:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\255[m[K’ in program
+     最终修剪结果�[01;31m[K�[m[K�入mk_bar_fixed等矩阵（用于状态提取）
+                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:25:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\230[m[K’ in program
+     最终修剪结果�[01;31m[K�[m[K入mk_bar_fixed等矩阵（用于状态提取）
+                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:26:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+     最终修剪结果存[01;31m[K�[m[K��mk_bar_fixed等矩阵（用于状态提取）
+                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:27:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\205[m[K’ in program
+     最终修剪结果存�[01;31m[K�[m[K�mk_bar_fixed等矩阵（用于状态提取）
+                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:28:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\245[m[K’ in program
+     最终修剪结果存�[01;31m[K�[m[Kmk_bar_fixed等矩阵（用于状态提取）
+                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:41:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     最终修剪结果存入mk_bar_fixed[01;31m[K�[m[K��矩阵（用于状态提取）
+                                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:42:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\255[m[K’ in program
+     最终修剪结果存入mk_bar_fixed�[01;31m[K�[m[K�矩阵（用于状态提取）
+                                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:43:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\211[m[K’ in program
+     最终修剪结果存入mk_bar_fixed�[01;31m[K�[m[K矩阵（用于状态提取）
+                                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:44:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等[01;31m[K�[m[K��阵（用于状态提取）
+                                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:45:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\237[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等�[01;31m[K�[m[K�阵（用于状态提取）
+                                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:46:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\251[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等�[01;31m[K�[m[K阵（用于状态提取）
+                                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:47:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩[01;31m[K�[m[K��（用于状态提取）
+                                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:48:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\230[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩�[01;31m[K�[m[K�（用于状态提取）
+                                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:49:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\265[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩�[01;31m[K�[m[K（用于状态提取）
+                                                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:50:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\357[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵[01;31m[K�[m[K��用于状态提取）
+                                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:51:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\274[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵�[01;31m[K�[m[K�用于状态提取）
+                                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:52:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\210[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵�[01;31m[K�[m[K用于状态提取）
+                                                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:53:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（[01;31m[K�[m[K��于状态提取）
+                                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:54:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\224[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（�[01;31m[K�[m[K�于状态提取）
+                                                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:55:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\250[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（�[01;31m[K�[m[K于状态提取）
+                                                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:56:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用[01;31m[K�[m[K��状态提取）
+                                                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:57:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用�[01;31m[K�[m[K�状态提取）
+                                                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:58:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\216[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用�[01;31m[K�[m[K状态提取）
+                                                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:59:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于[01;31m[K�[m[K��态提取）
+                                                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:60:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\212[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于�[01;31m[K�[m[K�态提取）
+                                                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:61:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\266[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于�[01;31m[K�[m[K态提取）
+                                                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:62:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状[01;31m[K�[m[K��提取）
+                                                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:63:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状�[01;31m[K�[m[K�提取）
+                                                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:64:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\201[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状�[01;31m[K�[m[K提取）
+                                                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:65:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态[01;31m[K�[m[K��取）
+                                                                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:66:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\217[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态�[01;31m[K�[m[K�取）
+                                                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:67:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\220[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态�[01;31m[K�[m[K取）
+                                                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:68:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态提[01;31m[K�[m[K��）
+                                                                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:69:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\217[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态提�[01;31m[K�[m[K�）
+                                                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:70:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\226[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态提�[01;31m[K�[m[K）
+                                                                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:71:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\357[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态提取[01;31m[K�[m[K��
+                                                                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:72:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\274[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态提取�[01;31m[K�[m[K�
+                                                                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:73:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\211[m[K’ in program
+     最终修剪结果存入mk_bar_fixed等矩阵（用于状态提取�[01;31m[K�[m[K
+                                                                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:[m[K In member function ‘[01m[Kvoid PhdFilter::phd_prune()[m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1091:41:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[Kmk_bar_fixed[m[K’
+     最终修剪结果存入mk_bar_fixed[01;31m[K�[m[K��矩阵（用于状态提取）
+                                         [01;31m[K^[m[K
+                                         [32m[K;[m[K
+     [32m[Kmk_bar_fixed[m[K = Eigen::MatrixXf::Zero(n_state,NUM_DRONES);
+     [32m[K~~~~~~~~~~~~[m[K                         
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1400:34:[m[K [01;31m[Kerror: [m[Kqualified-id in declaration before ‘[01m[K([m[K’ token
+ void PhdFilter::phd_state_extract[01;31m[K([m[K) //状态提取
+                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1528:35:[m[K [01;31m[Kerror: [m[Kqualified-id in declaration before ‘[01m[K([m[K’ token
+ float PhdFilter::clutter_intensity[01;31m[K([m[Kconst float ZmeasureX, const float ZmeasureY)
+                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1554:29:[m[K [01;31m[Kerror: [m[Kqualified-id in declaration before ‘[01m[K([m[K’ token
+ void PhdFilter::removeColumn[01;31m[K([m[KEigen::MatrixXd& matrix, unsigned int colToRemove)
+                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1565:30:[m[K [01;31m[Kerror: [m[Kqualified-id in declaration before ‘[01m[K([m[K’ token
+ void PhdFilter::removeColumnf[01;31m[K([m[KEigen::MatrixXf& matrix, unsigned int colToRemove)
+                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1576:30:[m[K [01;31m[Kerror: [m[Kqualified-id in declaration before ‘[01m[K([m[K’ token
+ void PhdFilter::removeColumni[01;31m[K([m[KEigen::MatrixXi& matrix, unsigned int colToRemove)
+                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1587:32:[m[K [01;31m[Kerror: [m[Kqualified-id in declaration before ‘[01m[K([m[K’ token
+ void PhdFilter::update_A_matrix[01;31m[K([m[Kfloat input_dt)
+                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1595:32:[m[K [01;31m[Kerror: [m[Kqualified-id in declaration before ‘[01m[K([m[K’ token
+ void PhdFilter::update_F_matrix[01;31m[K([m[Kfloat input_dt)
+                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1599:1:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K}[m[K’ at end of input
+ [01;31m[K}[m[K
+ [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:876:1:[m[K [01;36m[Knote: [m[Kto match this ‘[01m[K{[m[K’
+ [01;36m[K{[m[K
+ [01;36m[K^[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:132：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:1949：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:146：all] 错误 2
