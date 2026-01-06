@@ -52,7 +52,6 @@ public:
     void image_Callback(const sensor_msgs::ImageConstPtr &img_msg); //rgb raw
 #endif
     void imu_Callback(const sensor_msgs::ImuConstPtr &imu_msg); //rgb raw
-    void ground_truth_Callback(const geometry_msgs::PoseArray& in_PoseArray); //bbox projection from ground truth
 
     Eigen::MatrixXf get_B_ang_vel_matrix(float x, float y); //return B matrix for each measurement
 
@@ -958,48 +957,6 @@ void multi_robot_tracking_Nodelet::draw_image() {
 
 
 
-void multi_robot_tracking_Nodelet::ground_truth_Callback(const geometry_msgs::PoseArray &in_PoseArray)
-{
-    //cout<<"#############first_track_flag="<<first_track_flag<<endl;
-    if(want_export_toCSV)
-    {
-        //only after phd track occurred
-            ROS_WARN("inside callback");
-        if(first_track_flag)
-        {
-            cout<<"~~~~~~~~~~~~~~~~~~~~~~~"<<endl;
-            Eigen::MatrixXf temp_groundtruth, temp_estimation;
-            temp_groundtruth = Eigen::MatrixXf::Zero(2,num_drones);
-            temp_estimation = Eigen::MatrixXf::Zero(2,num_drones);
-
-            //store ground truth value
-            for(int i =0; i < in_PoseArray.poses.size(); i++)
-            {
-                //store Z
-                temp_groundtruth(0,i) = in_PoseArray.poses[i].position.x;
-                temp_groundtruth(1,i) = in_PoseArray.poses[i].position.y;
-            }
-
-            //store X_k value
-            for(int i =0; i < phd_filter_.detected_size_k; i++)
-            {
-                //store Z
-                temp_estimation(0,i) = phd_filter_.X_k(0,i);
-                temp_estimation(1,i) = phd_filter_.X_k(1,i);
-            }
-
-            //store into csv
-
-            outputFile << ros::Time::now().toSec() << "," <<  temp_groundtruth(0,0) << "," << temp_groundtruth(1,0)<< "," <<
-                          temp_groundtruth(0,1) << "," << temp_groundtruth(1,1) << "," << temp_estimation(0,0)  << "," <<
-                          temp_estimation(1,0)  << "," << temp_estimation(0,1) << "," << temp_estimation(1,1) << "," << endl;
-
-
-                    ROS_ERROR("saving into csv");
-        }
-    }
-}
-
 
 /* callback for 2D image to store before publishing
  * input: RGB Image
@@ -1748,7 +1705,6 @@ void multi_robot_tracking_Nodelet::onInit(void)
     //imu subscription
     imu_sub_ = priv_nh.subscribe(input_imu_topic, 10, &multi_robot_tracking_Nodelet::imu_Callback, this);
     //groundtruth bbox subscription
-    groundtruth_sub_ = priv_nh.subscribe("/DragonPro1/snpe_ros/detections", 10, &multi_robot_tracking_Nodelet::ground_truth_Callback, this);  //豁然开朗！
 
 
     image_pub_ = it.advertise("tracked_image",1);
