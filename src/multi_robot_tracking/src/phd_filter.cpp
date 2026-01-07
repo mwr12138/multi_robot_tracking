@@ -21,7 +21,7 @@ static const float ASSOC_COST_TH = 50.5f;
     0.3 * pred_err +     预测误差
     0.1 * (1 - vel_consistency);   0完全一致  1完全不一致12138
 */
-static const float ASSOC_DIST_TH = 10.0f;   // 距离阈值，后面可以调
+static const float ASSOC_DIST_TH = 20.0f;   // 距离阈值，后面可以调
 static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
 //新增：更新tracks_轨迹的更新应该只出现在这一步
 void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
@@ -75,9 +75,9 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
 
             float vel_consistency = calculate_velocity_consistency(tr, cand_vel);
 
-            float cost =    0.9f * pos_err +
-                            0.05f * pred_err +
-                            0.05f * (1.0f - vel_consistency);
+            float cost =    0.6f * pos_err +
+                            0.3f * pred_err +
+                            0.1f * (1.0f - vel_consistency);
 
             if (cost < best_cost) {
                 best_cost = cost;

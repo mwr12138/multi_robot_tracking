@@ -28,6 +28,9 @@
 #include <fstream>
 
 #include <chrono>
+#include <sstream>
+#include <iomanip>
+
 
 #define HOST
 
@@ -972,13 +975,47 @@ void multi_robot_tracking_Nodelet::draw_image() {
                 float speed = std::sqrt(vx*vx + vy*vy);
                 
                 if (speed > 1.0f) { // 稍微调高一点阈值防止抖动
-                    float arrow_scale = 2.0f; // 根据需要放大箭头长度
+                    float arrow_scale = 0.5f; // 根据需要放大箭头长度
                     cv::Point2f arrow_end(scaledX + vx * arrow_scale, scaledY + vy * arrow_scale);
                     cv::arrowedLine(input_image, target_center, arrow_end, 
                                 cv::Scalar(0, 255, 255), 2, cv::LINE_AA, 0, 0.2);
                 }
             }
         }
+        // ===============================
+        // 在左上角列出所有 Track 的 ID 和中心坐标
+        // ===============================
+        int text_x = 10;          // 左边距
+        int text_y = 20;          // 第一行高度
+        int line_height = 18;     // 行间距
+
+        int line_idx = 0;
+
+        for (const auto& tr : phd_filter_.tracks_)
+        {
+            if (!tr.active) continue;   // 只显示活跃目标
+            if (tr.confidence < 0.3f) continue;
+
+            std::ostringstream ss;
+            ss << "ID " << tr.id << " : ("
+            << std::fixed << std::setprecision(2)
+            << tr.x(0) << ", " << tr.x(2) << ")";
+
+            cv::putText(
+                input_image,
+                ss.str(),
+                cv::Point(text_x, text_y + line_idx * line_height),
+                cv::FONT_HERSHEY_SIMPLEX,
+                0.45,                    // 字号
+                cv::Scalar(255, 255, 255), // 白色文字
+                1,
+                cv::LINE_AA
+            );
+
+            line_idx++;
+        }
+
+
     }
     
     // 其他滤波器类型的绘制代码...
