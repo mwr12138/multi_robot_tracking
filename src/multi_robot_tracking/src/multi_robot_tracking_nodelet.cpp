@@ -983,37 +983,51 @@ void multi_robot_tracking_Nodelet::draw_image() {
             }
         }
         // ===============================
-        // 在左上角列出所有 Track 的 ID 和中心坐标
+        // 在左上角列出所有 Track 的 ID / 坐标 / active 状态
         // ===============================
         int text_x = 10;          // 左边距
-        int text_y = 20;          // 第一行高度
-        int line_height = 18;     // 行间距
+        int text_y = 10;          // 第一行高度
+        int line_height = 10;     // 行间距
 
         int line_idx = 0;
 
         for (const auto& tr : phd_filter_.tracks_)
         {
-            if (!tr.active) continue;   // 只显示活跃目标
-            if (tr.confidence < 0.3f) continue;
+            // 颜色区分 active / inactive
+            cv::Scalar text_color;
+            std::string state_str;
+
+            if (tr.active) {
+                state_str = "ACTIVE";
+                text_color = cv::Scalar(255, 0, 0);   // 红色
+            } else {
+                state_str = "INACTIVE";
+                text_color = cv::Scalar(255, 255, 255);   // 白色
+            }
 
             std::ostringstream ss;
-            ss << "ID " << tr.id << " : ("
+            ss << "ID " << tr.id
+            << " [" << state_str << "] : ("
             << std::fixed << std::setprecision(2)
             << tr.x(0) << ", " << tr.x(2) << ")";
+
+            // 如果你希望把 confidence 也打出来，可以打开这一行
+            // ss << " conf=" << std::setprecision(2) << tr.confidence;
 
             cv::putText(
                 input_image,
                 ss.str(),
                 cv::Point(text_x, text_y + line_idx * line_height),
                 cv::FONT_HERSHEY_SIMPLEX,
-                0.45,                    // 字号
-                cv::Scalar(255, 255, 255), // 白色文字
+                0.3,              // 字号
+                text_color,
                 1,
                 cv::LINE_AA
             );
 
             line_idx++;
         }
+
 
 
     }

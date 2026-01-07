@@ -1,65 +1,3 @@
-[  0%] Built target nav_msgs_generate_messages_py
-[  0%] Built target geometry_msgs_generate_messages_cpp
-[  0%] Built target geometry_msgs_generate_messages_eus
-[  0%] Built target std_msgs_generate_messages_nodejs
-[  0%] Built target std_msgs_generate_messages_py
-[  0%] Built target nodelet_generate_messages_cpp
-[  0%] Built target nodelet_generate_messages_eus
-[  0%] Built target nodelet_generate_messages_nodejs
-[  0%] Built target std_msgs_generate_messages_eus
-[  0%] Built target nodelet_generate_messages_lisp
-[  0%] Built target std_msgs_generate_messages_lisp
-[  0%] Built target geometry_msgs_generate_messages_nodejs
-[  0%] Built target std_msgs_generate_messages_cpp
-[  0%] Built target geometry_msgs_generate_messages_py
-[  0%] Built target geometry_msgs_generate_messages_lisp
-[  0%] Built target bond_generate_messages_cpp
-[  0%] Built target nodelet_generate_messages_py
-[  0%] Built target bond_generate_messages_nodejs
-[  0%] Built target bond_generate_messages_lisp
-[  0%] Built target roscpp_generate_messages_eus
-[  0%] Built target roscpp_generate_messages_lisp
-[  0%] Built target bond_generate_messages_eus
-[  0%] Built target bond_generate_messages_py
-[  0%] Built target roscpp_generate_messages_nodejs
-[  0%] Built target roscpp_generate_messages_py
-[  0%] Built target tf_generate_messages_cpp
-[  0%] Built target roscpp_generate_messages_cpp
-[  0%] Built target rosgraph_msgs_generate_messages_eus
-[  0%] Built target rosgraph_msgs_generate_messages_cpp
-[  0%] Built target rosgraph_msgs_generate_messages_py
-[  0%] Built target rosgraph_msgs_generate_messages_nodejs
-[  0%] Built target tf_generate_messages_eus
-[  0%] Built target rosgraph_msgs_generate_messages_lisp
-[  0%] Built target tf_generate_messages_lisp
-[  0%] Built target tf_generate_messages_nodejs
-[  0%] Built target sensor_msgs_generate_messages_cpp
-[  0%] Built target tf_generate_messages_py
-[  0%] Built target sensor_msgs_generate_messages_eus
-[  0%] Built target sensor_msgs_generate_messages_lisp
-[  0%] Built target sensor_msgs_generate_messages_py
-[  0%] Built target sensor_msgs_generate_messages_nodejs
-[  0%] Built target actionlib_generate_messages_nodejs
-[  0%] Built target actionlib_generate_messages_lisp
-[  0%] Built target actionlib_generate_messages_cpp
-[  0%] Built target actionlib_generate_messages_py
-[  0%] Built target actionlib_generate_messages_eus
-[  0%] Built target actionlib_msgs_generate_messages_lisp
-[  0%] Built target actionlib_msgs_generate_messages_eus
-[  0%] Built target actionlib_msgs_generate_messages_cpp
-[  0%] Built target tf2_msgs_generate_messages_cpp
-[  0%] Built target actionlib_msgs_generate_messages_py
-[  0%] Built target tf2_msgs_generate_messages_lisp
-[  0%] Built target actionlib_msgs_generate_messages_nodejs
-[  0%] Built target tf2_msgs_generate_messages_eus
-[  0%] Built target tf2_msgs_generate_messages_nodejs
-[  0%] Built target tf2_msgs_generate_messages_py
-[  0%] Built target nav_msgs_generate_messages_cpp
-[  0%] Built target nav_msgs_generate_messages_eus
-[  0%] Built target nav_msgs_generate_messages_lisp
-[  0%] Built target nav_msgs_generate_messages_nodejs
-[35m[1mConsolidate compiler generated dependencies of target multi_robot_tracking[0m
-[  9%] [32mBuilding CXX object CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o[0m
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
@@ -149,7 +87,3 @@
 [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:417:12:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
      #endif [01;35m[KTIMING[m[K
             [01;35m[K^~~~~~[m[K
-[ 18%] [32m[1mLinking CXX shared library /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/libmulti_robot_tracking.so[0m
-[ 81%] Built target multi_robot_tracking
-[ 90%] [32m[1mLinking CXX executable /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/multi_robot_tracking/multi_robot_tracking_node[0m
-[100%] Built target multi_robot_tracking_node
