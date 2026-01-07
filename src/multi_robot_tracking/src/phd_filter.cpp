@@ -14,218 +14,374 @@ PhdFilter::PhdFilter()
 {
     
 }
-static const float ASSOC_COST_TH = 50.5f;
 
-/*cost =
-    0.6 * pos_err +      当前位置误差
-    0.3 * pred_err +     预测误差
-    0.1 * (1 - vel_consistency);   0完全一致  1完全不一致12138
-*/
-static const float ASSOC_DIST_TH = 20.0f;   // 距离阈值，后面可以调
-static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-//新增：更新tracks_轨迹的更新应该只出现在这一步
+static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
 void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
-
 {
-    //打印 candidates 信息
-    ROS_ERROR_STREAM("1111111111111111111111111111111111111111111111111");
-    ROS_ERROR_STREAM("Number of candidates: " << candidates.size());
-    for(int k = 0; k < candidates.size(); k++)
-    {
-        ROS_ERROR_STREAM("candidates[" << k << "].x is:\n" << candidates[k].x << "\n");
-    }
-    ROS_ERROR_STREAM("Number of existing tracks: " << tracks_.size());
-    // candidate是新的候选，tracks_是已有的轨迹
-    // 记录每个 candidate 是否已被使用 防止同一个 Candidate 被分给两个 Track
+    // 1. 记录使用情况
     std::vector<bool> candidate_used(candidates.size(), false);
-    // 记录每个 track 是否已被使用 防止同一个 Track 被分给两个 Candidate
     std::vector<bool> track_used(tracks_.size(), false);
 
-    // ===== 1. 老轨迹匹配 尝试用 candidate 更新已有 Track 标准的贪婪匹配逻辑，遍历所有活跃轨迹来寻找最佳匹配=====
+    // 权重定义：最近一帧权重最大 (w1 为最近)
+    const float W_DIR[5] = {0.40f, 0.25f, 0.15f, 0.10f, 0.10f};
+
+    // ===== 1. 老轨迹匹配 (基于动态半径与加权方向) =====
     for (size_t i = 0; i < tracks_.size(); ++i) {
-
         auto& tr = tracks_[i];
+        if (!tr.active || tr.missed_count > OCCLUSION_THRESHOLD) continue;
 
-        if (!tr.active)
-            continue;
+        // --- 第一步：计算动态搜索半径 R ---
+        float last_move = 0.0f;
+        if (tr.position_history.size() >= 2) {
+            last_move = (tr.position_history.back() - tr.position_history[tr.position_history.size()-2]).norm();
+        }
+        float R_limit = std::max(last_move * 1.5f, 20.0f); // 最小 20 像素
 
-        if (tr.missed_count > OCCLUSION_THRESHOLD)
-            continue;   //  关键：失去 ID 保护权
-
-        float best_cost = 1e9f;
-        int best_idx = -1;
-
+        // 筛选半径内的候选点
+        std::vector<int> nearby_indices;
         for (int j = 0; j < candidates.size(); ++j) {
-            if (candidate_used[j])
-                continue;
+            if (candidate_used[j]) continue;
+            float d = (candidates[j].x.head(2) - tr.x.head(2)).norm(); // 简化距离计算，只看x,y
+            if (d < R_limit) nearby_indices.push_back(j);
+        }
 
-            Eigen::Vector2f cand_pos;
-            cand_pos << candidates[j].x(0), candidates[j].x(2);
+        if (nearby_indices.empty()) {
+            tr.missed_count++;
+            continue;
+        }
 
-            Eigen::Vector2f pred_pos = predict_position(tr);
+        // --- 第二步：在半径内进行方向辨别 ---
+        int best_idx = -1;
+        float min_total_cost = 1e9f;
 
-            float pos_err = (cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2))).norm();
+        // 如果只有一个点，直接判定；多个点时根据辨别力系数 lambda 加强方向权重
+        float lambda = (nearby_indices.size() > 1) ? 0.7f : 0.3f; 
 
-            float pred_err = (cand_pos - pred_pos).norm();
+        for (int idx : nearby_indices) {
+            const auto& cand = candidates[idx];
+            
+            // 计算当前瞬时观测速度方向向量
+            Eigen::Vector2f v_obs = (cand.x.head(2) - tr.position_history.back()) / dt_cam;
+            float v_obs_norm = v_obs.norm();
 
-            Eigen::Vector2f cand_vel = Eigen::Vector2f::Zero();
-            if (!tr.position_history.empty()) {
-                cand_vel = (cand_pos - tr.position_history.back()) / dt_cam;
+            // 计算加权方向得分 (余弦相似度)
+            float s_heading = 0.0f;
+            if (v_obs_norm > 1e-3f && !tr.velocity_history.empty()) {
+                int hist_size = tr.velocity_history.size();
+                for (int k = 0; k < std::min(hist_size, 5); ++k) {
+                    // velocity_history 是 back 为最新，使用反向迭代器
+                    auto it = tr.velocity_history.rbegin() + k;
+                    float cos_theta = v_obs.dot(*it) / (v_obs_norm * it->norm() + 1e-6f);
+                    s_heading += W_DIR[k] * cos_theta;
+                }
+            } else {
+                s_heading = 1.0f; // 如果没速度历史或静止，默认方向契合
             }
 
-            float vel_consistency = calculate_velocity_consistency(tr, cand_vel);
+            // 归一化距离代价 [0, 1]
+            float dist_cost = (cand.x.head(2) - tr.x.head(2)).norm() / R_limit;
+            // 方向代价 [0, 2] -> 归一化 [0, 1]
+            float heading_cost = (1.0f - s_heading) / 2.0f;
 
-            float cost =    0.6f * pos_err +
-                            0.3f * pred_err +
-                            0.1f * (1.0f - vel_consistency);
+            float total_cost = (1.0f - lambda) * dist_cost + lambda * heading_cost;
 
-            if (cost < best_cost) {
-                best_cost = cost;
-                best_idx = j;
+            if (total_cost < min_total_cost) {
+                min_total_cost = total_cost;
+                best_idx = idx;
             }
         }
-        ROS_ERROR_STREAM("Track " << tr.id << " best_idx=" << best_idx << " best_cost=" << best_cost);
 
-        if (best_idx >= 0 && best_cost < ASSOC_COST_TH) {
+        // 最终匹配判别 (如果方向完全反了 s_heading < 0，则拒绝匹配)
+    //     ROS_ERROR_STREAM("Track " << tr.id
+    // << " cost=" << min_total_cost
+    // << " miss=" << tr.missed_count);
 
-            Eigen::Vector2f pos;
-            pos << candidates[best_idx].x(0), candidates[best_idx].x(2);
-
-            if (!tr.position_history.empty()) {
-                Eigen::Vector2f vel = (pos - tr.position_history.back()) / dt_cam;
-
-                tr.velocity_history.push_back(vel);
-                if (tr.velocity_history.size() > HISTORY_SIZE)
-                    tr.velocity_history.pop_front();
-            }
-
-            tr.position_history.push_back(pos);
-            if (tr.position_history.size() > HISTORY_SIZE)
-                tr.position_history.pop_front();
-
-            tr.x = candidates[best_idx].x;
-            tr.P = candidates[best_idx].P;
-            tr.confidence = candidates[best_idx].w;
-            tr.missed_count = 0;
-
-            candidate_used[best_idx] = true; // 标记这个 candidate 已被使用
-            track_used[i] = true;  //一个 Track 一帧只能“被续命一次”
-        } 
-        else {
-            // 没匹配上
-            tr.missed_count++; 
+        if (best_idx != -1 && min_total_cost < 0.8f) { // 阈值 0.8 防止极端不匹配
+            update_track_data(tr, candidates[best_idx]);
+            candidate_used[best_idx] = true;
+            track_used[i] = true;
+        } else {
+            tr.missed_count++;
         }
     }
 
-    // ===== 2. 新轨迹创建 为未使用的 candidate 创建新 Track 创建新ID=====
+    // ===== 2. 新轨迹创建 & 复活 =====
     for (int j = 0; j < candidates.size(); ++j) {
-        if (candidate_used[j]) continue;
+        if (candidate_used[j] || candidates[j].w < 0.4f) continue;
 
-        // 寻找一个当前没有被任何 active 轨迹占用的 ID (0 到 NUM_DRONES-1)
+        // 优先寻找 0~NUM_DRONES-1 的空闲 ID
         int free_id = -1;
         for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
-            bool id_occupied = false;              
-            for (const auto& tr : tracks_) {
-                if (tr.active && tr.id == id_search) {
-                    id_occupied = true;
-                    break;
-                }
-            }
-            if (!id_occupied) {
-                free_id = id_search;
-                break;
-            }
+            bool occupied = false;
+            for (const auto& t : tracks_) if (t.active && t.id == id_search) { occupied = true; break; }
+            if (!occupied) { free_id = id_search; break; }
         }
 
-        // 如果找到了空闲 ID，就用这个 ID 创建新轨迹
         if (free_id != -1) {
-            Tracknew tr;
-            tr.id = free_id; // 使用找到的 0~9 之间的空闲 ID
-            tr.x = candidates[j].x;
-            tr.P = candidates[j].P;
-            tr.confidence = candidates[j].w;
-            tr.missed_count = 0;
-            tr.active = true; 
-            Eigen::Vector2f pos;                   
-            pos << tr.x(0), tr.x(2);
-            tr.position_history.push_back(pos);
-            
-            tracks_.push_back(tr);
-            ROS_INFO("New Target! Assigned ID: %d", tr.id);
-            candidate_used[j] = true; // 标记这个 candidate 已被使用
-            continue; // 继续处理下一个 candidate
-        }
-
-        bool assigned = false;
-
-        // 4.3：尝试复活失效 Track
-        for (size_t i = 0; i < tracks_.size(); ++i) {
-
-            auto& tr = tracks_[i];
-
-            if (tr.active)
-                continue;
-
-            float dist = (tr.x.head(2) - candidates[j].x.head(2)).norm();
-
-            if (dist < ASSOC_DIST_TH) {
-
-                tr.x = candidates[j].x;
-                tr.P = candidates[j].P;
-                tr.confidence = candidates[j].w;
-                tr.missed_count = 0;
-                tr.active = true;
-
-                assigned = true;
-                break;
-            }
-        }
-
-        if (assigned){
+            create_new_track(candidates[j], free_id);
             candidate_used[j] = true;
-            continue;
+        } else {
+            // 万不得已创建新 ID
+            create_new_track(candidates[j], next_track_id_++);
+            candidate_used[j] = true;
         }
-
-
-
-        // 4.4：真的没法用，才新建 Track
-        Tracknew tr;
-        tr.id = next_track_id_++;
-        tr.x = candidates[j].x;
-        tr.P = candidates[j].P;
-        tr.confidence = candidates[j].w;
-        tr.missed_count = 0;
-        tr.active = true;
-
-        Eigen::Vector2f pos;
-        pos << tr.x(0), tr.x(2);
-        tr.position_history.push_back(pos);
-
-        tracks_.push_back(tr);
     }
 
-
-
-
-    // ===== 3. 关闭长期未匹配的 Track =====
-    // --- 修改点 5：使用迭代器进行物理删除 ---
+    // ===== 3. 生命周期管理 =====
     auto it = tracks_.begin();
     while (it != tracks_.end()) {
-        // 逻辑 1：标记失效
-        if (it->missed_count > MAX_MISSED) {
-            it->active = false;
-        }
-        
-        // 逻辑 2：彻底删除（解决 206 个轨迹的问题）
-        // 如果已经不活跃了，且丢了很久（比如 15 帧），就彻底删掉，释放 ID
-        if (!it->active && it->missed_count > 15) {
-            ROS_INFO("Deleting track ID %d to free memory", it->id);
-            it = tracks_.erase(it); // <--- 这行代码会让 tracks_.size() 降下来
-        } else {
-            ++it; // 只有没删除的时候才移动迭代器
-        }
+        if (it->missed_count > MAX_MISSED) it->active = false;
+        if (!it->active && it->missed_count > 15) it = tracks_.erase(it);
+        else ++it;
     }
 }
+
+// 辅助函数：更新轨迹数据
+void PhdFilter::update_track_data(Tracknew& tr, const Candidate& cand) {
+    Eigen::Vector2f current_pos = cand.x.head(2);
+    Eigen::Vector2f last_pos = tr.position_history.back();
+    Eigen::Vector2f current_vel = (current_pos - last_pos) / dt_cam;
+
+    tr.velocity_history.push_back(current_vel);
+    if (tr.velocity_history.size() > 10) tr.velocity_history.pop_front();
+
+    tr.position_history.push_back(current_pos);
+    if (tr.position_history.size() > 10) tr.position_history.pop_front();
+
+    tr.x = cand.x;
+    tr.P = cand.P;
+    tr.confidence = cand.w;
+    tr.missed_count = 0;
+}
+
+// 辅助函数：创建轨迹
+void PhdFilter::create_new_track(const Candidate& cand, int id) {
+    Tracknew tr;
+    tr.id = id;
+    tr.x = cand.x;
+    tr.P = cand.P;
+    tr.confidence = cand.w;
+    tr.active = true;
+    tr.missed_count = 0;
+    tr.position_history.push_back(cand.x.head(2));
+    tracks_.push_back(tr);
+}
+
+// static const float ASSOC_COST_TH = 50.5f;
+
+// /*cost =
+//     0.6 * pos_err +      当前位置误差
+//     0.3 * pred_err +     预测误差
+//     0.1 * (1 - vel_consistency);   0完全一致  1完全不一致12138
+// */
+// static const float ASSOC_DIST_TH = 20.0f;   // 距离阈值，后面可以调
+// static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+// //新增：更新tracks_轨迹的更新应该只出现在这一步
+// void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
+
+// {
+//     //打印 candidates 信息
+//     ROS_ERROR_STREAM("1111111111111111111111111111111111111111111111111");
+//     ROS_ERROR_STREAM("Number of candidates: " << candidates.size());
+//     for(int k = 0; k < candidates.size(); k++)
+//     {
+//         ROS_ERROR_STREAM("candidates[" << k << "].x is:\n" << candidates[k].x << "\n");
+//     }
+//     ROS_ERROR_STREAM("Number of existing tracks: " << tracks_.size());
+//     // candidate是新的候选，tracks_是已有的轨迹
+//     // 记录每个 candidate 是否已被使用 防止同一个 Candidate 被分给两个 Track
+//     std::vector<bool> candidate_used(candidates.size(), false);
+//     // 记录每个 track 是否已被使用 防止同一个 Track 被分给两个 Candidate
+//     std::vector<bool> track_used(tracks_.size(), false);
+
+//     // ===== 1. 老轨迹匹配 尝试用 candidate 更新已有 Track 标准的贪婪匹配逻辑，遍历所有活跃轨迹来寻找最佳匹配=====
+//     for (size_t i = 0; i < tracks_.size(); ++i) {
+
+//         auto& tr = tracks_[i];
+
+//         if (!tr.active)
+//             continue;
+
+//         if (tr.missed_count > OCCLUSION_THRESHOLD)
+//             continue;   //  关键：失去 ID 保护权
+
+//         float best_cost = 1e9f;
+//         int best_idx = -1;
+
+//         for (int j = 0; j < candidates.size(); ++j) {
+//             if (candidate_used[j])
+//                 continue;
+
+//             Eigen::Vector2f cand_pos;
+//             cand_pos << candidates[j].x(0), candidates[j].x(2);
+
+//             Eigen::Vector2f pred_pos = predict_position(tr);
+
+//             float pos_err = (cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2))).norm();
+
+//             float pred_err = (cand_pos - pred_pos).norm();
+
+//             Eigen::Vector2f cand_vel = Eigen::Vector2f::Zero();
+//             if (!tr.position_history.empty()) {
+//                 cand_vel = (cand_pos - tr.position_history.back()) / dt_cam;
+//             }
+
+//             float vel_consistency = calculate_velocity_consistency(tr, cand_vel);
+
+//             float cost =    0.6f * pos_err +
+//                             0.3f * pred_err +
+//                             0.1f * (1.0f - vel_consistency);
+
+//             if (cost < best_cost) {
+//                 best_cost = cost;
+//                 best_idx = j;
+//             }
+//         }
+//         ROS_ERROR_STREAM("Track " << tr.id << " best_idx=" << best_idx << " best_cost=" << best_cost);
+
+//         if (best_idx >= 0 && best_cost < ASSOC_COST_TH) {
+
+//             Eigen::Vector2f pos;
+//             pos << candidates[best_idx].x(0), candidates[best_idx].x(2);
+
+//             if (!tr.position_history.empty()) {
+//                 Eigen::Vector2f vel = (pos - tr.position_history.back()) / dt_cam;
+
+//                 tr.velocity_history.push_back(vel);
+//                 if (tr.velocity_history.size() > HISTORY_SIZE)
+//                     tr.velocity_history.pop_front();
+//             }
+
+//             tr.position_history.push_back(pos);
+//             if (tr.position_history.size() > HISTORY_SIZE)
+//                 tr.position_history.pop_front();
+
+//             tr.x = candidates[best_idx].x;
+//             tr.P = candidates[best_idx].P;
+//             tr.confidence = candidates[best_idx].w;
+//             tr.missed_count = 0;
+
+//             candidate_used[best_idx] = true; // 标记这个 candidate 已被使用
+//             track_used[i] = true;  //一个 Track 一帧只能“被续命一次”
+//         } 
+//         else {
+//             // 没匹配上
+//             tr.missed_count++; 
+//         }
+//     }
+
+//     // ===== 2. 新轨迹创建 为未使用的 candidate 创建新 Track 创建新ID=====
+//     for (int j = 0; j < candidates.size(); ++j) {
+//         if (candidate_used[j]) continue;
+
+//         // 寻找一个当前没有被任何 active 轨迹占用的 ID (0 到 NUM_DRONES-1)
+//         int free_id = -1;
+//         for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
+//             bool id_occupied = false;              
+//             for (const auto& tr : tracks_) {
+//                 if (tr.active && tr.id == id_search) {
+//                     id_occupied = true;
+//                     break;
+//                 }
+//             }
+//             if (!id_occupied) {
+//                 free_id = id_search;
+//                 break;
+//             }
+//         }
+
+//         // 如果找到了空闲 ID，就用这个 ID 创建新轨迹
+//         if (free_id != -1) {
+//             Tracknew tr;
+//             tr.id = free_id; // 使用找到的 0~9 之间的空闲 ID
+//             tr.x = candidates[j].x;
+//             tr.P = candidates[j].P;
+//             tr.confidence = candidates[j].w;
+//             tr.missed_count = 0;
+//             tr.active = true; 
+//             Eigen::Vector2f pos;                   
+//             pos << tr.x(0), tr.x(2);
+//             tr.position_history.push_back(pos);
+            
+//             tracks_.push_back(tr);
+//             ROS_INFO("New Target! Assigned ID: %d", tr.id);
+//             candidate_used[j] = true; // 标记这个 candidate 已被使用
+//             continue; // 继续处理下一个 candidate
+//         }
+
+//         bool assigned = false;
+
+//         // 4.3：尝试复活失效 Track
+//         for (size_t i = 0; i < tracks_.size(); ++i) {
+
+//             auto& tr = tracks_[i];
+
+//             if (tr.active)
+//                 continue;
+
+//             float dist = (tr.x.head(2) - candidates[j].x.head(2)).norm();
+
+//             if (dist < ASSOC_DIST_TH) {
+
+//                 tr.x = candidates[j].x;
+//                 tr.P = candidates[j].P;
+//                 tr.confidence = candidates[j].w;
+//                 tr.missed_count = 0;
+//                 tr.active = true;
+
+//                 assigned = true;
+//                 break;
+//             }
+//         }
+
+//         if (assigned){
+//             candidate_used[j] = true;
+//             continue;
+//         }
+
+
+
+//         // 4.4：真的没法用，才新建 Track
+//         Tracknew tr;
+//         tr.id = next_track_id_++;
+//         tr.x = candidates[j].x;
+//         tr.P = candidates[j].P;
+//         tr.confidence = candidates[j].w;
+//         tr.missed_count = 0;
+//         tr.active = true;
+
+//         Eigen::Vector2f pos;
+//         pos << tr.x(0), tr.x(2);
+//         tr.position_history.push_back(pos);
+
+//         tracks_.push_back(tr);
+//     }
+
+
+
+
+//     // ===== 3. 关闭长期未匹配的 Track =====
+//     // --- 修改点 5：使用迭代器进行物理删除 ---
+//     auto it = tracks_.begin();
+//     while (it != tracks_.end()) {
+//         // 逻辑 1：标记失效
+//         if (it->missed_count > MAX_MISSED) {
+//             it->active = false;
+//         }
+        
+//         // 逻辑 2：彻底删除（解决 206 个轨迹的问题）
+//         // 如果已经不活跃了，且丢了很久（比如 15 帧），就彻底删掉，释放 ID
+//         if (!it->active && it->missed_count > 15) {
+//             ROS_INFO("Deleting track ID %d to free memory", it->id);
+//             it = tracks_.erase(it); // <--- 这行代码会让 tracks_.size() 降下来
+//         } else {
+//             ++it; // 只有没删除的时候才移动迭代器
+//         }
+//     }
+// }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 // void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 

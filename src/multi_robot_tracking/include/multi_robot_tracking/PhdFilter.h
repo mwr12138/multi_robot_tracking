@@ -77,6 +77,8 @@ class PhdFilter
 
 //新增、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\、0104新增
   void updateTracks(const std::vector<Candidate>& candidates);
+  void update_track_data(Tracknew& tr, const Candidate& cand);
+  void create_new_track(const Candidate& cand, int id);//创建新轨迹
   Eigen::Vector2f predict_position(const Tracknew& tr) const;//新 基于历史位置预测当前位置
   float calculate_velocity_consistency(const Tracknew& tr, const Eigen::Vector2f& candidate_velocity) const; //新 计算速度连续性得分
 
