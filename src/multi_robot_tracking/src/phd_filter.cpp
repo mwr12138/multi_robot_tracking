@@ -14,197 +14,446 @@ PhdFilter::PhdFilter()
 {
     
 }
+// ==========================================
+// 放在 phd_filter.cpp 的 updateTracks 函数上方
+// ==========================================
 
+// 权重参数 (根据实际情况微调)
 static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
-// 定义一个结构体来存储潜在的配对
-struct AssociationPair {
+// ==========================================
+// 参数调整区 (针对 224x224 坐标系优化)
+// ==========================================
+
+// 权重：刚开始跟丢通常是因为方向/速度惩罚太重，我们先调低它们
+static const float W_DIST = 0.8f;       // 距离权重 (主力)
+static const float W_DIR  = 0.1f;       // 方向权重 (辅助)
+static const float W_VEL  = 0.1f;       // 速度大小权重 (辅助)
+
+// 阈值：关键修改点！
+static const float GATE_DIST_BASE = 400.0f; // 搜索半径加大，防止跟丢
+static const float DUPLICATE_DIST = 20.0f; // 【关键】互斥半径加大！224像素下，20像素内视为同一个目标
+static const float NEW_TRACK_TH   = 0.3f;  // 新生目标权重门限
+static const float MERGE_CAND_DIST = 15.0f; // 【新增】候选点合并距离
+
+struct MatchPair {
     int track_idx;
     int cand_idx;
     float cost;
-    
-    // 重载 < 运算符，用于排序
-    bool operator<(const AssociationPair& other) const {
-        return cost < other.cost;
-    }
+    bool operator<(const MatchPair& other) const { return cost < other.cost; }
 };
 
-void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
+void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates) 
 {
-    // ==========================================
-    // 1. 计算代价矩阵 (Cost Matrix Calculation)
-    // ==========================================
+    // --- 0. 初始化 ---
+    if (tracks_.size() != NUM_DRONES) {
+        tracks_.resize(NUM_DRONES);
+        for(int i=0; i<NUM_DRONES; ++i) { 
+            tracks_[i].id = i; tracks_[i].active = false; 
+            tracks_[i].missed_count = 999; tracks_[i].velocity = Eigen::Vector2f::Zero();
+        }
+    }
+
+    // --- 1. 候选点预处理 (合并双黄蛋) ---
+    // PHD滤波器有时会对一个强目标输出2个靠得很近的点，必须先合并，否则必定导致多ID
+    std::vector<Candidate> candidates = raw_candidates; // 拷贝一份
+    std::vector<bool> skip_cand(candidates.size(), false);
     
-    // 存储所有可能的配对 (只要在半径内，都算潜在配对)
-    std::vector<AssociationPair> all_associations;
+    // 简单的合并逻辑：如果两个候选点太近，保留权重大的，把小的标记为无效
+    for(int i=0; i<candidates.size(); ++i) {
+        if(skip_cand[i]) continue;
+        for(int j=i+1; j<candidates.size(); ++j) {
+            if(skip_cand[j]) continue;
+            Eigen::Vector2f p1; p1 << candidates[i].x(0), candidates[i].x(2);
+            Eigen::Vector2f p2; p2 << candidates[j].x(0), candidates[j].x(2);
+            
+            if((p1 - p2).norm() < MERGE_CAND_DIST) {
+                // 距离过近，视为同一个目标的抖动
+                // 保留权重大的
+                if(candidates[i].w >= candidates[j].w) {
+                    skip_cand[j] = true;
+                } else {
+                    skip_cand[i] = true;
+                    break; // i 已经被废了，跳出内层
+                }
+            }
+        }
+    }
 
-    // 动态权重 (最近一帧权重最大)
-    const float W_DIR[5] = {0.40f, 0.25f, 0.15f, 0.10f, 0.10f};
+    // --- 2. 内部去重 (Track Self-Collision) ---
+    // 防止两个 ID 粘在一起
+    for (int i = 0; i < NUM_DRONES; ++i) {
+        if (!tracks_[i].active) continue;
+        for (int j = i + 1; j < NUM_DRONES; ++j) {
+            if (!tracks_[j].active) continue;
+            Eigen::Vector2f p1; p1 << tracks_[i].x(0), tracks_[i].x(2);
+            Eigen::Vector2f p2; p2 << tracks_[j].x(0), tracks_[j].x(2);
+            
+            if ((p1 - p2).norm() < DUPLICATE_DIST) {
+                ROS_WARN("ID Collision! %d and %d merged.", i, j);
+                // 谁的历史长保留谁，或者保留 ID 小的
+                tracks_[j].active = false; 
+                tracks_[j].missed_count = 999; 
+            }
+        }
+    }
 
-    for (size_t i = 0; i < tracks_.size(); ++i) {
+    std::vector<bool> candidate_used(candidates.size(), false);
+    std::vector<bool> track_matched(NUM_DRONES, false);
+    std::vector<MatchPair> all_matches;
+
+    // --- 3. 构建代价矩阵 (Cost Matrix) ---
+    for (int i = 0; i < NUM_DRONES; ++i) {
         auto& tr = tracks_[i];
         if (!tr.active) continue;
 
-        // --- 确定搜索半径 ---
-        float search_radius = 40.0f; 
-        if (tr.position_history.size() >= 2) {
-             float last_step = (tr.position_history.back() - tr.position_history[tr.position_history.size()-2]).norm();
-             search_radius = std::max(last_step * 2.0f, 40.0f); 
-        }
+        // 运动预测
+        Eigen::Vector2f cur_pos; cur_pos << tr.x(0), tr.x(2);
+        Eigen::Vector2f pred_pos = cur_pos + tr.velocity * dt_cam;
+        float search_radius = GATE_DIST_BASE + tr.velocity.norm() * dt_cam * 2.0f; // 扩大搜索范围
 
-        // --- 遍历所有候选点，计算 Cost ---
         for (int j = 0; j < candidates.size(); ++j) {
+            if (skip_cand[j]) continue; // 跳过被合并掉的候选点
             
-            // 1. 距离门控 (Gating)
-            float dist = (candidates[j].x.head(2) - tr.x.head(2)).norm();
-            if (dist > search_radius) continue; // 太远了，根本没资格竞争
+            Eigen::Vector2f cand_pos; cand_pos << candidates[j].x(0), candidates[j].x(2);
+            float dist_err = (cand_pos - pred_pos).norm();
 
-            // 2. 计算综合代价 (Cost)
-            float score = dist; // 基础分是距离
+            if (dist_err > search_radius) continue; 
 
-            // 3. 加上行为/方向惩罚 (竞争的核心判据)
-            // 如果两个轨迹离该点距离差不多，谁的方向更顺，谁的 Cost 就更低
-            if (tr.velocity_history.size() >= 3) {
-                Eigen::Vector2f v_obs = (candidates[j].x.head(2) - tr.position_history.back()) / dt_cam;
-                float v_obs_norm = v_obs.norm();
-                
-                // 计算加权方向一致性
-                float weighted_cos = 0.0f;
-                float total_w = 0.0f;
-                int hist_idx = 0;
-                // 反向遍历历史速度
-                for(auto it = tr.velocity_history.rbegin(); it != tr.velocity_history.rend() && hist_idx < 5; ++it, ++hist_idx){
-                     if(it->norm() > 0.1f) {
-                        weighted_cos += W_DIR[hist_idx] * (v_obs.dot(*it) / (v_obs_norm * it->norm() + 1e-5f));
-                        total_w += W_DIR[hist_idx];
-                     }
+            // 代价计算
+            float c_dist = dist_err;
+            float c_dir = 0.0f;
+            float c_vel = 0.0f;
+
+            // 【关键修改】：只有当轨迹稳定（历史数据>5帧）才启用高级特征
+            // 否则只用距离匹配。这能解决“起步阶段跟丢”的问题。
+            if (tr.position_history.size() > 5) {
+                Eigen::Vector2f cand_vel_est = (cand_pos - cur_pos) / dt_cam;
+                float v_tr = tr.velocity.norm();
+                float v_ca = cand_vel_est.norm();
+                if (v_tr > 0.1f && v_ca > 0.1f) {
+                    float cos_theta = tr.velocity.dot(cand_vel_est) / (v_tr * v_ca);
+                    c_dir = 1.0f - cos_theta; 
                 }
-
-                if (total_w > 0.0f) {
-                    float avg_cos = weighted_cos / total_w; 
-                    // 如果方向不一致 (avg_cos < 0.5)，增加罚分
-                    // 这就是解决“竞争”的关键：谁方向对，谁罚分少
-                    if (avg_cos < 0.5f) {
-                        score += (1.0f - avg_cos) * 30.0f; 
-                    }
-                }
+                c_vel = std::abs(v_tr - v_ca);
             }
 
-            // 将这对组合加入候选池
-            // 阈值设宽一点 (比如 80)，让所有可能的组合都进来参与排序
-            if (score < 80.0f) {
-                all_associations.push_back({(int)i, j, score});
-            }
+            float total_cost = (W_DIST * c_dist) + (W_DIR * c_dir * 20.0f) + (W_VEL * c_vel);
+            
+            MatchPair mp; mp.track_idx = i; mp.cand_idx = j; mp.cost = total_cost;
+            all_matches.push_back(mp);
         }
     }
 
-    // ==========================================
-    // 2. 全局排序与分配 (Global Assignment)
-    // ==========================================
+    // --- 4. 全局分配 ---
+    std::sort(all_matches.begin(), all_matches.end());
+    for (const auto& mp : all_matches) {
+        if (!track_matched[mp.track_idx] && !candidate_used[mp.cand_idx]) {
+            auto& tr = tracks_[mp.track_idx];
+            int cid = mp.cand_idx;
 
-    // 关键一步：按 Cost 从小到大排序
-    // 这解决了局部最优问题。全场最好的匹配会排在第一个。
-    std::sort(all_associations.begin(), all_associations.end());
+            // 计算瞬时速度
+            Eigen::Vector2f new_pos; new_pos << candidates[cid].x(0), candidates[cid].x(2);
+            Eigen::Vector2f old_pos; old_pos << tr.x(0), tr.x(2);
+            Eigen::Vector2f instant_vel = (new_pos - old_pos) / dt_cam;
 
-    std::vector<bool> track_matched(tracks_.size(), false);
-    std::vector<bool> candidate_used(candidates.size(), false);
-
-    for (const auto& assoc : all_associations) {
-        int t_idx = assoc.track_idx;
-        int c_idx = assoc.cand_idx;
-
-        // 如果这个 Track 还没配对，且这个 Candidate 也没被用过
-        if (!track_matched[t_idx] && !candidate_used[c_idx]) {
+            // 更新
+            tr.x = candidates[cid].x;
+            tr.P = candidates[cid].P;
+            tr.confidence = candidates[cid].w;
+            tr.missed_count = 0;
             
-            // === 配对成功 ===
-            update_track_data(tracks_[t_idx], candidates[c_idx]);
-            
-            track_matched[t_idx] = true;
-            candidate_used[c_idx] = true;
-            
-            // ROS_INFO("Global Match: Track %d <-> Cand %d (Cost: %.1f)", tracks_[t_idx].id, c_idx, assoc.cost);
-        }
-        // 如果 else：说明这个 Candidate 已经被一个 Cost 更低的 Track 抢走了
-        // 或者这个 Track 已经找到了一个 Cost 更低的 Candidate
-        // 这种情况下，自动跳过，寻找下一个最优解
-    }
+            // 速度平滑更新
+            if(tr.velocity.norm() == 0) tr.velocity = instant_vel;
+            else tr.velocity = 0.5f * instant_vel + 0.5f * tr.velocity;
 
-    // 处理没抢到点的 Track (Missed)
-    for (size_t i = 0; i < tracks_.size(); ++i) {
-        if (tracks_[i].active && !track_matched[i]) {
-            tracks_[i].missed_count++;
+            tr.position_history.push_back(new_pos);
+            if (tr.position_history.size() > HISTORY_SIZE) tr.position_history.pop_front();
+
+            track_matched[mp.track_idx] = true;
+            candidate_used[cid] = true;
         }
     }
 
-    // ==========================================
-    // 3. 复活逻辑 (Revival) - 针对不活跃轨迹
-    // ==========================================
+    // 未匹配的增加丢失计数
+    for (int i = 0; i < NUM_DRONES; ++i) {
+        if (tracks_[i].active && !track_matched[i]) tracks_[i].missed_count++;
+    }
+
+    // --- 5. 复活逻辑 (Revival) ---
     for (int j = 0; j < candidates.size(); ++j) {
-        if (candidate_used[j]) continue;
+        if (candidate_used[j] || skip_cand[j]) continue;
+        Eigen::Vector2f cand_pos; cand_pos << candidates[j].x(0), candidates[j].x(2);
 
-        for (auto& tr : tracks_) {
-            if (tr.active) continue; 
-            
-            // 复活要求距离很近，且没有被人用过
-            float dist = (tr.x.head(2) - candidates[j].x.head(2)).norm();
-            if (dist < 30.0f) {
-                update_track_data(tr, candidates[j]);
-                tr.active = true;
-                candidate_used[j] = true;
-                break; 
+        // 互斥：复活点周围不能有活着的 ID (20像素)
+        bool overlap = false;
+        for(int k=0; k<NUM_DRONES; ++k) {
+            if(tracks_[k].active) {
+                Eigen::Vector2f tp; tp << tracks_[k].x(0), tracks_[k].x(2);
+                if((cand_pos - tp).norm() < DUPLICATE_DIST) { overlap = true; break; }
             }
         }
+        if(overlap) continue;
+
+        int best_id = -1; 
+        float min_d = 1e9f;
+        for(int i=0; i<NUM_DRONES; ++i) {
+            if(!tracks_[i].active && tracks_[i].missed_count < 30 && !tracks_[i].position_history.empty()) {
+                float d = (cand_pos - tracks_[i].position_history.back()).norm();
+                if(d < GATE_DIST_BASE * 1.5f && d < min_d) { min_d = d; best_id = i; }
+            }
+        }
+
+        if(best_id != -1) {
+            auto& tr = tracks_[best_id];
+            tr.active = true; tr.missed_count = 0;
+            tr.x = candidates[j].x; tr.P = candidates[j].P; tr.confidence = candidates[j].w;
+            Eigen::Vector2f p; p << tr.x(0), tr.x(2);
+            tr.position_history.push_back(p);
+            candidate_used[j] = true;
+        }
     }
 
-    // ==========================================
-    // 4. 新轨迹创建 (严进原则)
-    // ==========================================
+    // --- 6. 新生逻辑 (Birth) ---
     for (int j = 0; j < candidates.size(); ++j) {
-        if (candidate_used[j]) continue;
+        if (candidate_used[j] || skip_cand[j]) continue;
+        if (candidates[j].w < NEW_TRACK_TH) continue;
 
-        // 权重门槛
-        if (candidates[j].w < 0.85f) continue;
-
-        // 重影/幽灵点抑制 (Ghost Suppression)
-        // 即使没匹配上，如果离现有轨迹太近，也不要开新号，认为它是噪声
-        bool is_ghost = false;
-        for (const auto& tr : tracks_) {
-            float dist = (tr.x.head(2) - candidates[j].x.head(2)).norm();
-            if (dist < 40.0f) { is_ghost = true; break; }
+        Eigen::Vector2f cand_pos; cand_pos << candidates[j].x(0), candidates[j].x(2);
+        
+        // 互斥：绝不在现有 ID 旁边生孩子
+        bool overlap = false;
+        for(int k=0; k<NUM_DRONES; ++k) {
+            if(tracks_[k].active) {
+                Eigen::Vector2f tp; tp << tracks_[k].x(0), tracks_[k].x(2);
+                if((cand_pos - tp).norm() < DUPLICATE_DIST) { overlap = true; break; }
+            }
         }
-        if (is_ghost) continue;
+        if(overlap) continue;
 
-        // 创建逻辑
-        int free_id = -1;
-        for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
-            bool occupied = false;
-            for (const auto& t : tracks_) if (t.active && t.id == id_search) { occupied = true; break; }
-            if (!occupied) { free_id = id_search; break; }
+        int free_id = -1; int max_m = -1;
+        for(int i=0; i<NUM_DRONES; ++i) {
+            if(!tracks_[i].active && tracks_[i].missed_count > max_m) {
+                max_m = tracks_[i].missed_count; free_id = i;
+            }
         }
 
-        if (free_id != -1) {
-            create_new_track(candidates[j], free_id);
-        } else if (candidates[j].w > 0.95f) { // 必须非常确信才开临时号
-            create_new_track(candidates[j], next_track_id_++);
+        if(free_id != -1) {
+            auto& tr = tracks_[free_id];
+            tr.active = true; tr.id = free_id;
+            tr.x = candidates[j].x; tr.P = candidates[j].P; tr.confidence = candidates[j].w;
+            tr.missed_count = 0; tr.velocity = Eigen::Vector2f::Zero();
+            tr.position_history.clear(); tr.velocity_history.clear();
+            Eigen::Vector2f p; p << tr.x(0), tr.x(2);
+            tr.position_history.push_back(p);
+            candidate_used[j] = true;
         }
     }
 
-    // ==========================================
-    // 5. 清理逻辑
-    // ==========================================
-    auto it = tracks_.begin();
-    while (it != tracks_.end()) {
-        if (it->missed_count > 5) it->active = false;
-        
-        // 临时 ID 删得快，固定 ID 留得久
-        int del_th = (it->id >= NUM_DRONES) ? 2 : 20;
-        
-        if (!it->active && it->missed_count > del_th) {
-            it = tracks_.erase(it);
-        } else {
-            ++it;
-        }
+    // --- 7. 清理 ---
+    for (int i = 0; i < NUM_DRONES; ++i) {
+        if (tracks_[i].active && tracks_[i].missed_count > MAX_MISSED) tracks_[i].active = false;
     }
 }
+void PhdFilter::initTracks() {
+    tracks_.clear();
+    tracks_.resize(NUM_DRONES); // 直接开辟好固定大小
+    for(int i=0; i<NUM_DRONES; ++i) {
+        tracks_[i].id = i;        // ID 永远等于索引
+        tracks_[i].active = false;
+        tracks_[i].missed_count = 999; // 初始状态为空
+    }
+}
+
+// static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
+// // 定义一个结构体来存储潜在的配对
+// struct AssociationPair {
+//     int track_idx;
+//     int cand_idx;
+//     float cost;
+    
+//     // 重载 < 运算符，用于排序
+//     bool operator<(const AssociationPair& other) const {
+//         return cost < other.cost;
+//     }
+// };
+
+// void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
+// {
+//     // ==========================================
+//     // 1. 计算代价矩阵 (Cost Matrix Calculation)
+//     // ==========================================
+    
+//     // 存储所有可能的配对 (只要在半径内，都算潜在配对)
+//     std::vector<AssociationPair> all_associations;
+
+//     // 动态权重 (最近一帧权重最大)
+//     const float W_DIR[5] = {0.40f, 0.25f, 0.15f, 0.10f, 0.10f};
+
+//     for (size_t i = 0; i < tracks_.size(); ++i) {
+//         auto& tr = tracks_[i];
+//         if (!tr.active) continue;
+
+//         // --- 确定搜索半径 ---
+//         float search_radius = 40.0f; 
+//         if (tr.position_history.size() >= 2) {
+//              float last_step = (tr.position_history.back() - tr.position_history[tr.position_history.size()-2]).norm();
+//              search_radius = std::max(last_step * 2.0f, 40.0f); 
+//         }
+
+//         // --- 遍历所有候选点，计算 Cost ---
+//         for (int j = 0; j < candidates.size(); ++j) {
+            
+//             // 1. 距离门控 (Gating)
+//             float dist = (candidates[j].x.head(2) - tr.x.head(2)).norm();
+//             if (dist > search_radius) continue; // 太远了，根本没资格竞争
+
+//             // 2. 计算综合代价 (Cost)
+//             float score = dist; // 基础分是距离
+
+//             // 3. 加上行为/方向惩罚 (竞争的核心判据)
+//             // 如果两个轨迹离该点距离差不多，谁的方向更顺，谁的 Cost 就更低
+//             if (tr.velocity_history.size() >= 3) {
+//                 Eigen::Vector2f v_obs = (candidates[j].x.head(2) - tr.position_history.back()) / dt_cam;
+//                 float v_obs_norm = v_obs.norm();
+                
+//                 // 计算加权方向一致性
+//                 float weighted_cos = 0.0f;
+//                 float total_w = 0.0f;
+//                 int hist_idx = 0;
+//                 // 反向遍历历史速度
+//                 for(auto it = tr.velocity_history.rbegin(); it != tr.velocity_history.rend() && hist_idx < 5; ++it, ++hist_idx){
+//                      if(it->norm() > 0.1f) {
+//                         weighted_cos += W_DIR[hist_idx] * (v_obs.dot(*it) / (v_obs_norm * it->norm() + 1e-5f));
+//                         total_w += W_DIR[hist_idx];
+//                      }
+//                 }
+
+//                 if (total_w > 0.0f) {
+//                     float avg_cos = weighted_cos / total_w; 
+//                     // 如果方向不一致 (avg_cos < 0.5)，增加罚分
+//                     // 这就是解决“竞争”的关键：谁方向对，谁罚分少
+//                     if (avg_cos < 0.5f) {
+//                         score += (1.0f - avg_cos) * 30.0f; 
+//                     }
+//                 }
+//             }
+
+//             // 将这对组合加入候选池
+//             // 阈值设宽一点 (比如 80)，让所有可能的组合都进来参与排序
+//             if (score < 80.0f) {
+//                 all_associations.push_back({(int)i, j, score});
+//             }
+//         }
+//     }
+
+//     // ==========================================
+//     // 2. 全局排序与分配 (Global Assignment)
+//     // ==========================================
+
+//     // 关键一步：按 Cost 从小到大排序
+//     // 这解决了局部最优问题。全场最好的匹配会排在第一个。
+//     std::sort(all_associations.begin(), all_associations.end());
+
+//     std::vector<bool> track_matched(tracks_.size(), false);
+//     std::vector<bool> candidate_used(candidates.size(), false);
+
+//     for (const auto& assoc : all_associations) {
+//         int t_idx = assoc.track_idx;
+//         int c_idx = assoc.cand_idx;
+
+//         // 如果这个 Track 还没配对，且这个 Candidate 也没被用过
+//         if (!track_matched[t_idx] && !candidate_used[c_idx]) {
+            
+//             // === 配对成功 ===
+//             update_track_data(tracks_[t_idx], candidates[c_idx]);
+            
+//             track_matched[t_idx] = true;
+//             candidate_used[c_idx] = true;
+            
+//             // ROS_INFO("Global Match: Track %d <-> Cand %d (Cost: %.1f)", tracks_[t_idx].id, c_idx, assoc.cost);
+//         }
+//         // 如果 else：说明这个 Candidate 已经被一个 Cost 更低的 Track 抢走了
+//         // 或者这个 Track 已经找到了一个 Cost 更低的 Candidate
+//         // 这种情况下，自动跳过，寻找下一个最优解
+//     }
+
+//     // 处理没抢到点的 Track (Missed)
+//     for (size_t i = 0; i < tracks_.size(); ++i) {
+//         if (tracks_[i].active && !track_matched[i]) {
+//             tracks_[i].missed_count++;
+//         }
+//     }
+
+//     // ==========================================
+//     // 3. 复活逻辑 (Revival) - 针对不活跃轨迹
+//     // ==========================================
+//     for (int j = 0; j < candidates.size(); ++j) {
+//         if (candidate_used[j]) continue;
+
+//         for (auto& tr : tracks_) {
+//             if (tr.active) continue; 
+            
+//             // 复活要求距离很近，且没有被人用过
+//             float dist = (tr.x.head(2) - candidates[j].x.head(2)).norm();
+//             if (dist < 30.0f) {
+//                 update_track_data(tr, candidates[j]);
+//                 tr.active = true;
+//                 candidate_used[j] = true;
+//                 break; 
+//             }
+//         }
+//     }
+
+//     // ==========================================
+//     // 4. 新轨迹创建 (严进原则)
+//     // ==========================================
+//     for (int j = 0; j < candidates.size(); ++j) {
+//         if (candidate_used[j]) continue;
+
+//         // 权重门槛
+//         if (candidates[j].w < 0.85f) continue;
+
+//         // 重影/幽灵点抑制 (Ghost Suppression)
+//         // 即使没匹配上，如果离现有轨迹太近，也不要开新号，认为它是噪声
+//         bool is_ghost = false;
+//         for (const auto& tr : tracks_) {
+//             float dist = (tr.x.head(2) - candidates[j].x.head(2)).norm();
+//             if (dist < 40.0f) { is_ghost = true; break; }
+//         }
+//         if (is_ghost) continue;
+
+//         // 创建逻辑
+//         int free_id = -1;
+//         for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
+//             bool occupied = false;
+//             for (const auto& t : tracks_) if (t.active && t.id == id_search) { occupied = true; break; }
+//             if (!occupied) { free_id = id_search; break; }
+//         }
+
+//         if (free_id != -1) {
+//             create_new_track(candidates[j], free_id);
+//         } else if (candidates[j].w > 0.95f) { // 必须非常确信才开临时号
+//             create_new_track(candidates[j], next_track_id_++);
+//         }
+//     }
+
+//     // ==========================================
+//     // 5. 清理逻辑
+//     // ==========================================
+//     auto it = tracks_.begin();
+//     while (it != tracks_.end()) {
+//         if (it->missed_count > 5) it->active = false;
+        
+//         // 临时 ID 删得快，固定 ID 留得久
+//         int del_th = (it->id >= NUM_DRONES) ? 2 : 20;
+        
+//         if (!it->active && it->missed_count > del_th) {
+//             it = tracks_.erase(it);
+//         } else {
+//             ++it;
+//         }
+//     }
+// }
 
 // 辅助函数：更新轨迹数据
 void PhdFilter::update_track_data(Tracknew& tr, const Candidate& cand) {
@@ -757,6 +1006,7 @@ void PhdFilter::initialize_matrix(float cam_cu, float cam_cv, float cam_f, float
     f = cam_f;   //焦距
     dt = 0.01;
     initialize_velocity_history();
+    initTracks();
 }
 
 void PhdFilter::set_num_drones(int num_drones_in)  //设置无人机数量

@@ -37,6 +37,7 @@ struct Tracknew {
 
     std::deque<Eigen::Vector2f> position_history;  // 位置历史
     std::deque<Eigen::Vector2f> velocity_history;  // 速度历史
+    Eigen::Vector2f velocity; //当前帧的卡尔曼/预测计算
 };
 
 //从PHD到track的候选结构体
@@ -82,6 +83,8 @@ class PhdFilter
   Eigen::Vector2f predict_position(const Tracknew& tr) const;//新 基于历史位置预测当前位置
   float calculate_velocity_consistency(const Tracknew& tr, const Eigen::Vector2f& candidate_velocity) const; //新 计算速度连续性得分
   void update_track_data_directional(Tracknew& tr, const Candidate& cand);
+  // 在 PhdFilter.h 或初始化函数中
+  void initTracks();
 
 //新增、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、、\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\0104新增
 

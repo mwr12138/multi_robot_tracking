@@ -951,7 +951,7 @@ void multi_robot_tracking_Nodelet::draw_image() {
         {
             //ROS_ERROR_STREAM("tr.confidence is: " << tr.confidence);
             // 只绘制活跃的、且置信度足够的目标
-            if(!tr.active || tr.confidence < 0.3f) continue;
+            if(!tr.active || tr.confidence < 0.1f) continue;
 
             int scaledX = floor((tr.x(0) + detection_offset_x) * scaleX);
             int scaledY = floor((tr.x(2) + detection_offset_y) * scaleY);
