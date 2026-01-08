@@ -192,12 +192,12 @@ class PhdFilter
   const int MIN_OCCLUDED_FRAMES = 3;  // 至少连续3帧权重低才视为空列
   bool is_occlusion_counter_init = false;  // 标记是否已初始化
   std::vector<Tracknew> tracks_; // 滤波器维护的所有轨迹的容器（包含活跃和非活跃的）
- 
+  std::vector<Candidate> candidates_;// 存储当前帧的候选跟踪
   private:
 
   //新增：存储所有有效跟踪
   
-  std::vector<Candidate> candidates_;// 存储当前帧的候选跟踪
+  
   int next_track_id_ = 0; // 下一个可用的跟踪ID
 
 

@@ -1027,7 +1027,27 @@ void multi_robot_tracking_Nodelet::draw_image() {
 
             line_idx++;
         }
+        // // ===============================
+        // // 绘制 Candidate（白色空心圆）
+        // // ===============================
+        // for (const auto& cand : phd_filter_.candidates_)
+        // {
+        //     int scaledX = floor((cand.x(0) + detection_offset_x) * scaleX);
+        //     int scaledY = floor((cand.x(1) + detection_offset_y) * scaleY);
 
+        //     if (scaledX > 0 && scaledX < input_image.cols &&
+        //         scaledY > 0 && scaledY < input_image.rows)
+        //     {
+        //         cv::circle(
+        //             input_image,
+        //             cv::Point2f(scaledX, scaledY),
+        //             30,                          // 半径
+        //             cv::Scalar(255, 255, 255),  // 白色
+        //             1,                          // 空心
+        //             cv::LINE_AA
+        //         );
+        //     }
+        // }
 
 
     }
