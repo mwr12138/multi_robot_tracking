@@ -68,7 +68,7 @@ class KalmanFilter
 
   //phd variables
 
-  float dt_cam = 0.125; //8hz
+  float dt_cam = 0.033; //0.125; //8hz
   float dt_imu = 0.01;  //100hz
 
   Eigen::MatrixXf mk_minus_1;

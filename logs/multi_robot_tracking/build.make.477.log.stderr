@@ -1,65 +1,3 @@
-[  0%] Built target geometry_msgs_generate_messages_cpp
-[  0%] Built target nav_msgs_generate_messages_py
-[  0%] Built target geometry_msgs_generate_messages_eus
-[  0%] Built target std_msgs_generate_messages_nodejs
-[  0%] Built target std_msgs_generate_messages_py
-[  0%] Built target nodelet_generate_messages_cpp
-[  0%] Built target nodelet_generate_messages_eus
-[  0%] Built target nodelet_generate_messages_lisp
-[  0%] Built target nodelet_generate_messages_nodejs
-[  0%] Built target geometry_msgs_generate_messages_nodejs
-[  0%] Built target geometry_msgs_generate_messages_lisp
-[  0%] Built target std_msgs_generate_messages_cpp
-[  0%] Built target nodelet_generate_messages_py
-[  0%] Built target std_msgs_generate_messages_eus
-[  0%] Built target geometry_msgs_generate_messages_py
-[  0%] Built target bond_generate_messages_cpp
-[  0%] Built target bond_generate_messages_eus
-[  0%] Built target std_msgs_generate_messages_lisp
-[  0%] Built target bond_generate_messages_lisp
-[  0%] Built target bond_generate_messages_nodejs
-[  0%] Built target bond_generate_messages_py
-[  0%] Built target roscpp_generate_messages_cpp
-[  0%] Built target roscpp_generate_messages_eus
-[  0%] Built target roscpp_generate_messages_lisp
-[  0%] Built target roscpp_generate_messages_nodejs
-[  0%] Built target roscpp_generate_messages_py
-[  0%] Built target rosgraph_msgs_generate_messages_lisp
-[  0%] Built target rosgraph_msgs_generate_messages_eus
-[  0%] Built target tf_generate_messages_cpp
-[  0%] Built target rosgraph_msgs_generate_messages_nodejs
-[  0%] Built target rosgraph_msgs_generate_messages_cpp
-[  0%] Built target tf_generate_messages_lisp
-[  0%] Built target tf_generate_messages_nodejs
-[  0%] Built target tf_generate_messages_eus
-[  0%] Built target rosgraph_msgs_generate_messages_py
-[  0%] Built target sensor_msgs_generate_messages_lisp
-[  0%] Built target sensor_msgs_generate_messages_eus
-[  0%] Built target sensor_msgs_generate_messages_cpp
-[  0%] Built target tf_generate_messages_py
-[  0%] Built target sensor_msgs_generate_messages_nodejs
-[  0%] Built target sensor_msgs_generate_messages_py
-[  0%] Built target actionlib_generate_messages_lisp
-[  0%] Built target actionlib_generate_messages_cpp
-[  0%] Built target actionlib_generate_messages_py
-[  0%] Built target actionlib_generate_messages_nodejs
-[  0%] Built target actionlib_msgs_generate_messages_cpp
-[  0%] Built target actionlib_generate_messages_eus
-[  0%] Built target actionlib_msgs_generate_messages_eus
-[  0%] Built target actionlib_msgs_generate_messages_nodejs
-[  0%] Built target actionlib_msgs_generate_messages_py
-[  0%] Built target tf2_msgs_generate_messages_eus
-[  0%] Built target actionlib_msgs_generate_messages_lisp
-[  0%] Built target tf2_msgs_generate_messages_cpp
-[  0%] Built target tf2_msgs_generate_messages_lisp
-[  0%] Built target tf2_msgs_generate_messages_nodejs
-[  0%] Built target tf2_msgs_generate_messages_py
-[  0%] Built target nav_msgs_generate_messages_cpp
-[  0%] Built target nav_msgs_generate_messages_eus
-[  0%] Built target nav_msgs_generate_messages_lisp
-[  0%] Built target nav_msgs_generate_messages_nodejs
-[35m[1mConsolidate compiler generated dependencies of target multi_robot_tracking[0m
-[  9%] [32mBuilding CXX object CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o[0m
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
@@ -143,13 +81,50 @@
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
-[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:735:18:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #ifdef directive
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:578:18:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #ifdef directive
      #ifdef TIMING[01;35m[K�[m[K��
                   [01;35m[K^[m[K
-[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:737:12:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:580:12:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
      #endif [01;35m[KTIMING[m[K
             [01;35m[K^~~~~~[m[K
-[ 18%] [32m[1mLinking CXX shared library /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/libmulti_robot_tracking.so[0m
-[ 81%] Built target multi_robot_tracking
-[ 90%] [32m[1mLinking CXX executable /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/multi_robot_tracking/multi_robot_tracking_node[0m
-[100%] Built target multi_robot_tracking_node
+In file included from [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1[m[K:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:[m[K In member function ‘[01m[Kvoid PhdFilter::updateTracks(const std::vector<Candidate>&)[m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:111:31:[m[K [01;31m[Kerror: [m[K‘[01m[Kj[m[K’ was not declared in this scope
+     "NEW TRACK from cand " << [01;31m[Kj[m[K
+                               [01;31m[K^[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:361:64:[m[K [01;36m[Knote: [m[Kin definition of macro ‘[01m[KROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER[m[K’
+     __rosconsole_print_stream_at_location_with_filter__ss__ << [01;36m[Kargs[m[K; \
+                                                                [01;36m[K^~~~[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:409:7:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROSCONSOLE_PRINT_STREAM_AT_LOCATION[m[K’
+       [01;36m[KROSCONSOLE_PRINT_STREAM_AT_LOCATION[m[K(args); \
+       [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:582:43:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_LOG_STREAM_COND[m[K’
+ #define ROS_LOG_STREAM(level, name, args) [01;36m[KROS_LOG_STREAM_COND[m[K(true, level, name, args)
+                                           [01;36m[K^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/rosconsole/macros_generated.h:163:31:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_LOG_STREAM[m[K’
+ #define ROS_WARN_STREAM(args) [01;36m[KROS_LOG_STREAM[m[K(::ros::console::levels::Warn, ROSCONSOLE_DEFAULT_NAME, args)
+                               [01;36m[K^~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:110:5:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_WARN_STREAM[m[K’
+     [01;36m[KROS_WARN_STREAM[m[K(
+     [01;36m[K^~~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:111:31:[m[K [01;36m[Knote: [m[Ksuggested alternative: ‘[01m[Kjn[m[K’
+     "NEW TRACK from cand " << [01;36m[Kj[m[K
+                               [01;36m[K^[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:361:64:[m[K [01;36m[Knote: [m[Kin definition of macro ‘[01m[KROSCONSOLE_PRINT_STREAM_AT_LOCATION_WITH_FILTER[m[K’
+     __rosconsole_print_stream_at_location_with_filter__ss__ << [01;36m[Kargs[m[K; \
+                                                                [01;36m[K^~~~[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:409:7:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROSCONSOLE_PRINT_STREAM_AT_LOCATION[m[K’
+       [01;36m[KROSCONSOLE_PRINT_STREAM_AT_LOCATION[m[K(args); \
+       [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/ros/console.h:582:43:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_LOG_STREAM_COND[m[K’
+ #define ROS_LOG_STREAM(level, name, args) [01;36m[KROS_LOG_STREAM_COND[m[K(true, level, name, args)
+                                           [01;36m[K^~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/opt/ros/noetic/include/rosconsole/macros_generated.h:163:31:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_LOG_STREAM[m[K’
+ #define ROS_WARN_STREAM(args) [01;36m[KROS_LOG_STREAM[m[K(::ros::console::levels::Warn, ROSCONSOLE_DEFAULT_NAME, args)
+                               [01;36m[K^~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:110:5:[m[K [01;36m[Knote: [m[Kin expansion of macro ‘[01m[KROS_WARN_STREAM[m[K’
+     [01;36m[KROS_WARN_STREAM[m[K(
+     [01;36m[K^~~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:132：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:1949：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:146：all] 错误 2

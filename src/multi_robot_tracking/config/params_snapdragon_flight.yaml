@@ -20,8 +20,8 @@ camera_f: 287.4  #相机焦距
 
 dt: 0.225
   
-viz_detection_height: 378
-viz_detection_width: 863
+viz_detection_height: 1080
+viz_detection_width: 1920
 viz_detection_offset_x: 0
 viz_detection_offset_y: 0
 #630  1279  480 640

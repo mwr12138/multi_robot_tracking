@@ -15,126 +15,133 @@ PhdFilter::PhdFilter()
     
 }
 
-static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
-void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
-{
-    // 1. 记录使用情况
-    std::vector<bool> candidate_used(candidates.size(), false);
-    std::vector<bool> track_used(tracks_.size(), false);
+//static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
+// void PhdFilter::updateTracks(const std::vector<Candidate>& candidates) 
+// {
+//     // 1. 记录使用情况
+//     std::vector<bool> candidate_used(candidates.size(), false); //记录备选点是否被使用
+//     std::vector<bool> track_used(tracks_.size(), false); //记录轨迹是否被使用
 
-    // 权重定义：最近一帧权重最大 (w1 为最近)
-    const float W_DIR[5] = {0.40f, 0.25f, 0.15f, 0.10f, 0.10f};
+//     // 权重定义：最近一帧权重最大 (w1 为最近)
+//     const float W_DIR[5] = {0.40f, 0.25f, 0.15f, 0.10f, 0.10f}; //速度帧的权重系数
 
-    // ===== 1. 老轨迹匹配 (基于动态半径与加权方向) =====
-    for (size_t i = 0; i < tracks_.size(); ++i) {
-        auto& tr = tracks_[i];
-        if (!tr.active || tr.missed_count > OCCLUSION_THRESHOLD) continue;
+//     // ===== 1. 老轨迹匹配 (基于动态半径与加权方向) =====
+//     for (size_t i = 0; i < tracks_.size(); ++i) {   //遍历所有轨迹
+//         auto& tr = tracks_[i];
+//         if (!tr.active || tr.missed_count > OCCLUSION_THRESHOLD) continue;
 
-        // --- 第一步：计算动态搜索半径 R ---
-        float last_move = 0.0f;
-        if (tr.position_history.size() >= 2) {
-            last_move = (tr.position_history.back() - tr.position_history[tr.position_history.size()-2]).norm();
-        }
-        float R_limit = std::max(last_move * 1.5f, 20.0f); // 最小 20 像素
+//         // --- 第一步：计算动态搜索半径 R ---
+//         float last_move = 0.0f;
+//         if (tr.position_history.size() >= 2) {
+//             last_move = (tr.position_history.back() - tr.position_history[tr.position_history.size()-2]).norm(); // 最近一次移动距离
+//         }
+//         float R_limit = std::max(last_move * 1.5f, 20.0f); // 最小 20 像素
+//         ROS_ERROR_STREAM("Track " << i << ": last_move = " << last_move << ", R_limit = " << R_limit);
 
-        // 筛选半径内的候选点
-        std::vector<int> nearby_indices;
-        for (int j = 0; j < candidates.size(); ++j) {
-            if (candidate_used[j]) continue;
-            float d = (candidates[j].x.head(2) - tr.x.head(2)).norm(); // 简化距离计算，只看x,y
-            if (d < R_limit) nearby_indices.push_back(j);
-        }
+//         // 筛选半径内的候选点
+//         std::vector<int> nearby_indices;
+//         for (int j = 0; j < candidates.size(); ++j) {
+//             if (candidate_used[j]) continue;
+//             float d = (candidates[j].x.head(2) - tr.x.head(2)).norm(); // 简化距离计算，只看x,y
+//             if (d < R_limit) nearby_indices.push_back(j);
+//         }
 
-        if (nearby_indices.empty()) {
-            tr.missed_count++;
-            continue;
-        }
+//         if (nearby_indices.empty()) {
+//             tr.missed_count++;
+//             continue;
+//         }
 
-        // --- 第二步：在半径内进行方向辨别 ---
-        int best_idx = -1;
-        float min_total_cost = 1e9f;
+//         // --- 第二步：在半径内进行方向辨别 ---
+//         int best_idx = -1;
+//         float min_total_cost = 1e9f;
 
-        // 如果只有一个点，直接判定；多个点时根据辨别力系数 lambda 加强方向权重
-        float lambda = (nearby_indices.size() > 1) ? 0.7f : 0.3f; 
+//         // 如果只有一个点，直接判定；多个点时根据辨别力系数 lambda 加强方向权重
+//         float lambda = (nearby_indices.size() > 1) ? 0.7f : 0.3f; 
 
-        for (int idx : nearby_indices) {
-            const auto& cand = candidates[idx];
+//         for (int idx : nearby_indices) {
+//             const auto& cand = candidates[idx];
             
-            // 计算当前瞬时观测速度方向向量
-            Eigen::Vector2f v_obs = (cand.x.head(2) - tr.position_history.back()) / dt_cam;
-            float v_obs_norm = v_obs.norm();
+//             // 计算当前瞬时观测速度方向向量
+//             Eigen::Vector2f v_obs = (cand.x.head(2) - tr.position_history.back()) / dt_cam;
+//             float v_obs_norm = v_obs.norm();
 
-            // 计算加权方向得分 (余弦相似度)
-            float s_heading = 0.0f;
-            if (v_obs_norm > 1e-3f && !tr.velocity_history.empty()) {
-                int hist_size = tr.velocity_history.size();
-                for (int k = 0; k < std::min(hist_size, 5); ++k) {
-                    // velocity_history 是 back 为最新，使用反向迭代器
-                    auto it = tr.velocity_history.rbegin() + k;
-                    float cos_theta = v_obs.dot(*it) / (v_obs_norm * it->norm() + 1e-6f);
-                    s_heading += W_DIR[k] * cos_theta;
-                }
-            } else {
-                s_heading = 1.0f; // 如果没速度历史或静止，默认方向契合
-            }
+//             // 计算加权方向得分 (余弦相似度)
+//             float s_heading = 0.0f;
+//             if (v_obs_norm > 1e-3f && !tr.velocity_history.empty()) {
+//                 int hist_size = tr.velocity_history.size();
+//                 for (int k = 0; k < std::min(hist_size, 5); ++k) {
+//                     // velocity_history 是 back 为最新，使用反向迭代器
+//                     auto it = tr.velocity_history.rbegin() + k;
+//                     float cos_theta = v_obs.dot(*it) / (v_obs_norm * it->norm() + 1e-6f);
+//                     s_heading += W_DIR[k] * cos_theta;
+//                 }
+//             } else {
+//                 s_heading = 1.0f; // 如果没速度历史或静止，默认方向契合
+//             }
 
-            // 归一化距离代价 [0, 1]
-            float dist_cost = (cand.x.head(2) - tr.x.head(2)).norm() / R_limit;
-            // 方向代价 [0, 2] -> 归一化 [0, 1]
-            float heading_cost = (1.0f - s_heading) / 2.0f;
+//             // 归一化距离代价 [0, 1]
+//             float dist_cost = (cand.x.head(2) - tr.x.head(2)).norm() / R_limit;
+//             // 方向代价 [0, 2] -> 归一化 [0, 1]
+//             float heading_cost = (1.0f - s_heading) / 2.0f;
 
-            float total_cost = (1.0f - lambda) * dist_cost + lambda * heading_cost;
+//             float total_cost = (1.0f - lambda) * dist_cost + lambda * heading_cost;
 
-            if (total_cost < min_total_cost) {
-                min_total_cost = total_cost;
-                best_idx = idx;
-            }
-        }
+//             if (total_cost < min_total_cost) {
+//                 min_total_cost = total_cost;
+//                 best_idx = idx;
+//             }
+//         }
 
-        // 最终匹配判别 (如果方向完全反了 s_heading < 0，则拒绝匹配)
-    //     ROS_ERROR_STREAM("Track " << tr.id
-    // << " cost=" << min_total_cost
-    // << " miss=" << tr.missed_count);
+//         // 最终匹配判别 (如果方向完全反了 s_heading < 0，则拒绝匹配)
+//     //     ROS_ERROR_STREAM("Track " << tr.id
+//     // << " cost=" << min_total_cost
+//     // << " miss=" << tr.missed_count);
 
-        if (best_idx != -1 && min_total_cost < 0.8f) { // 阈值 0.8 防止极端不匹配
-            update_track_data(tr, candidates[best_idx]);
-            candidate_used[best_idx] = true;
-            track_used[i] = true;
-        } else {
-            tr.missed_count++;
-        }
-    }
+//         if (best_idx != -1 && min_total_cost < 0.8f) { // 阈值 0.8 防止极端不匹配
+//             update_track_data(tr, candidates[best_idx]);
+//             candidate_used[best_idx] = true;
+//             track_used[i] = true;
+//         } else {
+//             tr.missed_count++;
+//         }
+//     }
 
-    // ===== 2. 新轨迹创建 & 复活 =====
-    for (int j = 0; j < candidates.size(); ++j) {
-        if (candidate_used[j] || candidates[j].w < 0.4f) continue;
+//      // ===== 2. 新轨迹创建 & 复活 =====
+// //     ROS_WARN_STREAM(
+// //     "NEW TRACK from cand " << j
+// //     << " w=" << candidates[j].w
+// //     << " pos=(" << candidates[j].x(0) << "," << candidates[j].x(1) << ")"
+// // );
 
-        // 优先寻找 0~NUM_DRONES-1 的空闲 ID
-        int free_id = -1;
-        for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
-            bool occupied = false;
-            for (const auto& t : tracks_) if (t.active && t.id == id_search) { occupied = true; break; }
-            if (!occupied) { free_id = id_search; break; }
-        }
+//     for (int j = 0; j < candidates.size(); ++j) {
+//         if (candidate_used[j] || candidates[j].w < 0.4f) continue;
 
-        if (free_id != -1) {
-            create_new_track(candidates[j], free_id);
-            candidate_used[j] = true;
-        } else {
-            // 万不得已创建新 ID
-            create_new_track(candidates[j], next_track_id_++);
-            candidate_used[j] = true;
-        }
-    }
+//         // 优先寻找 0~NUM_DRONES-1 的空闲 ID
+//         int free_id = -1;
+//         for (int id_search = 0; id_search < NUM_DRONES; ++id_search) {
+//             bool occupied = false;
+//             for (const auto& t : tracks_) if (t.active && t.id == id_search) { occupied = true; break; }
+//             if (!occupied) { free_id = id_search; break; }
+//         }
 
-    // ===== 3. 生命周期管理 =====
-    auto it = tracks_.begin();
-    while (it != tracks_.end()) {
-        if (it->missed_count > MAX_MISSED) it->active = false;
-        if (!it->active && it->missed_count > 15) it = tracks_.erase(it);
-        else ++it;
-    }
-}
+//         if (free_id != -1) {
+//             create_new_track(candidates[j], free_id);
+//             candidate_used[j] = true;
+//         } else {
+//             // 万不得已创建新 ID
+//             create_new_track(candidates[j], next_track_id_++);
+//             candidate_used[j] = true;
+//         }
+//     }
+
+//     // ===== 3. 生命周期管理 =====
+//     auto it = tracks_.begin();
+//     while (it != tracks_.end()) {
+//         if (it->missed_count > MAX_MISSED) it->active = false;
+//         if (!it->active && it->missed_count > 15) it = tracks_.erase(it);
+//         else ++it;
+//     }
+// }
 
 // 辅助函数：更新轨迹数据
 void PhdFilter::update_track_data(Tracknew& tr, const Candidate& cand) {
@@ -166,6 +173,163 @@ void PhdFilter::create_new_track(const Candidate& cand, int id) {
     tr.position_history.push_back(cand.x.head(2));
     tracks_.push_back(tr);
 }
+
+
+
+
+static const float COS_DIR_TH = 0.3f;   // 约 72°，方向太偏就不要
+static const float MIN_R      = 20.0f;  // 最小搜索半径（像素）
+static const float R_SCALE    = 1.5f;   // 动态半径系数
+static const int   MAX_MISSED = 10;
+
+void PhdFilter::updateTracks(const std::vector<Candidate>& candidates)
+{
+    std::vector<bool> candidate_used(candidates.size(), false);
+
+    // ===== 1. 老轨迹匹配 =====
+    for (auto& tr : tracks_)
+    {
+        if (!tr.active)
+            continue;
+
+        // --- 1.1 计算历史主方向 ---
+        Eigen::Vector2f dir_hist(0.f, 0.f);
+        bool has_dir = false;
+
+        if (tr.position_history.size() >= 2)
+        {
+            const auto& p1 = tr.position_history.back();
+            const auto& p0 = tr.position_history[tr.position_history.size() - 2];
+            Eigen::Vector2f d = p1 - p0;
+            float n = d.norm();
+            if (n > 1e-3f)
+            {
+                dir_hist = d / n;
+                has_dir = true;
+            }
+        }
+
+        // --- 1.2 动态搜索半径 ---
+        float last_move = 0.f;
+        if (tr.position_history.size() >= 2)
+        {
+            last_move = (tr.position_history.back() -
+                         tr.position_history[tr.position_history.size() - 2]).norm();
+        }
+        float R = std::max(MIN_R, R_SCALE * last_move);
+
+        int   best_idx  = -1;
+        float best_dist = 1e9f;
+
+        // --- 1.3 遍历候选点 ---
+        for (size_t j = 0; j < candidates.size(); ++j)
+        {
+            if (candidate_used[j])
+                continue;
+
+            Eigen::Vector2f dp =
+                candidates[j].x.head(2) - tr.position_history.back();
+            float dist = dp.norm();
+
+            // 距离 gating
+            if (dist > R)
+                continue;
+
+            // 方向 gating
+            if (has_dir && dist > 1e-3f)
+            {
+                Eigen::Vector2f dir_obs = dp / dist;
+                float cos_theta = dir_hist.dot(dir_obs);
+
+                if (cos_theta < COS_DIR_TH)
+                    continue;
+            }
+
+            // 只在通过 gating 的点里选最近的
+            if (dist < best_dist)
+            {
+                best_dist = dist;
+                best_idx = static_cast<int>(j);
+            }
+        }
+
+        // --- 1.4 更新或 miss ---
+        if (best_idx >= 0)
+        {
+            update_track_data(tr, candidates[best_idx]);
+            candidate_used[best_idx] = true;
+        }
+        else
+        {
+            tr.missed_count++;
+        }
+    }
+
+    // ===== 2. 新轨迹创建 =====
+    for (size_t j = 0; j < candidates.size(); ++j)
+    {
+        if (candidate_used[j])
+            continue;
+        if (candidates[j].w < 0.4f)
+            continue;
+
+        int free_id = -1;
+        for (int id = 0; id < NUM_DRONES; ++id)
+        {
+            bool used = false;
+            for (const auto& t : tracks_)
+            {
+                if (t.active && t.id == id)
+                {
+                    used = true;
+                    break;
+                }
+            }
+            if (!used)
+            {
+                free_id = id;
+                break;
+            }
+        }
+
+        if (free_id < 0)
+            free_id = next_track_id_++;
+
+        create_new_track(candidates[j], free_id);
+    }
+
+    // ===== 3. 生命周期管理 =====
+    for (auto& tr : tracks_)
+    {
+        if (tr.missed_count > MAX_MISSED)
+            tr.active = false;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // static const float ASSOC_COST_TH = 50.5f;
 
