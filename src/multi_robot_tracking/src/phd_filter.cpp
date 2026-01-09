@@ -19,7 +19,7 @@ PhdFilter::PhdFilter()
 // ==========================================
 
 // 权重参数 (根据实际情况微调)
-static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
+static const int MAX_MISSED = 20;           // 连续没匹配的最大帧数
 // ==========================================
 // 参数调整区 (针对 224x224 坐标系优化)
 // ==========================================
@@ -1759,7 +1759,8 @@ void PhdFilter::phd_state_extract()
     
     // 2. 收集剪枝后的候选目标 (Candidates)
     // 注意：从 mk_bar_fixed 获取，这是经过 prune 和 merge 后的干净数据
-    std::vector<Candidate> candidates_for_matching;
+    //std::vector<Candidate> candidates_for_matching;
+    candidates_for_matching.clear();
     for (int i = 0; i < wk_bar_fixed.cols(); i++) {
         // 只要权重不是微不足道的，都送入 ID 匹配器
         if (wk_bar_fixed(i) > 0.1f) { 

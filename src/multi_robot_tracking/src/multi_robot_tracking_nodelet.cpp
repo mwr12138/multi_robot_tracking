@@ -1048,9 +1048,90 @@ void multi_robot_tracking_Nodelet::draw_image() {
         //         );
         //     }
         // }
+// ==========================================================
+        // === 新增：绘制 Candidate（白色大空心圆） ===
+        // ==========================================================
+        // 在 multi_robot_tracking_Nodelet.cpp 的 draw_image 函数中
 
+// ... 绘制 Candidate 部分 ...
+
+// 1. 打印总数：看看是不是 0
+//ROS_ERROR_STREAM("Drawing Debug: Candidates Size = " << phd_filter_.candidates_for_matching.size());
+
+// for (const auto& cand : phd_filter_.candidates_for_matching)
+// {
+//     float raw_x = cand.x(0);
+//     float raw_y = cand.x(2);
+    
+//     int scaledX = floor((raw_x + detection_offset_x) * scaleX);
+//     int scaledY = floor((raw_y + detection_offset_y) * scaleY);
+
+//     // 2. 打印坐标：看看是不是算出界了
+//     // ROS_INFO("Cand: Raw(%.1f, %.1f) -> Scaled(%d, %d) | ImgSize(%d, %d)", 
+//     //           raw_x, raw_y, scaledX, scaledY, input_image.cols, input_image.rows);
+
+//     if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
+//     {
+//         cv::circle(input_image, cv::Point(scaledX, scaledY), 12, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+//         ROS_ERROR_STREAM("Circle drawn!"); // 3. 如果打印这个，说明画了但你没看见
+//     }
+//     else 
+//     {
+//         ROS_ERROR_STREAM("Out of bounds!"); // 4. 如果打印这个，说明出界了
+//     }
+// }
+        // 【安全检查 1】确保图像不为空
+        if (input_image.empty()) {
+ 
+            return;
+        }
+
+        // 遍历 candidates
+        for (const auto& cand : phd_filter_.candidates_for_matching)
+        {
+            // 【安全检查 2】确保 Eigen 向量已经初始化且维度足够
+            // 假设状态是 [x, vx, y, vy]，我们需要访问 index 0 和 2
+            if (cand.x.rows() < 3) {
+                continue; // 维度不够，跳过，防止 crash
+            }
+
+            // 【安全检查 3】检查数值是否为 NaN (滤波器发散时会出现)
+            if (std::isnan(cand.x(0)) || std::isnan(cand.x(2))) {
+                continue; // 数值无效，跳过
+            }
+
+            float raw_x = cand.x(0);
+            float raw_y = cand.x(2);
+
+            // 【安全检查 4】防止 float 转 int 溢出
+            // 限制范围在 -10000 到 10000 之间，防止极端大数导致 int 溢出
+            if (raw_x < -10000.0f || raw_x > 10000.0f || raw_y < -10000.0f || raw_y > 10000.0f) {
+                continue;
+            }
+
+            int scaledX = floor((raw_x + detection_offset_x) * scaleX);
+            int scaledY = floor((raw_y + detection_offset_y) * scaleY);
+
+            // 【安全检查 5】严格的图像边界检查
+            // 只有当圆心完全在图像内，或者在边缘附近时才绘制
+            // input_image.cols 和 rows 是图像的宽和高
+            if(scaledX >= 0 && scaledX < input_image.cols && scaledY >= 0 && scaledY < input_image.rows)
+            {
+                cv::Point center(scaledX, scaledY);
+                
+                // 绘制白色空心圆
+                try {
+                    cv::circle(input_image, center, 12, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+                } catch (...) {
+                    // 捕获 OpenCV 内部可能的异常
+                    ROS_ERROR("OpenCV circle drawing failed.");
+                }
+            }
+        }
+        // ==========================================================
 
     }
+    
     
     // 其他滤波器类型的绘制代码...
     
