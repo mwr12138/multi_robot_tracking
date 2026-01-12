@@ -1,7 +1,7 @@
 <launch>
   <arg name="filter" default="phd" />
   <arg name="sim" default="false" />
-  <arg name="num_drones" default="9" />
+  <arg name="num_drones" default="11" />
   <arg name="config_file" default="params_snapdragon_flight.yaml" />
   
   <arg name="start_nodelet_manager" default="true" />

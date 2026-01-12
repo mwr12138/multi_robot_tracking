@@ -261,6 +261,8 @@ void PhdFilter::initTracks() {
         tracks_[i].id = i;        // ID 永远等于索引
         tracks_[i].active = false;
         tracks_[i].missed_count = 999; // 初始状态为空
+        tracks_[i].x = Eigen::VectorXf::Zero(n_state);
+        tracks_[i].P = Eigen::MatrixXf::Identity(n_state, n_state);
     }
 }
 

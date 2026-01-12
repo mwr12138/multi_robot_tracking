@@ -1892,7 +1892,7 @@ void multi_robot_tracking_Nodelet::onInit(void)
     priv_nh.param<bool>("use_generated_id", consensus_sort_complete,0);
 
     priv_nh.param<float>("phd/q_pos", phd_q_pos, 6.25);
-    priv_nh.param<float>("phd/q_vel", phd_q_vel, 0.1);
+    priv_nh.param<float>("phd/q_vel", phd_q_vel, 12.5);
     priv_nh.param<float>("phd/p_pos_init", phd_p_pos_init, 5.0);
     priv_nh.param<float>("phd/p_vel_init", phd_p_vel_init, 2.0);
     priv_nh.param<float>("phd/r_meas", phd_r_meas, 45);
