@@ -158,8 +158,10 @@ public:
     int image_height, image_width;
 
     //phd_filter_parameters
-    float q_pos, q_vel, r_meas;
-    float p_pos_init, p_vel_init;
+    float phd_q_pos, phd_q_vel, phd_r_meas;
+    float phd_p_pos_init, phd_p_vel_init;
+    float jpdaf_q_pos, jpdaf_q_vel, jpdaf_r_meas;
+    float jpdaf_p_pos_init, jpdaf_p_vel_init;
     float phd_prune_weight_threshold;
     float phd_prune_mahalanobis_dist_threshold;
     float phd_extract_weight_threshold;
@@ -974,12 +976,12 @@ void multi_robot_tracking_Nodelet::draw_image() {
                 float vy = tr.x(3);
                 float speed = std::sqrt(vx*vx + vy*vy);
                 
-                if (speed > 1.0f) { // 稍微调高一点阈值防止抖动
-                    float arrow_scale = 0.5f; // 根据需要放大箭头长度
+                //if (speed > 1.0f) { // 稍微调高一点阈值防止抖动
+                    float arrow_scale = 3.0f; // 根据需要放大箭头长度
                     cv::Point2f arrow_end(scaledX + vx * arrow_scale, scaledY + vy * arrow_scale);
                     cv::arrowedLine(input_image, target_center, arrow_end, 
                                 cv::Scalar(0, 255, 255), 2, cv::LINE_AA, 0, 0.2);
-                }
+                //}
             }
         }
         // ===============================
@@ -1129,6 +1131,73 @@ void multi_robot_tracking_Nodelet::draw_image() {
             }
         }
         // ==========================================================
+
+
+// ==========================================================
+        // === 新增：右下角显示 Candidate 详细数据 (调试用) ===
+        // ==========================================================
+        int list_x = input_image.cols - 380; // 文字起始X坐标 (靠右)
+        int list_y_base = input_image.rows - 20; // 文字起始Y坐标 (靠底)
+        int line_step = 16; // 行间距
+        int max_lines = 15; // 最多显示多少行，防止遮挡太多
+
+        // 1. 先画一个半透明黑色背景框，保证文字清晰
+        int box_height = std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step + 30;
+        cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 390, box_height));
+        cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
+        double alpha = 0.5;
+        cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+
+        // 2. 打印表头
+        // P: [位置X / 速度X / 位置Y / 速度Y]
+        std::string header = "ID | Wgt | P:[PosX VelX PosY VelY]";
+        cv::putText(input_image, header, 
+                    cv::Point(list_x, list_y_base - (std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step) - 5),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
+
+        // 3. 遍历并打印数据 (倒序打印，让列表从底向上堆叠)
+        int count = 0;
+        for (size_t i = 0; i < phd_filter_.candidates_for_matching.size(); i++) 
+        {
+            if (count >= max_lines) break;
+
+            const auto& cand = phd_filter_.candidates_for_matching[i];
+            
+            // 格式化字符串
+            char buffer[256];
+            // 只取 P 的对角线元素，保留整数部分即可 (方差通常比较大)
+            // 如果方差特别小(<1)，可以改用 %.1f
+            sprintf(buffer, "#%zu | %.2f | [%.0f, %.0f, %.0f, %.0f]", 
+                    i, 
+                    cand.w, 
+                    cand.P(0,0), cand.P(1,1), cand.P(2,2), cand.P(3,3));
+
+            // 根据权重变色：高权重(>0.5)显示绿色，低权重显示品红
+            cv::Scalar txt_color = (cand.w > 0.5) ? cv::Scalar(0, 255, 0) : cv::Scalar(255, 0, 255);
+
+            // 从底部向上绘制
+            int draw_y = list_y_base - (count * line_step);
+            cv::putText(input_image, buffer, cv::Point(list_x, draw_y),
+                        cv::FONT_HERSHEY_SIMPLEX, 0.35, txt_color, 1, cv::LINE_AA);
+
+            // 可选：同时在原来的白圈旁边画个 ID，方便对应
+            // 重新计算坐标
+            float raw_x = cand.x(0);
+            float raw_y = cand.x(2);
+            float scaleX = input_image.cols / (float)detection_width;
+            float scaleY = input_image.rows / (float)detection_height;
+            int sx = floor((raw_x + detection_offset_x) * scaleX);
+            int sy = floor((raw_y + detection_offset_y) * scaleY);
+            if(sx > 0 && sx < input_image.cols && sy > 0 && sy < input_image.rows) {
+                 cv::putText(input_image, to_string(i), cv::Point(sx+10, sy), 
+                        cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
+            }
+
+            count++;
+        }
+
+
+
 
     }
     
@@ -1353,10 +1422,10 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
         ROS_INFO_STREAM("WK-1: " << phd_filter_.wk << "\n");
         if(phd_filter_.first_callback)
         {
-            delta_timestamp =0.033;//0.043; //0.025;//0.143; //0.225   0.125
+            delta_timestamp =filter_dt;//0.033;//0.043; //0.025;//0.143; //0.225   0.125
             phd_filter_.dt_cam = delta_timestamp;  //摄像头检测之间的时间间隔，用于PHD滤波器的主更新
 
-            phd_filter_.initialize(q_pos, q_vel, r_meas, p_pos_init, p_vel_init,
+            phd_filter_.initialize(phd_q_pos, phd_q_vel, phd_r_meas, phd_p_pos_init, phd_p_vel_init,
                                 phd_prune_weight_threshold,
                                 phd_prune_mahalanobis_dist_threshold,
                                 phd_extract_weight_threshold);
@@ -1369,7 +1438,7 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
         {
 
 
-            delta_timestamp =0.025;//0.043; //0.025; //hard-coded for 4.5 Hz TO DO FIX   0.143
+            delta_timestamp =filter_dt;//0.025;//0.043; //0.025; //hard-coded for 4.5 Hz TO DO FIX   0.143
             //      delta_timestamp = current_timestamp - previous_timestamp;
             //check for data with no timestamp and thus dt = 0
 
@@ -1452,10 +1521,10 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
         ROS_INFO_STREAM("WK-1: " << kalman_filter_.wk << "\n");
         if(kalman_filter_.first_callback)
         {
-            delta_timestamp = 0.125;//0.143; //0.225
+            delta_timestamp = filter_dt;//0.125;//0.143; //0.225
             kalman_filter_.dt_cam = delta_timestamp;
 
-            kalman_filter_.initialize(q_pos, q_vel, r_meas, p_pos_init, p_vel_init,
+            kalman_filter_.initialize(jpdaf_q_pos, jpdaf_q_vel, jpdaf_r_meas, jpdaf_p_pos_init, jpdaf_p_vel_init,
                                 phd_prune_weight_threshold,
                                 phd_prune_mahalanobis_dist_threshold,
                                 phd_extract_weight_threshold);
@@ -1468,7 +1537,7 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
         {
 
 
-            delta_timestamp = 0.143; //hard-coded for 4.5 Hz TO DO FIX
+            delta_timestamp = filter_dt;//0.143; //hard-coded for 4.5 Hz TO DO FIX
             //      delta_timestamp = current_timestamp - previous_timestamp;
             //check for data with no timestamp and thus dt = 0
 
@@ -1822,20 +1891,20 @@ void multi_robot_tracking_Nodelet::onInit(void)
     priv_nh.param<int>("viz_detection_offset_y", detection_offset_y, 28);
     priv_nh.param<bool>("use_generated_id", consensus_sort_complete,0);
 
-    priv_nh.param<float>("phd/q_pos", q_pos, 6.25);
-    priv_nh.param<float>("phd/q_vel", q_vel, 12.5);
-    priv_nh.param<float>("phd/p_pos_init", p_pos_init, 5.0);
-    priv_nh.param<float>("phd/p_vel_init", p_vel_init, 2.0);
-    priv_nh.param<float>("phd/r_meas", r_meas, 45);
+    priv_nh.param<float>("phd/q_pos", phd_q_pos, 6.25);
+    priv_nh.param<float>("phd/q_vel", phd_q_vel, 0.1);
+    priv_nh.param<float>("phd/p_pos_init", phd_p_pos_init, 5.0);
+    priv_nh.param<float>("phd/p_vel_init", phd_p_vel_init, 2.0);
+    priv_nh.param<float>("phd/r_meas", phd_r_meas, 45);
     priv_nh.param<float>("phd/prune_weight_threshold", phd_prune_weight_threshold, 1e-1);
     priv_nh.param<float>("phd/prune_mahalanobis_threshold_", phd_prune_mahalanobis_dist_threshold, 4.0);
     priv_nh.param<float>("phd/extract_weight_threshold", phd_extract_weight_threshold, 5e-1);
 
-    priv_nh.param<float>("jpdaf/q_pos", q_pos, 6.25);
-    priv_nh.param<float>("jpdaf/q_vel", q_vel, 12.5);
-    priv_nh.param<float>("jpdaf/p_pos_init", p_pos_init, 5.0);
-    priv_nh.param<float>("jpdaf/p_vel_init", p_vel_init, 2.0);
-    priv_nh.param<float>("jpdaf/r_meas", r_meas, 45);
+    priv_nh.param<float>("jpdaf/q_pos", jpdaf_q_pos, 6.25);
+    priv_nh.param<float>("jpdaf/q_vel", jpdaf_q_vel, 12.5);
+    priv_nh.param<float>("jpdaf/p_pos_init", jpdaf_p_pos_init, 5.0);
+    priv_nh.param<float>("jpdaf/p_vel_init", jpdaf_p_vel_init, 2.0);
+    priv_nh.param<float>("jpdaf/r_meas", jpdaf_r_meas, 45);
     priv_nh.param<float>("jpdaf/alpha_0_threshold", jpdaf_filter_.params.alpha_0_threshold); 
     priv_nh.param<float>("jpdaf/alpha_cam", jpdaf_filter_.params.alpha_cam);
     priv_nh.param<float>("jpdaf/associaiton_cost", jpdaf_filter_.params.assoc_cost);
@@ -1868,13 +1937,13 @@ void multi_robot_tracking_Nodelet::onInit(void)
     {
         jpdaf_filter_.params.focal_length = f;
         jpdaf_filter_.params.nb_drones = num_drones;
-        jpdaf_filter_.params.P_0 << p_pos_init, 0, 0, 0,
-                                    0, p_vel_init, 0, 0,
-                                    0, 0, p_pos_init, 0,
-                                    0, 0, 0, p_vel_init;
+        jpdaf_filter_.params.P_0 << jpdaf_p_pos_init, 0, 0, 0,
+                                    0, jpdaf_p_vel_init, 0, 0,
+                                    0, 0, jpdaf_p_pos_init, 0,
+                                    0, 0, 0, jpdaf_p_vel_init;
         jpdaf_filter_.params.principal_point << cx, cy;
-        jpdaf_filter_.params.R <<   r_meas, 0,
-                                    0, r_meas;
+        jpdaf_filter_.params.R <<   jpdaf_r_meas, 0,
+                                    0, jpdaf_r_meas;
         ROS_WARN("will be using: %s", filter_to_use_.c_str());
     }
 

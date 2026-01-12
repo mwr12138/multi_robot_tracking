@@ -18,7 +18,7 @@ camera_cx: 960  #相机中心x坐标
 camera_cy: 540  #相机中心y坐标
 camera_f: 287.4  #相机焦距
 
-dt: 0.225
+dt: 1.125 #0.225
   
 viz_detection_height: 1080
 viz_detection_width: 1920
@@ -31,17 +31,17 @@ use_generated_id: true
 
 phd: 
   q_pos: 6.25
-  q_vel: 12.5
+  q_vel: 0.001
   r_meas: 100
-  p_pos_init: 5.0
-  p_vel_init: 2.0
+  p_pos_init: 20.0
+  p_vel_init: 20.0
   prune_weight_threshold: 0.1
-  prune_mahalanobis_threshold: 4.0
+  prune_mahalanobis_threshold_: 1
   extract_weight_threshold: 0.5
 
-jpdaf:
+jpdaf:  
   q_pos: 100.0
-  q_vel: 100.0
+  q_vel: 0.1
   p_pos_init: 10.0
   p_vel_init: 20.0
   r_meas: 2.0

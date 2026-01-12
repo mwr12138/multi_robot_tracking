@@ -1061,6 +1061,8 @@ void PhdFilter::initialize(float q_pos, float q_vel, float r_meas, float p_pos_i
          0,         r_meas;
 
     numTargets_Jk_minus_1 = NUM_DRONES;
+    cout<<"q_pos: "<<q_pos<<endl;
+    cout<<"q_vel: "<<q_vel<<endl;
 }
 
 /* 
@@ -1123,6 +1125,12 @@ void PhdFilter::asynchronous_predict_existing() //异步预测
     ROS_INFO_STREAM("WK|K-1:\n" << wk_k_minus_1 << endl);
     ROS_INFO_STREAM("mK|K-1:\n" << mk_k_minus_1 << endl);
     ROS_INFO_STREAM("PK|K-1:\n" << Pk_k_minus_1 << endl);
+        for(int i = 0; i < NUM_DRONES; i++) 
+    {
+        // 提取每个无人机对应的4×4子矩阵的对角线元素
+        Eigen::Vector4f diagonal = Pk_k_minus_1.block(0, n_state * i, n_state, n_state).diagonal();
+        ROS_ERROR_STREAM("Drone predict " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
+    }
 }
 
 
@@ -1373,7 +1381,12 @@ void PhdFilter::phd_update() //更新
 
         ROS_ERROR_STREAM("NEW OBJECT!!!" << col << ",MEASUREMENT: " << z_meas.transpose());
     }
-
+    for(int i = 0; i < NUM_DRONES; i++) 
+    {
+        // 提取每个无人机对应的4×4子矩阵的对角线元素
+        Eigen::Vector4f diagonal = Pk.block(0, n_state * i, n_state, n_state).diagonal();
+        ROS_ERROR_STREAM("Drone update " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
+    }
 }
 
 void PhdFilter::phd_prune() //剪枝
@@ -1608,6 +1621,12 @@ void PhdFilter::phd_prune() //剪枝
 
     numTargets_Jk_minus_1 = wk_bar_fixed.cols();
     ROS_INFO_STREAM("numTargets_Jk_minus_1: " << numTargets_Jk_minus_1);
+        for(int i = 0; i < NUM_DRONES; i++) 
+    {
+        // 提取每个无人机对应的4×4子矩阵的对角线元素
+        Eigen::Vector4f diagonal = Pk_bar_fixed.block(0, n_state * i, n_state, n_state).diagonal();
+        ROS_ERROR_STREAM("Drone prune " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
+    }
 }
 
 // void PhdFilter::phd_state_extract() //状态提取
@@ -1833,6 +1852,7 @@ void PhdFilter::phd_state_extract()
     X_k_previous = X_k;
 
     ROS_ERROR_STREAM("Feedback Loop Complete. Valid Tracks: " << (wk_bar_display.array() > 0).count());
+
 }
 
 
