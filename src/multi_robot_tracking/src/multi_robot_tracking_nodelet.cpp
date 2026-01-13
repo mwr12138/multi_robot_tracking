@@ -1050,38 +1050,38 @@ void multi_robot_tracking_Nodelet::draw_image() {
         //         );
         //     }
         // }
-// ==========================================================
-        // === 新增：绘制 Candidate（白色大空心圆） ===
         // ==========================================================
-        // 在 multi_robot_tracking_Nodelet.cpp 的 draw_image 函数中
+                // === 新增：绘制 Candidate（白色大空心圆） ===
+                // ==========================================================
+                // 在 multi_robot_tracking_Nodelet.cpp 的 draw_image 函数中
 
-// ... 绘制 Candidate 部分 ...
+        // ... 绘制 Candidate 部分 ...
 
-// 1. 打印总数：看看是不是 0
-//ROS_ERROR_STREAM("Drawing Debug: Candidates Size = " << phd_filter_.candidates_for_matching.size());
+        // 1. 打印总数：看看是不是 0
+        //ROS_ERROR_STREAM("Drawing Debug: Candidates Size = " << phd_filter_.candidates_for_matching.size());
 
-// for (const auto& cand : phd_filter_.candidates_for_matching)
-// {
-//     float raw_x = cand.x(0);
-//     float raw_y = cand.x(2);
-    
-//     int scaledX = floor((raw_x + detection_offset_x) * scaleX);
-//     int scaledY = floor((raw_y + detection_offset_y) * scaleY);
+        // for (const auto& cand : phd_filter_.candidates_for_matching)
+        // {
+        //     float raw_x = cand.x(0);
+        //     float raw_y = cand.x(2);
+            
+        //     int scaledX = floor((raw_x + detection_offset_x) * scaleX);
+        //     int scaledY = floor((raw_y + detection_offset_y) * scaleY);
 
-//     // 2. 打印坐标：看看是不是算出界了
-//     // ROS_INFO("Cand: Raw(%.1f, %.1f) -> Scaled(%d, %d) | ImgSize(%d, %d)", 
-//     //           raw_x, raw_y, scaledX, scaledY, input_image.cols, input_image.rows);
+        //     // 2. 打印坐标：看看是不是算出界了
+        //     // ROS_INFO("Cand: Raw(%.1f, %.1f) -> Scaled(%d, %d) | ImgSize(%d, %d)", 
+        //     //           raw_x, raw_y, scaledX, scaledY, input_image.cols, input_image.rows);
 
-//     if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
-//     {
-//         cv::circle(input_image, cv::Point(scaledX, scaledY), 12, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-//         ROS_ERROR_STREAM("Circle drawn!"); // 3. 如果打印这个，说明画了但你没看见
-//     }
-//     else 
-//     {
-//         ROS_ERROR_STREAM("Out of bounds!"); // 4. 如果打印这个，说明出界了
-//     }
-// }
+        //     if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
+        //     {
+        //         cv::circle(input_image, cv::Point(scaledX, scaledY), 12, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
+        //         ROS_ERROR_STREAM("Circle drawn!"); // 3. 如果打印这个，说明画了但你没看见
+        //     }
+        //     else 
+        //     {
+        //         ROS_ERROR_STREAM("Out of bounds!"); // 4. 如果打印这个，说明出界了
+        //     }
+        // }
         // 【安全检查 1】确保图像不为空
         if (input_image.empty()) {
  
@@ -1133,70 +1133,89 @@ void multi_robot_tracking_Nodelet::draw_image() {
         // ==========================================================
 
 
-// ==========================================================
-        // === 新增：右下角显示 Candidate 详细数据 (调试用) ===
+    // ==========================================================
+        // === 修改：右下角显示 Track 遮挡详情 (P_Occ & IOU) ===
         // ==========================================================
-        int list_x = input_image.cols - 380; // 文字起始X坐标 (靠右)
-        int list_y_base = input_image.rows - 20; // 文字起始Y坐标 (靠底)
-        int line_step = 16; // 行间距
-        int max_lines = 15; // 最多显示多少行，防止遮挡太多
+        
+        // 1. 布局设置 (宽度设为 460 以容纳新数据)
+        int list_x = input_image.cols - 460; 
+        int list_y_base = input_image.rows - 20; 
+        int line_step = 16; 
+        int max_lines = 15; 
 
-        // 1. 先画一个半透明黑色背景框，保证文字清晰
-        int box_height = std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step + 30;
-        cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 390, box_height));
-        cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
-        double alpha = 0.5;
-        cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+        // 统计要显示的行数 (改为统计 Tracks)
+        int total_count = phd_filter_.tracks_.size();
 
-        // 2. 打印表头
-        // P: [位置X / 速度X / 位置Y / 速度Y]
-        std::string header = "ID | Wgt | P:[PosX VelX PosY VelY]";
+        // 2. 画半透明黑色背景框
+        int box_height = std::min(total_count, max_lines) * line_step + 30;
+        // 边界检查
+        if (list_x > 0 && list_y_base - box_height > 0) {
+            cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 470, box_height));
+            cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
+            double alpha = 0.5;
+            cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+        }
+
+        // 3. 打印表头 (这里改成了遮挡相关的信息)
+        // P_Occ: 遮挡概率 | IOU: 重叠度 | P: 协方差
+        std::string header = "ID | P_Occ | IOU | P:[Pos Vel Pos Vel]";
         cv::putText(input_image, header, 
-                    cv::Point(list_x, list_y_base - (std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step) - 5),
+                    cv::Point(list_x, list_y_base - (std::min(total_count, max_lines) * line_step) - 5),
                     cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
 
-        // 3. 遍历并打印数据 (倒序打印，让列表从底向上堆叠)
+        // 4. 遍历 Tracks 并打印 (注意：必须遍历 tracks_ 才能拿到 p_occluded)
         int count = 0;
-        for (size_t i = 0; i < phd_filter_.candidates_for_matching.size(); i++) 
+        for (const auto& tr : phd_filter_.tracks_) 
         {
             if (count >= max_lines) break;
 
-            const auto& cand = phd_filter_.candidates_for_matching[i];
-            
             // 格式化字符串
             char buffer[256];
-            // 只取 P 的对角线元素，保留整数部分即可 (方差通常比较大)
-            // 如果方差特别小(<1)，可以改用 %.1f
-            sprintf(buffer, "#%zu | %.2f | [%.0f, %.0f, %.0f, %.0f]", 
-                    i, 
-                    cand.w, 
-                    cand.P(0,0), cand.P(1,1), cand.P(2,2), cand.P(3,3));
+            // 显示: ID | 遮挡概率 | IOU | P矩阵对角线
+            sprintf(buffer, "#%d | %.2f | %.2f | [%.0f, %.0f, %.0f, %.0f]", 
+                    tr.id, 
+                    tr.p_occluded,      // 遮挡概率
+                    tr.max_iou_score,   // 重叠度
+                    tr.P(0,0), tr.P(1,1), tr.P(2,2), tr.P(3,3));
 
-            // 根据权重变色：高权重(>0.5)显示绿色，低权重显示品红
-            cv::Scalar txt_color = (cand.w > 0.5) ? cv::Scalar(0, 255, 0) : cv::Scalar(255, 0, 255);
+            // === 颜色逻辑 (帮你直观判断遮挡) ===
+            cv::Scalar txt_color;
+            
+            if (tr.active) {
+                txt_color = cv::Scalar(0, 255, 0); // 正常: 绿色
+            } else {
+                // 如果是不活跃状态，判断原因
+                if (tr.p_occluded > 0.6f) {
+                    txt_color = cv::Scalar(0, 165, 255); // 判定为遮挡: 橙色
+                } else {
+                    txt_color = cv::Scalar(180, 180, 180); // 普通丢失: 灰色
+                }
+            }
 
             // 从底部向上绘制
             int draw_y = list_y_base - (count * line_step);
             cv::putText(input_image, buffer, cv::Point(list_x, draw_y),
                         cv::FONT_HERSHEY_SIMPLEX, 0.35, txt_color, 1, cv::LINE_AA);
 
-            // 可选：同时在原来的白圈旁边画个 ID，方便对应
-            // 重新计算坐标
-            float raw_x = cand.x(0);
-            float raw_y = cand.x(2);
-            float scaleX = input_image.cols / (float)detection_width;
-            float scaleY = input_image.rows / (float)detection_height;
-            int sx = floor((raw_x + detection_offset_x) * scaleX);
-            int sy = floor((raw_y + detection_offset_y) * scaleY);
-            if(sx > 0 && sx < input_image.cols && sy > 0 && sy < input_image.rows) {
-                 cv::putText(input_image, to_string(i), cv::Point(sx+10, sy), 
-                        cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
+            // 可选：在图像目标位置画ID (仅活跃时)
+            if (tr.active) {
+                float raw_x = tr.x(0);
+                float raw_y = tr.x(2);
+                float scaleX = input_image.cols / (float)detection_width;
+                float scaleY = input_image.rows / (float)detection_height;
+                int sx = floor((raw_x + detection_offset_x) * scaleX);
+                int sy = floor((raw_y + detection_offset_y) * scaleY);
+                
+                if(sx > 0 && sx < input_image.cols && sy > 0 && sy < input_image.rows) {
+                     // 也在 ID 旁边显示一下遮挡概率，方便录像观察
+                     // string label = to_string(tr.id);
+                     // cv::putText(input_image, label, cv::Point(sx+10, sy), 
+                     //        cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
+                }
             }
 
             count++;
         }
-
-
 
 
     }

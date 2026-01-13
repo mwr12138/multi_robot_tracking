@@ -38,9 +38,15 @@ struct Tracknew {
     std::deque<Eigen::Vector2f> position_history;  // 位置历史
     std::deque<Eigen::Vector2f> velocity_history;  // 速度历史
     Eigen::Vector2f velocity; //当前帧的卡尔曼/预测计算
+    // === 新增：遮挡概率隐变量 ===
+    float p_visible;   // P(z = V) 当前是可见状态的概率
+    float p_occluded;  // P(z = O) 当前是被遮挡状态的概率
+    float max_iou_score; // 记录当前帧的最大重叠度（用于调试打印）
+
     // === 新增：P(0,0) 的历史记录 ===
-    std::deque<float> p00_history;  // 存储最近 5 帧的 P(0,0)
-    float p00_variance_5_frames;    // 存储计算出来的方差
+    // std::deque<float> p00_history;  // 存储最近 5 帧的 P(0,0)
+    // float p00_variance_5_frames;    // 存储计算出来的方差
+
 };
 
 //从PHD到track的候选结构体
@@ -200,6 +206,22 @@ class PhdFilter
   std::vector<Tracknew> tracks_; // 滤波器维护的所有轨迹的容器（包含活跃和非活跃的）
   std::vector<Candidate> candidates_;// 存储当前帧的候选跟踪
   std::vector<Candidate> candidates_for_matching;// 存储当前帧的候选跟踪，用于匹配
+  // === 新增：遮挡相关参数 ===
+    // 状态转移矩阵
+    const float P_VV = 0.90f; // Visible -> Visible
+    const float P_VO = 0.10f; // Visible -> Occluded
+    const float P_OV = 0.30f; // Occluded -> Visible (恢复)
+    const float P_OO = 0.70f; // Occluded -> Occluded (持续遮挡)
+    
+    // 观测参数
+    const float LAMBDA_IOU = 3.0f; // 拥挤惩罚系数
+    
+    // 辅助函数：计算两个位置的伪 IOU (基于距离的近似)
+    float calculate_approx_iou(const Eigen::VectorXf& s1, const Eigen::VectorXf& s2);
+    
+    // 核心函数：更新遮挡概率
+    void updateOcclusionProbabilities(const std::vector<bool>& track_matched);
+
   private:
 
   //新增：存储所有有效跟踪
