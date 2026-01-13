@@ -1134,58 +1134,73 @@ void multi_robot_tracking_Nodelet::draw_image() {
 
 
 // ==========================================================
-        // === 右下角显示 Tracks 详细数据 (含 P00 方差) ===
+        // === 修改：右下角显示 ALL Tracks (含不活跃的) ===
         // ==========================================================
-        int list_x = input_image.cols - 450; // 向左挪一点，因为字变多了
-        int list_y_base = input_image.rows - 20;
-        int line_step = 16;
-        int max_lines = 15;
+        
+        // 1. 布局设置
+        int list_x = input_image.cols - 480; 
+        int list_y_base = input_image.rows - 20; 
+        int line_step = 16; 
+        int max_lines = 15; 
 
-        // 1. 统计要画多少行 (只画 active 的)
-        int active_count = 0;
-        for(const auto& tr : phd_filter_.tracks_) if(tr.active) active_count++;
-        
-        int box_height = std::min(active_count, max_lines) * line_step + 30;
-        
-        // 绘制半透明背景
-        if (box_height > 30) {
-            cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 460, box_height));
-            cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
-            double alpha = 0.5;
-            cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+        // 直接统计所有轨迹的数量 (不再过滤 active)
+        int total_track_count = phd_filter_.tracks_.size();
+
+        // 2. 画背景框
+        int rows_to_draw = std::min(total_track_count, max_lines);
+        if (rows_to_draw > 0) {
+            int box_height = rows_to_draw * line_step + 30;
+            // 边界检查
+            if (list_x > 0 && list_y_base - box_height > 0) {
+                cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 490, box_height));
+                cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
+                double alpha = 0.5;
+                cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+            }
         }
 
-        // 2. 打印表头
-        // Var5: 最近5帧 P(0,0) 的方差
-        std::string header = "ID | P:[Pos Vel Pos Vel] | Var5";
+        // 3. 打印表头
+        std::string header = "ID | St | P:[Pos Vel Pos Vel] | Var";
         cv::putText(input_image, header, 
-                    cv::Point(list_x, list_y_base - (std::min(active_count, max_lines) * line_step) - 5),
+                    cv::Point(list_x, list_y_base - (rows_to_draw * line_step) - 5),
                     cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
 
-        // 3. 遍历并打印数据
+        // 4. 遍历所有 Tracks 并打印
         int count = 0;
         for (const auto& tr : phd_filter_.tracks_) 
         {
-            if (!tr.active) continue; // 只看活跃的
             if (count >= max_lines) break;
 
             char buffer[256];
-            // P: 对角线元素
-            // Var: 方差
-            sprintf(buffer, "#%d | [%.0f, %.0f, %.0f, %.0f] | %.2f", 
-                    tr.id, 
+            // 增加一列显示状态: A(Active) 或 M(Missed)
+            char status_char = tr.active ? 'A' : 'M';
+            
+            sprintf(buffer, "#%d|%c | [%.0f, %.0f, %.0f, %.0f] | %.2f", 
+                    tr.id, status_char,
                     tr.P(0,0), tr.P(1,1), tr.P(2,2), tr.P(3,3),
-                    tr.p00_variance_5_frames); // <--- 这里就是你要的方差
+                    tr.p00_variance_5_frames); 
 
-            // 颜色逻辑：
-            // 如果方差很大 (>100)，说明协方差在剧烈抖动，显示红色警报
-            // 如果方差很小，显示绿色
-            cv::Scalar txt_color = (tr.p00_variance_5_frames > 100.0f) ? cv::Scalar(0, 0, 255) : cv::Scalar(0, 255, 0);
+            // === 颜色逻辑 ===
+            cv::Scalar txt_color;
 
+            if (tr.active) {
+                // 活跃状态：默认绿色
+                txt_color = cv::Scalar(0, 255, 0); 
+                // 如果方差爆炸，变红报警
+                if (tr.p00_variance_5_frames > 100.0f || tr.P(1,1) > 1000.0f) {
+                    txt_color = cv::Scalar(0, 0, 255); 
+                }
+            } else {
+                // 不活跃状态 (Missed)：显示灰色，方便区分
+                // 这样你就能看到跟丢的目标 P 值是不是在疯涨
+                txt_color = cv::Scalar(180, 180, 180); 
+            }
+
+            // 从底部向上绘制
             int draw_y = list_y_base - (count * line_step);
             cv::putText(input_image, buffer, cv::Point(list_x, draw_y),
                         cv::FONT_HERSHEY_SIMPLEX, 0.35, txt_color, 1, cv::LINE_AA);
-
+            
             count++;
         }
 

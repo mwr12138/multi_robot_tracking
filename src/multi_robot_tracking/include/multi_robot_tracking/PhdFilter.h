@@ -38,6 +38,9 @@ struct Tracknew {
     std::deque<Eigen::Vector2f> position_history;  // 位置历史
     std::deque<Eigen::Vector2f> velocity_history;  // 速度历史
     Eigen::Vector2f velocity; //当前帧的卡尔曼/预测计算
+    // === 新增：P(0,0) 的历史记录 ===
+    std::deque<float> p00_history;  // 存储最近 5 帧的 P(0,0)
+    float p00_variance_5_frames;    // 存储计算出来的方差
 };
 
 //从PHD到track的候选结构体
