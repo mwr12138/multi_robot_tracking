@@ -1,63 +1,63 @@
+[  0%] Built target geometry_msgs_generate_messages_cpp
 [  0%] Built target nav_msgs_generate_messages_py
-[  0%] Built target std_msgs_generate_messages_nodejs
+[  0%] Built target nodelet_generate_messages_cpp
 [  0%] Built target std_msgs_generate_messages_py
 [  0%] Built target geometry_msgs_generate_messages_eus
-[  0%] Built target nodelet_generate_messages_cpp
-[  0%] Built target geometry_msgs_generate_messages_cpp
-[  0%] Built target nodelet_generate_messages_eus
+[  0%] Built target std_msgs_generate_messages_nodejs
 [  0%] Built target nodelet_generate_messages_lisp
-[  0%] Built target geometry_msgs_generate_messages_nodejs
+[  0%] Built target nodelet_generate_messages_eus
 [  0%] Built target geometry_msgs_generate_messages_lisp
-[  0%] Built target geometry_msgs_generate_messages_py
-[  0%] Built target nodelet_generate_messages_nodejs
+[  0%] Built target geometry_msgs_generate_messages_nodejs
 [  0%] Built target std_msgs_generate_messages_eus
-[  0%] Built target std_msgs_generate_messages_cpp
+[  0%] Built target nodelet_generate_messages_nodejs
 [  0%] Built target std_msgs_generate_messages_lisp
+[  0%] Built target geometry_msgs_generate_messages_py
+[  0%] Built target std_msgs_generate_messages_cpp
 [  0%] Built target nodelet_generate_messages_py
 [  0%] Built target bond_generate_messages_cpp
+[  0%] Built target bond_generate_messages_nodejs
+[  0%] Built target bond_generate_messages_py
+[  0%] Built target roscpp_generate_messages_cpp
 [  0%] Built target bond_generate_messages_lisp
 [  0%] Built target bond_generate_messages_eus
-[  0%] Built target bond_generate_messages_nodejs
-[  0%] Built target roscpp_generate_messages_cpp
-[  0%] Built target bond_generate_messages_py
-[  0%] Built target roscpp_generate_messages_lisp
-[  0%] Built target roscpp_generate_messages_nodejs
 [  0%] Built target roscpp_generate_messages_eus
-[  0%] Built target rosgraph_msgs_generate_messages_cpp
-[  0%] Built target roscpp_generate_messages_py
+[  0%] Built target roscpp_generate_messages_nodejs
 [  0%] Built target rosgraph_msgs_generate_messages_lisp
-[  0%] Built target tf_generate_messages_eus
-[  0%] Built target rosgraph_msgs_generate_messages_py
-[  0%] Built target rosgraph_msgs_generate_messages_nodejs
 [  0%] Built target rosgraph_msgs_generate_messages_eus
-[  0%] Built target tf_generate_messages_nodejs
+[  0%] Built target rosgraph_msgs_generate_messages_cpp
+[  0%] Built target rosgraph_msgs_generate_messages_nodejs
+[  0%] Built target roscpp_generate_messages_py
 [  0%] Built target tf_generate_messages_cpp
-[  0%] Built target tf_generate_messages_py
-[  0%] Built target sensor_msgs_generate_messages_cpp
-[  0%] Built target sensor_msgs_generate_messages_eus
+[  0%] Built target roscpp_generate_messages_lisp
+[  0%] Built target rosgraph_msgs_generate_messages_py
+[  0%] Built target tf_generate_messages_eus
 [  0%] Built target tf_generate_messages_lisp
+[  0%] Built target tf_generate_messages_nodejs
+[  0%] Built target tf_generate_messages_py
+[  0%] Built target sensor_msgs_generate_messages_eus
+[  0%] Built target actionlib_generate_messages_cpp
+[  0%] Built target sensor_msgs_generate_messages_cpp
 [  0%] Built target sensor_msgs_generate_messages_lisp
 [  0%] Built target sensor_msgs_generate_messages_py
+[  0%] Built target actionlib_msgs_generate_messages_eus
 [  0%] Built target sensor_msgs_generate_messages_nodejs
-[  0%] Built target actionlib_generate_messages_cpp
-[  0%] Built target actionlib_msgs_generate_messages_lisp
-[  0%] Built target actionlib_msgs_generate_messages_cpp
-[  0%] Built target actionlib_generate_messages_lisp
-[  0%] Built target actionlib_generate_messages_eus
 [  0%] Built target actionlib_generate_messages_nodejs
 [  0%] Built target actionlib_generate_messages_py
+[  0%] Built target actionlib_generate_messages_lisp
 [  0%] Built target tf2_msgs_generate_messages_cpp
+[  0%] Built target actionlib_msgs_generate_messages_cpp
+[  0%] Built target actionlib_generate_messages_eus
 [  0%] Built target actionlib_msgs_generate_messages_py
-[  0%] Built target actionlib_msgs_generate_messages_eus
-[  0%] Built target nav_msgs_generate_messages_eus
-[  0%] Built target actionlib_msgs_generate_messages_nodejs
+[  0%] Built target actionlib_msgs_generate_messages_lisp
 [  0%] Built target tf2_msgs_generate_messages_eus
 [  0%] Built target tf2_msgs_generate_messages_nodejs
-[  0%] Built target nav_msgs_generate_messages_nodejs
-[  0%] Built target tf2_msgs_generate_messages_py
-[  0%] Built target nav_msgs_generate_messages_lisp
-[  0%] Built target nav_msgs_generate_messages_cpp
 [  0%] Built target tf2_msgs_generate_messages_lisp
+[  0%] Built target actionlib_msgs_generate_messages_nodejs
+[  0%] Built target nav_msgs_generate_messages_eus
+[  0%] Built target nav_msgs_generate_messages_cpp
+[  0%] Built target tf2_msgs_generate_messages_py
+[  0%] Built target nav_msgs_generate_messages_nodejs
+[  0%] Built target nav_msgs_generate_messages_lisp
 [35m[1mConsolidate compiler generated dependencies of target multi_robot_tracking[0m
 [  9%] [32mBuilding CXX object CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o[0m
 [01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
@@ -149,7 +149,14 @@
 [01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:894:12:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
      #endif [01;35m[KTIMING[m[K
             [01;35m[K^~~~~~[m[K
-[ 18%] [32m[1mLinking CXX shared library /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/libmulti_robot_tracking.so[0m
-[ 81%] Built target multi_robot_tracking
-[ 90%] [32m[1mLinking CXX executable /home/mwr/tracking/devel/.private/multi_robot_tracking/lib/multi_robot_tracking/multi_robot_tracking_node[0m
-[100%] Built target multi_robot_tracking_node
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:[m[K In member function ‘[01m[Kvoid PhdFilter::phd_prune()[m[K’:
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1408:35:[m[K [01;31m[Kerror: [m[K‘[01m[Kprune_mahalanobis_threshold[m[K’ was not declared in this scope
+     float mahalanobis_threshold = [01;31m[Kprune_mahalanobis_threshold[m[K;  // 马氏距离阈值（来自配置）
+                                   [01;31m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1408:35:[m[K [01;36m[Knote: [m[Ksuggested alternative: ‘[01m[Kmahalanobis_threshold[m[K’
+     float mahalanobis_threshold = [01;36m[Kprune_mahalanobis_threshold[m[K;  // 马氏距离阈值（来自配置）
+                                   [01;36m[K^~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+                                   [32m[Kmahalanobis_threshold[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:132：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:1949：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:146：all] 错误 2

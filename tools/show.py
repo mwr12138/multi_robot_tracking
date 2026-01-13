@@ -65,7 +65,8 @@ def render_frame(current_frame, data_dict, mode, img_size=(1080, 1920)):
     return canvas
 
 def main():
-    gt_path = "/media/mwr/新加卷/Drone/AIRMOT/images/test/DJI_M300_03/gt/gt.txt"
+    gt_path= "/home/mwr/tracking/tools/gt4.txt"
+    #gt_path = "/media/mwr/新加卷/Drone/AIRMOT/images/test/DJI_M300_03/gt/gt.txt"
     #gt_path = "/media/mwr/新加卷/Drone/AIRMOT/images/test/Lab_FL5_02/gt/gt.txt"
     #gt_path = "/media/mwr/新加卷/Drone/AIRMOT/images/test/DJI_Phantom_03/gt/gt.txt"
     data, max_frame = load_data(gt_path)

@@ -1134,64 +1134,57 @@ void multi_robot_tracking_Nodelet::draw_image() {
 
 
 // ==========================================================
-        // === 新增：右下角显示 Candidate 详细数据 (调试用) ===
+        // === 右下角显示 Tracks 详细数据 (含 P00 方差) ===
         // ==========================================================
-        int list_x = input_image.cols - 380; // 文字起始X坐标 (靠右)
-        int list_y_base = input_image.rows - 20; // 文字起始Y坐标 (靠底)
-        int line_step = 16; // 行间距
-        int max_lines = 15; // 最多显示多少行，防止遮挡太多
+        int list_x = input_image.cols - 450; // 向左挪一点，因为字变多了
+        int list_y_base = input_image.rows - 20;
+        int line_step = 16;
+        int max_lines = 15;
 
-        // 1. 先画一个半透明黑色背景框，保证文字清晰
-        int box_height = std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step + 30;
-        cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 390, box_height));
-        cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
-        double alpha = 0.5;
-        cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+        // 1. 统计要画多少行 (只画 active 的)
+        int active_count = 0;
+        for(const auto& tr : phd_filter_.tracks_) if(tr.active) active_count++;
+        
+        int box_height = std::min(active_count, max_lines) * line_step + 30;
+        
+        // 绘制半透明背景
+        if (box_height > 30) {
+            cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 460, box_height));
+            cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
+            double alpha = 0.5;
+            cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+        }
 
         // 2. 打印表头
-        // P: [位置X / 速度X / 位置Y / 速度Y]
-        std::string header = "ID | Wgt | P:[PosX VelX PosY VelY]";
+        // Var5: 最近5帧 P(0,0) 的方差
+        std::string header = "ID | P:[Pos Vel Pos Vel] | Var5";
         cv::putText(input_image, header, 
-                    cv::Point(list_x, list_y_base - (std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step) - 5),
+                    cv::Point(list_x, list_y_base - (std::min(active_count, max_lines) * line_step) - 5),
                     cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
 
-        // 3. 遍历并打印数据 (倒序打印，让列表从底向上堆叠)
+        // 3. 遍历并打印数据
         int count = 0;
-        for (size_t i = 0; i < phd_filter_.candidates_for_matching.size(); i++) 
+        for (const auto& tr : phd_filter_.tracks_) 
         {
+            if (!tr.active) continue; // 只看活跃的
             if (count >= max_lines) break;
 
-            const auto& cand = phd_filter_.candidates_for_matching[i];
-            
-            // 格式化字符串
             char buffer[256];
-            // 只取 P 的对角线元素，保留整数部分即可 (方差通常比较大)
-            // 如果方差特别小(<1)，可以改用 %.1f
-            sprintf(buffer, "#%zu | %.2f | [%.0f, %.0f, %.0f, %.0f]", 
-                    i, 
-                    cand.w, 
-                    cand.P(0,0), cand.P(1,1), cand.P(2,2), cand.P(3,3));
+            // P: 对角线元素
+            // Var: 方差
+            sprintf(buffer, "#%d | [%.0f, %.0f, %.0f, %.0f] | %.2f", 
+                    tr.id, 
+                    tr.P(0,0), tr.P(1,1), tr.P(2,2), tr.P(3,3),
+                    tr.p00_variance_5_frames); // <--- 这里就是你要的方差
 
-            // 根据权重变色：高权重(>0.5)显示绿色，低权重显示品红
-            cv::Scalar txt_color = (cand.w > 0.5) ? cv::Scalar(0, 255, 0) : cv::Scalar(255, 0, 255);
+            // 颜色逻辑：
+            // 如果方差很大 (>100)，说明协方差在剧烈抖动，显示红色警报
+            // 如果方差很小，显示绿色
+            cv::Scalar txt_color = (tr.p00_variance_5_frames > 100.0f) ? cv::Scalar(0, 0, 255) : cv::Scalar(0, 255, 0);
 
-            // 从底部向上绘制
             int draw_y = list_y_base - (count * line_step);
             cv::putText(input_image, buffer, cv::Point(list_x, draw_y),
                         cv::FONT_HERSHEY_SIMPLEX, 0.35, txt_color, 1, cv::LINE_AA);
-
-            // 可选：同时在原来的白圈旁边画个 ID，方便对应
-            // 重新计算坐标
-            float raw_x = cand.x(0);
-            float raw_y = cand.x(2);
-            float scaleX = input_image.cols / (float)detection_width;
-            float scaleY = input_image.rows / (float)detection_height;
-            int sx = floor((raw_x + detection_offset_x) * scaleX);
-            int sy = floor((raw_y + detection_offset_y) * scaleY);
-            if(sx > 0 && sx < input_image.cols && sy > 0 && sy < input_image.rows) {
-                 cv::putText(input_image, to_string(i), cv::Point(sx+10, sy), 
-                        cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
-            }
 
             count++;
         }

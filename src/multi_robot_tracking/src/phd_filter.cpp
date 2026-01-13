@@ -1274,8 +1274,8 @@ void PhdFilter::phd_update() //更新
     // ==============================================
     // 1. 定义参数
     const float birth_weight = 1.0f;        // 新生目标初始权重
-    const float birth_pos_var = 1.0f;       // 位置初始不确定性
-    const float birth_vel_var = 0.5f;       // 速度初始不确定性
+    const float birth_pos_var = 20.0f;       // 位置初始不确定性
+    const float birth_vel_var = 20.0f;       // 速度初始不确定性
     //const float match_threshold = 0.01f;     // 关联权重低于此值视为未匹配
     const float empty_threshold = 0.05f;    // 权重低于此值视为"空列"（可复用）
 
@@ -1405,7 +1405,7 @@ void PhdFilter::phd_prune() //剪枝
 
     int I_counter = 0;  // 保留的目标计数
     float weight_threshold = 0.03;  // 权重阈值（来自配置）
-    float mahalanobis_threshold = 4.0;  // 马氏距离阈值（来自配置）
+    float mahalanobis_threshold = 2.0;  // 马氏距离阈值（来自配置）
     int l = 0;  // 合并迭代计数
 
     // 2. 第一步：修剪低权重目标（保留高权重+新生目标）
