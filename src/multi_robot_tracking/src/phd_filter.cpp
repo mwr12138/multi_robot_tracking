@@ -255,44 +255,44 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates)
     }
     
     
-    // === 新增：计算最近 5 帧 P(0,0) 的方差 ===
-    // ==========================================
-    for (int i = 0; i < NUM_DRONES; ++i) {
-        auto& tr = tracks_[i];
+    // // === 新增：计算最近 5 帧 P(0,0) 的方差 ===
+    // // ==========================================
+    // for (int i = 0; i < NUM_DRONES; ++i) {
+    //     auto& tr = tracks_[i];
         
-        // 只计算活跃的，或者刚丢失不久的
-        if (tr.active || tr.missed_count < 10) {
+    //     // 只计算活跃的，或者刚丢失不久的
+    //     if (tr.active || tr.missed_count < 10) {
             
-            // 1. 存入当前帧的 P(0,0)
-            // 注意：这里取的是位置X的协方差
-            tr.p00_history.push_back(tr.P(0,0));
+    //         // 1. 存入当前帧的 P(0,0)
+    //         // 注意：这里取的是位置X的协方差
+    //         tr.p00_history.push_back(tr.P(0,0));
 
-            // 2. 保持队列长度为 5
-            if (tr.p00_history.size() > 5) {
-                tr.p00_history.pop_front();
-            }
+    //         // 2. 保持队列长度为 5
+    //         if (tr.p00_history.size() > 5) {
+    //             tr.p00_history.pop_front();
+    //         }
 
-            // 3. 计算方差
-            if (tr.p00_history.size() > 1) {
-                // 计算均值
-                float sum = 0.0f;
-                for (float val : tr.p00_history) sum += val;
-                float mean = sum / tr.p00_history.size();
+    //         // 3. 计算方差
+    //         if (tr.p00_history.size() > 1) {
+    //             // 计算均值
+    //             float sum = 0.0f;
+    //             for (float val : tr.p00_history) sum += val;
+    //             float mean = sum / tr.p00_history.size();
 
-                // 计算方差 sum((x - mean)^2) / N
-                float sq_sum = 0.0f;
-                for (float val : tr.p00_history) {
-                    sq_sum += (val - mean) * (val - mean);
-                }
-                tr.p00_variance_5_frames = sq_sum / tr.p00_history.size();
-            } else {
-                tr.p00_variance_5_frames = 0.0f;
-            }
-        } else {
-            // 如果由不活跃变活跃，可能需要清空历史（可选）
-            if (!tr.p00_history.empty()) tr.p00_history.clear();
-        }
-    }
+    //             // 计算方差 sum((x - mean)^2) / N
+    //             float sq_sum = 0.0f;
+    //             for (float val : tr.p00_history) {
+    //                 sq_sum += (val - mean) * (val - mean);
+    //             }
+    //             tr.p00_variance_5_frames = sq_sum / tr.p00_history.size();
+    //         } else {
+    //             tr.p00_variance_5_frames = 0.0f;
+    //         }
+    //     } else {
+    //         // 如果由不活跃变活跃，可能需要清空历史（可选）
+    //         if (!tr.p00_history.empty()) tr.p00_history.clear();
+    //     }
+    // }
 
 
 }

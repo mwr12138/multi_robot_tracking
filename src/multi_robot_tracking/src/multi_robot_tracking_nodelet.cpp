@@ -1134,73 +1134,65 @@ void multi_robot_tracking_Nodelet::draw_image() {
 
 
 // ==========================================================
-        // === 修改：右下角显示 ALL Tracks (含不活跃的) ===
+        // === 新增：右下角显示 Candidate 详细数据 (调试用) ===
         // ==========================================================
-        
-        // 1. 布局设置
-        int list_x = input_image.cols - 480; 
-        int list_y_base = input_image.rows - 20; 
-        int line_step = 16; 
-        int max_lines = 15; 
+        int list_x = input_image.cols - 380; // 文字起始X坐标 (靠右)
+        int list_y_base = input_image.rows - 20; // 文字起始Y坐标 (靠底)
+        int line_step = 16; // 行间距
+        int max_lines = 15; // 最多显示多少行，防止遮挡太多
 
-        // 直接统计所有轨迹的数量 (不再过滤 active)
-        int total_track_count = phd_filter_.tracks_.size();
+        // 1. 先画一个半透明黑色背景框，保证文字清晰
+        int box_height = std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step + 30;
+        cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 390, box_height));
+        cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
+        double alpha = 0.5;
+        cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
 
-        // 2. 画背景框
-        int rows_to_draw = std::min(total_track_count, max_lines);
-        if (rows_to_draw > 0) {
-            int box_height = rows_to_draw * line_step + 30;
-            // 边界检查
-            if (list_x > 0 && list_y_base - box_height > 0) {
-                cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 490, box_height));
-                cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
-                double alpha = 0.5;
-                cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
-            }
-        }
-
-        // 3. 打印表头
-        std::string header = "ID | St | P:[Pos Vel Pos Vel] | Var";
+        // 2. 打印表头
+        // P: [位置X / 速度X / 位置Y / 速度Y]
+        std::string header = "ID | Wgt | P:[PosX VelX PosY VelY]";
         cv::putText(input_image, header, 
-                    cv::Point(list_x, list_y_base - (rows_to_draw * line_step) - 5),
+                    cv::Point(list_x, list_y_base - (std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step) - 5),
                     cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
 
-        // 4. 遍历所有 Tracks 并打印
+        // 3. 遍历并打印数据 (倒序打印，让列表从底向上堆叠)
         int count = 0;
-        for (const auto& tr : phd_filter_.tracks_) 
+        for (size_t i = 0; i < phd_filter_.candidates_for_matching.size(); i++) 
         {
             if (count >= max_lines) break;
 
-            char buffer[256];
-            // 增加一列显示状态: A(Active) 或 M(Missed)
-            char status_char = tr.active ? 'A' : 'M';
+            const auto& cand = phd_filter_.candidates_for_matching[i];
             
-            sprintf(buffer, "#%d|%c | [%.0f, %.0f, %.0f, %.0f] | %.2f", 
-                    tr.id, status_char,
-                    tr.P(0,0), tr.P(1,1), tr.P(2,2), tr.P(3,3),
-                    tr.p00_variance_5_frames); 
+            // 格式化字符串
+            char buffer[256];
+            // 只取 P 的对角线元素，保留整数部分即可 (方差通常比较大)
+            // 如果方差特别小(<1)，可以改用 %.1f
+            sprintf(buffer, "#%zu | %.2f | [%.0f, %.0f, %.0f, %.0f]", 
+                    i, 
+                    cand.w, 
+                    cand.P(0,0), cand.P(1,1), cand.P(2,2), cand.P(3,3));
 
-            // === 颜色逻辑 ===
-            cv::Scalar txt_color;
-
-            if (tr.active) {
-                // 活跃状态：默认绿色
-                txt_color = cv::Scalar(0, 255, 0); 
-                // 如果方差爆炸，变红报警
-                if (tr.p00_variance_5_frames > 100.0f || tr.P(1,1) > 1000.0f) {
-                    txt_color = cv::Scalar(0, 0, 255); 
-                }
-            } else {
-                // 不活跃状态 (Missed)：显示灰色，方便区分
-                // 这样你就能看到跟丢的目标 P 值是不是在疯涨
-                txt_color = cv::Scalar(180, 180, 180); 
-            }
+            // 根据权重变色：高权重(>0.5)显示绿色，低权重显示品红
+            cv::Scalar txt_color = (cand.w > 0.5) ? cv::Scalar(0, 255, 0) : cv::Scalar(255, 0, 255);
 
             // 从底部向上绘制
             int draw_y = list_y_base - (count * line_step);
             cv::putText(input_image, buffer, cv::Point(list_x, draw_y),
                         cv::FONT_HERSHEY_SIMPLEX, 0.35, txt_color, 1, cv::LINE_AA);
-            
+
+            // 可选：同时在原来的白圈旁边画个 ID，方便对应
+            // 重新计算坐标
+            float raw_x = cand.x(0);
+            float raw_y = cand.x(2);
+            float scaleX = input_image.cols / (float)detection_width;
+            float scaleY = input_image.rows / (float)detection_height;
+            int sx = floor((raw_x + detection_offset_x) * scaleX);
+            int sy = floor((raw_y + detection_offset_y) * scaleY);
+            if(sx > 0 && sx < input_image.cols && sy > 0 && sy < input_image.rows) {
+                 cv::putText(input_image, to_string(i), cv::Point(sx+10, sy), 
+                        cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
+            }
+
             count++;
         }
 
