@@ -253,7 +253,7 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates)
     for (int i = 0; i < NUM_DRONES; ++i) {
         if (tracks_[i].active && tracks_[i].missed_count > MAX_MISSED) tracks_[i].active = false;
     }
-    updateOcclusionProbabilities(track_matched); 
+    
     
     // // === 新增：计算最近 5 帧 P(0,0) 的方差 ===
     // // ==========================================
@@ -527,115 +527,7 @@ void PhdFilter::create_new_track(const Candidate& cand, int id) {
     tr.active = true;
     tr.missed_count = 0;
     tr.position_history.push_back(cand.x.head(2));
-
-    // === 新增：概率初始化 ===
-    tr.p_visible = 0.9f;   // 新生目标默认可见
-    tr.p_occluded = 0.1f;  // 只有很小概率一出生就被挡
-    tr.max_iou_score = 0.0f;
-
     tracks_.push_back(tr);
-}
-
-// 计算近似 IOU / 竞争强度
-float PhdFilter::calculate_approx_iou(const Eigen::VectorXf& x1, const Eigen::VectorXf& x2) {
-    float dist = (x1.head(2) - x2.head(2)).norm(); // 计算欧氏距离
-    // 假设目标直径约 40 像素 (根据你的 224x224 图像估算)
-    float diameter = 100.0f; 
-    
-    if (dist >= diameter) return 0.0f; // 没挨着
-    
-    // 简单的线性重叠度：距离越近，IOU 越高 (0~1)
-    return 1.0f - (dist / diameter);
-}
-
-void PhdFilter::updateOcclusionProbabilities(const std::vector<bool>& track_matched) 
-{
-    // 图像边界定义 (224x224)
-    const float IMG_W = 1920.0f;
-    const float IMG_H = 1080.0f;
-    const float MARGIN = 10.0f; // 边界余量
-
-    for (int i = 0; i < NUM_DRONES; ++i) {
-        auto& tr = tracks_[i];
-        if (!tr.active) continue;
-
-        // ==========================================
-        // Step 1: 状态转移 (Prediction / Prior)
-        // ==========================================
-        // 根据上一帧的后验，预测当前的先验
-        float prior_V = P_VV * tr.p_visible + P_OV * tr.p_occluded;
-        float prior_O = P_VO * tr.p_visible + P_OO * tr.p_occluded;
-
-        // ==========================================
-        // Step 2: 计算观测所需变量
-        // ==========================================
-        bool matched = track_matched[i];
-        
-        // 检查是否在视野内 (In View)
-        bool in_view = (tr.x(0) > MARGIN && tr.x(0) < IMG_W - MARGIN &&
-                        tr.x(2) > MARGIN && tr.x(2) < IMG_H - MARGIN);
-
-        // 计算最大重叠度 (Max IOU / Competition)
-        float max_iou = 0.0f;
-        for (int j = 0; j < NUM_DRONES; ++j) {
-            if (i == j || !tracks_[j].active) continue;
-            // 计算与其他目标的重叠
-            float iou = calculate_approx_iou(tr.x, tracks_[j].x);
-            if (iou > max_iou) max_iou = iou;
-        }
-        tr.max_iou_score = max_iou; // 存起来打印用
-
-        // ==========================================
-        // Step 3: 观测似然 (Likelihood) - 论文核心公式
-        // ==========================================
-        float p_y_given_V = 0.0f;
-        float p_y_given_O = 0.0f;
-
-        if (matched) {
-            // Case A: 观测到了 (y=1)
-            // 如果可见，观测到的概率很高；如果被遮挡，观测到的概率极低
-            p_y_given_V = 0.95f; 
-            p_y_given_O = 0.01f; 
-        } else {
-            // Case B: 没观测到 (y=0) -> 遮挡推断的关键
-            
-            // P(y=0 | V): 如果目标可见但没测到 (漏检)，概率较小
-            p_y_given_V = 0.2f; 
-
-            // P(y=0 | O): 如果目标被遮挡且没测到，这很正常
-            // 关键逻辑：如果在视野内，且周围有干扰(max_iou大)，则大概率是被遮挡
-            if (in_view) {
-                // 公式： P(y=0|O) ∝ exp(lambda * IOU)
-                // 重叠越大，越像是因为遮挡导致的丢失
-                float base_prob = 0.5f;
-                // 限制最大值为 0.95 (防止溢出)
-                p_y_given_O = std::min(0.95f, base_prob * std::exp(LAMBDA_IOU * max_iou));
-            } else {
-                // 如果出了视野，没测到是因为出去了，而不是被遮挡
-                p_y_given_O = 0.1f; 
-            }
-        }
-
-        // ==========================================
-        // Step 4: 贝叶斯更新 (Posterior Update)
-        // ==========================================
-        float likelihood_V = p_y_given_V * prior_V;
-        float likelihood_O = p_y_given_O * prior_O;
-        
-        // 归一化
-        float norm_factor = likelihood_V + likelihood_O;
-        if (norm_factor > 1e-6) {
-            tr.p_visible = likelihood_V / norm_factor;
-            tr.p_occluded = likelihood_O / norm_factor;
-        }
-
-        // 打印调试信息 (这就是你要的数据！)
-        /*
-        ROS_INFO_THROTTLE(0.5, 
-            "[ID %d] Match:%d InView:%d IoU:%.2f -> P_Occ: %.3f (P_Vis: %.3f)", 
-            tr.id, matched, in_view, max_iou, tr.p_occluded, tr.p_visible);
-        */
-    }
 }
 
 // static const float ASSOC_COST_TH = 50.5f;
