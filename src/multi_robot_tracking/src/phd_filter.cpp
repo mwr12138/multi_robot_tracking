@@ -1173,7 +1173,7 @@ void PhdFilter::asynchronous_predict_existing() //异步预测
     {
         // 提取每个无人机对应的4×4子矩阵的对角线元素
         Eigen::Vector4f diagonal = Pk_k_minus_1.block(0, n_state * i, n_state, n_state).diagonal();
-        ROS_ERROR_STREAM("Drone predict " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
+        //ROS_ERROR_STREAM("Drone predict " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
     }
 }
 
@@ -1429,7 +1429,7 @@ void PhdFilter::phd_update() //更新
     {
         // 提取每个无人机对应的4×4子矩阵的对角线元素
         Eigen::Vector4f diagonal = Pk.block(0, n_state * i, n_state, n_state).diagonal();
-        ROS_ERROR_STREAM("Drone update " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
+        //ROS_ERROR_STREAM("Drone update " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
     }
 }
 
@@ -1669,7 +1669,7 @@ void PhdFilter::phd_prune() //剪枝
     {
         // 提取每个无人机对应的4×4子矩阵的对角线元素
         Eigen::Vector4f diagonal = Pk_bar_fixed.block(0, n_state * i, n_state, n_state).diagonal();
-        ROS_ERROR_STREAM("Drone prune " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
+        //ROS_ERROR_STREAM("Drone prune " << i << " Pk diagonal: [" << diagonal(0) << ", " << diagonal(1) << ", " << diagonal(2) << ", " << diagonal(3) << "]");
     }
 }
 
@@ -1884,8 +1884,8 @@ void PhdFilter::phd_state_extract()
 
                 // 将计算出的实时速度反馈给下一帧的预测
                 // 这样下一帧的预测位置 = 当前位置 + velocity * dt
-                mk_minus_1(1, i) = velocity(0, 0);
-                mk_minus_1(3, i) = velocity(1, 0);
+                mk_minus_1(1, i) = tracks_[i].velocity(0);
+                mk_minus_1(3, i) = tracks_[i].velocity(1);
                 
                 ROS_INFO("Drone %d Velocity: VX=%.2f, VY=%.2f", i, velocity(0, 0), velocity(1, 0));
             }

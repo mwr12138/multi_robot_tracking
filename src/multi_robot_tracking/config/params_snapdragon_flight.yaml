@@ -31,8 +31,8 @@ use_generated_id: true
 
 phd: 
   q_pos: 6.25
-  q_vel: 0
-  r_meas: 10
+  q_vel: 0.01
+  r_meas: 40
   p_pos_init: 20.0
   p_vel_init: 20.0
   prune_weight_threshold: 0.1
