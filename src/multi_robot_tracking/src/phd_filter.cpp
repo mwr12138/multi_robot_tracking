@@ -31,7 +31,7 @@ static const float W_VEL  = 0.1f;       // 速度大小权重 (辅助)
 
 // 阈值：关键修改点！
 static const float GATE_DIST_BASE = 400.0f; // 搜索半径加大，防止跟丢
-static const float DUPLICATE_DIST = 20.0f; // 【关键】互斥半径加大！224像素下，20像素内视为同一个目标
+static const float DUPLICATE_DIST = 1.0f; // 【关键】互斥半径加大！224像素下，20像素内视为同一个目标
 static const float NEW_TRACK_TH   = 0.3f;  // 新生目标权重门限
 static const float MERGE_CAND_DIST = 15.0f; // 【新增】候选点合并距离
 
@@ -1589,17 +1589,17 @@ void PhdFilter::phd_prune() //剪枝
             }
         }
 
-        // 移除重复的无人机索引（避免同一无人机被多次跟踪）
-        // int deleteDroneIndex = j%NUM_DRONES;
-        // for(int i=0; i<I_copy.cols(); i++)
-        // {
-        //     if(I_copy(i) % numTargets_Jk_k_minus_1 == deleteDroneIndex)
-        //     {
-        //         ROS_INFO_STREAM("Removing indices for drone: " << deleteDroneIndex << " at index: " << i);
-        //         removeColumni(I_copy, i);
-        //         removeColumni(I, i);
-        //     } 
-        // }
+        //移除重复的无人机索引（避免同一无人机被多次跟踪）
+        int deleteDroneIndex = j%NUM_DRONES;
+        for(int i=0; i<I_copy.cols(); i++)
+        {
+            if(I_copy(i) % numTargets_Jk_k_minus_1 == deleteDroneIndex)
+            {
+                ROS_INFO_STREAM("Removing indices for drone: " << deleteDroneIndex << " at index: " << i);
+                removeColumni(I_copy, i);
+                removeColumni(I, i);
+            } 
+        }
         ROS_INFO_STREAM("New I: " << I);
         ROS_INFO_STREAM("New I_copy: " << I_copy);
 
@@ -1659,7 +1659,8 @@ void PhdFilter::phd_prune() //剪枝
         mk_bar_fixed.block(0, sortedIndex, n_state, 1) = mk_bar_fixed_k.block(0, i, n_state, 1);
         Pk_bar_fixed.block(0, n_state*sortedIndex, n_state, n_state) = Pk_bar_fixed_k.block(0, n_state*i, n_state, n_state);
     }
-    ROS_INFO_STREAM("wk_bar_fixed is:\n" << wk_bar_fixed << "\n");
+    ROS_ERROR_STREAM("wk_bar_fixed number: " << wk_bar_fixed.cols());
+    ROS_ERROR_STREAM("wk_bar_fixed is:\n" << wk_bar_fixed << "\n");
     ROS_INFO_STREAM("mk_bar_fixed is:\n" << mk_bar_fixed << "\n");
     ROS_INFO_STREAM("Pk_bar_fixed is:\n" << Pk_bar_fixed << "\n");
 
@@ -1826,7 +1827,7 @@ void PhdFilter::phd_state_extract()
     candidates_for_matching.clear();
     for (int i = 0; i < wk_bar_fixed.cols(); i++) {
         // 只要权重不是微不足道的，都送入 ID 匹配器
-        if (wk_bar_fixed(i) > 0.1f) { 
+        if (wk_bar_fixed(i) > 0.0f) { 
             Candidate c;
             c.x = mk_bar_fixed.col(i);
             c.P = Pk_bar_fixed.block(0, n_state * i, n_state, n_state);
@@ -1834,7 +1835,7 @@ void PhdFilter::phd_state_extract()
             candidates_for_matching.push_back(c);
         }
     }
-
+    ROS_ERROR_STREAM("candidates_for_matching size: " << candidates_for_matching.size());
     // 3. 执行 ID 分配 (数据关联)
     // 这一步会将 candidates 分配给 tracks_[0...NUM_DRONES-1]
     updateTracks(candidates_for_matching);

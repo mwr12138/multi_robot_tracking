@@ -1088,7 +1088,11 @@ void multi_robot_tracking_Nodelet::draw_image() {
             return;
         }
 
+        cv::putText(input_image,"candidates_size=" + std::to_string(phd_filter_.candidates_for_matching.size()),
+                    cv::Point(input_image.cols - 200, 30),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
         // 遍历 candidates
+        cout << "candidates_for_matching size: " << phd_filter_.candidates_for_matching.size() << endl;
         for (const auto& cand : phd_filter_.candidates_for_matching)
         {
             // 【安全检查 2】确保 Eigen 向量已经初始化且维度足够

@@ -1,0 +1,308 @@
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libnodeletlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libbondcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libuuid.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2_ros.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libactionlib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libtf2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcv_bridge.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_calib3d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_features2d.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_flann.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ml.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_photo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_video.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videoio.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_aruco.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bgsegm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_bioinspired.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ccalib.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_objdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dnn_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_dpm.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_face.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_freetype.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_fuzzy.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hdf.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_hfs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_img_hash.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_line_descriptor.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_optflow.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_phase_unwrapping.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_quality.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_reg.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_rgbd.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_saliency.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_shape.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_stereo.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_structured_light.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_superres.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_surface_matching.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_text.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_tracking.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_videostab.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_viz.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_ximgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xobjdetect.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_xphoto.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_core.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libopencv_imgcodecs.so.4.2.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libimage_transport.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libmessage_filters.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libclass_loader.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libPocoFoundation.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libdl.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpthread.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_chrono.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_log4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librosconsole_backend_interface.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/liblog4cxx.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_regex.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libxmlrpcpp.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroslib.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librospack.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libpython3.8.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_filesystem.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_program_options.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libtinyxml2.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libroscpp_serialization.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/librostime.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_date_time.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/opt/ros/noetic/lib/libcpp_common.so: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_system.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libboost_thread.so.1.71.0: not a directory
+[01m[Kcc1plus:[m[K [01;35m[Kwarning: [m[K/usr/lib/x86_64-linux-gnu/libconsole_bridge.so.0.4: not a directory
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:934:18:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #ifdef directive
+     #ifdef TIMING[01;35m[K�[m[K��
+                  [01;35m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:936:12:[m[K [01;35m[Kwarning: [m[Kextra tokens at end of #endif directive [[01;35m[K-Wendif-labels[m[K]
+     #endif [01;35m[KTIMING[m[K
+            [01;35m[K^~~~~~[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:9:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+         [01;31m[K�[m[K��除重复的无人机索引（避免同一无人机被多次跟踪）
+         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:10:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\247[m[K’ in program
+         �[01;31m[K�[m[K�除重复的无人机索引（避免同一无人机被多次跟踪）
+          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:11:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\273[m[K’ in program
+         �[01;31m[K�[m[K除重复的无人机索引（避免同一无人机被多次跟踪）
+           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:12:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+         移[01;31m[K�[m[K��重复的无人机索引（避免同一无人机被多次跟踪）
+            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:13:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\231[m[K’ in program
+         移�[01;31m[K�[m[K�重复的无人机索引（避免同一无人机被多次跟踪）
+             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:14:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\244[m[K’ in program
+         移�[01;31m[K�[m[K重复的无人机索引（避免同一无人机被多次跟踪）
+              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:15:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+         移除[01;31m[K�[m[K��复的无人机索引（避免同一无人机被多次跟踪）
+               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:16:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\207[m[K’ in program
+         移除�[01;31m[K�[m[K�复的无人机索引（避免同一无人机被多次跟踪）
+                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:17:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\215[m[K’ in program
+         移除�[01;31m[K�[m[K复的无人机索引（避免同一无人机被多次跟踪）
+                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:18:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+         移除重[01;31m[K�[m[K��的无人机索引（避免同一无人机被多次跟踪）
+                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:19:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\244[m[K’ in program
+         移除重�[01;31m[K�[m[K�的无人机索引（避免同一无人机被多次跟踪）
+                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:20:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\215[m[K’ in program
+         移除重�[01;31m[K�[m[K的无人机索引（避免同一无人机被多次跟踪）
+                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:21:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+         移除重复[01;31m[K�[m[K��无人机索引（避免同一无人机被多次跟踪）
+                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:22:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\232[m[K’ in program
+         移除重复�[01;31m[K�[m[K�无人机索引（避免同一无人机被多次跟踪）
+                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:23:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\204[m[K’ in program
+         移除重复�[01;31m[K�[m[K无人机索引（避免同一无人机被多次跟踪）
+                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:24:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+         移除重复的[01;31m[K�[m[K��人机索引（避免同一无人机被多次跟踪）
+                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:25:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\227[m[K’ in program
+         移除重复的�[01;31m[K�[m[K�人机索引（避免同一无人机被多次跟踪）
+                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:26:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\240[m[K’ in program
+         移除重复的�[01;31m[K�[m[K人机索引（避免同一无人机被多次跟踪）
+                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:27:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+         移除重复的无[01;31m[K�[m[K��机索引（避免同一无人机被多次跟踪）
+                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:28:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+         移除重复的无�[01;31m[K�[m[K�机索引（避免同一无人机被多次跟踪）
+                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:29:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+         移除重复的无�[01;31m[K�[m[K机索引（避免同一无人机被多次跟踪）
+                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:30:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+         移除重复的无人[01;31m[K�[m[K��索引（避免同一无人机被多次跟踪）
+                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:31:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\234[m[K’ in program
+         移除重复的无人�[01;31m[K�[m[K�索引（避免同一无人机被多次跟踪）
+                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:32:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+         移除重复的无人�[01;31m[K�[m[K索引（避免同一无人机被多次跟踪）
+                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:33:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\347[m[K’ in program
+         移除重复的无人机[01;31m[K�[m[K��引（避免同一无人机被多次跟踪）
+                                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:34:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\264[m[K’ in program
+         移除重复的无人机�[01;31m[K�[m[K�引（避免同一无人机被多次跟踪）
+                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:35:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\242[m[K’ in program
+         移除重复的无人机�[01;31m[K�[m[K引（避免同一无人机被多次跟踪）
+                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:36:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+         移除重复的无人机索[01;31m[K�[m[K��（避免同一无人机被多次跟踪）
+                                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:37:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\274[m[K’ in program
+         移除重复的无人机索�[01;31m[K�[m[K�（避免同一无人机被多次跟踪）
+                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:38:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\225[m[K’ in program
+         移除重复的无人机索�[01;31m[K�[m[K（避免同一无人机被多次跟踪）
+                                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:39:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\357[m[K’ in program
+         移除重复的无人机索引[01;31m[K�[m[K��避免同一无人机被多次跟踪）
+                                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:40:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\274[m[K’ in program
+         移除重复的无人机索引�[01;31m[K�[m[K�避免同一无人机被多次跟踪）
+                                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:41:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\210[m[K’ in program
+         移除重复的无人机索引�[01;31m[K�[m[K避免同一无人机被多次跟踪）
+                                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:42:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\351[m[K’ in program
+         移除重复的无人机索引（[01;31m[K�[m[K��免同一无人机被多次跟踪）
+                                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:43:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\201[m[K’ in program
+         移除重复的无人机索引（�[01;31m[K�[m[K�免同一无人机被多次跟踪）
+                                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:44:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\277[m[K’ in program
+         移除重复的无人机索引（�[01;31m[K�[m[K免同一无人机被多次跟踪）
+                                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:45:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+         移除重复的无人机索引（避[01;31m[K�[m[K��同一无人机被多次跟踪）
+                                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:46:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\205[m[K’ in program
+         移除重复的无人机索引（避�[01;31m[K�[m[K�同一无人机被多次跟踪）
+                                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:47:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\215[m[K’ in program
+         移除重复的无人机索引（避�[01;31m[K�[m[K同一无人机被多次跟踪）
+                                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:48:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+         移除重复的无人机索引（避免[01;31m[K�[m[K��一无人机被多次跟踪）
+                                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:49:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\220[m[K’ in program
+         移除重复的无人机索引（避免�[01;31m[K�[m[K�一无人机被多次跟踪）
+                                                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:50:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\214[m[K’ in program
+         移除重复的无人机索引（避免�[01;31m[K�[m[K一无人机被多次跟踪）
+                                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:51:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+         移除重复的无人机索引（避免同[01;31m[K�[m[K��无人机被多次跟踪）
+                                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:52:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\270[m[K’ in program
+         移除重复的无人机索引（避免同�[01;31m[K�[m[K�无人机被多次跟踪）
+                                                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:53:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\200[m[K’ in program
+         移除重复的无人机索引（避免同�[01;31m[K�[m[K无人机被多次跟踪）
+                                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:54:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+         移除重复的无人机索引（避免同一[01;31m[K�[m[K��人机被多次跟踪）
+                                                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:55:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\227[m[K’ in program
+         移除重复的无人机索引（避免同一�[01;31m[K�[m[K�人机被多次跟踪）
+                                                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:56:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\240[m[K’ in program
+         移除重复的无人机索引（避免同一�[01;31m[K�[m[K人机被多次跟踪）
+                                                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:57:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\344[m[K’ in program
+         移除重复的无人机索引（避免同一无[01;31m[K�[m[K��机被多次跟踪）
+                                                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:58:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+         移除重复的无人机索引（避免同一无�[01;31m[K�[m[K�机被多次跟踪）
+                                                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:59:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+         移除重复的无人机索引（避免同一无�[01;31m[K�[m[K机被多次跟踪）
+                                                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:60:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+         移除重复的无人机索引（避免同一无人[01;31m[K�[m[K��被多次跟踪）
+                                                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:61:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\234[m[K’ in program
+         移除重复的无人机索引（避免同一无人�[01;31m[K�[m[K�被多次跟踪）
+                                                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:62:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\272[m[K’ in program
+         移除重复的无人机索引（避免同一无人�[01;31m[K�[m[K被多次跟踪）
+                                                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:63:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\350[m[K’ in program
+         移除重复的无人机索引（避免同一无人机[01;31m[K�[m[K��多次跟踪）
+                                                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:64:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\242[m[K’ in program
+         移除重复的无人机索引（避免同一无人机�[01;31m[K�[m[K�多次跟踪）
+                                                                [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:65:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\253[m[K’ in program
+         移除重复的无人机索引（避免同一无人机�[01;31m[K�[m[K多次跟踪）
+                                                                 [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:66:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\345[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被[01;31m[K�[m[K��次跟踪）
+                                                                  [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:67:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\244[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被�[01;31m[K�[m[K�次跟踪）
+                                                                   [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:68:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\232[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被�[01;31m[K�[m[K次跟踪）
+                                                                    [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:69:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\346[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多[01;31m[K�[m[K��跟踪）
+                                                                     [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:70:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\254[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多�[01;31m[K�[m[K�跟踪）
+                                                                      [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:71:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\241[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多�[01;31m[K�[m[K跟踪）
+                                                                       [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:72:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\350[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次[01;31m[K�[m[K��踪）
+                                                                        [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:73:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\267[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次�[01;31m[K�[m[K�踪）
+                                                                         [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:74:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\237[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次�[01;31m[K�[m[K踪）
+                                                                          [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:75:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\350[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次跟[01;31m[K�[m[K��）
+                                                                           [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:76:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\270[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次跟�[01;31m[K�[m[K�）
+                                                                            [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:77:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\252[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次跟�[01;31m[K�[m[K）
+                                                                             [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:78:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\357[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次跟踪[01;31m[K�[m[K��
+                                                                              [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:79:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\274[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次跟踪�[01;31m[K�[m[K�
+                                                                               [01;31m[K^[m[K
+[01m[K/home/mwr/tracking/src/multi_robot_tracking/src/phd_filter.cpp:1592:80:[m[K [01;31m[Kerror: [m[Kstray ‘[01m[K\211[m[K’ in program
+         移除重复的无人机索引（避免同一无人机被多次跟踪�[01;31m[K�[m[K
+                                                                                [01;31m[K^[m[K
+make[2]: *** [CMakeFiles/multi_robot_tracking.dir/build.make:132：CMakeFiles/multi_robot_tracking.dir/src/phd_filter.cpp.o] 错误 1
+make[1]: *** [CMakeFiles/Makefile2:1949：CMakeFiles/multi_robot_tracking.dir/all] 错误 2
+make: *** [Makefile:146：all] 错误 2
