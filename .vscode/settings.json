@@ -86,5 +86,6 @@
         "tensor": "cpp",
         "threadpool": "cpp",
         "*.txt": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "/home/mwr/tracking/build/catkin_tools_prebuild"
 }
