@@ -34,6 +34,11 @@ struct Tracknew {
     float confidence;            // 可信度（暂时用权重）
     int missed_count;            // 连续未匹配帧数
     bool active;                 // 是否仍然有效
+    int match_type;              // 匹配类型    
+    // 0: Miss (没匹配到/遮挡)
+    // 1: Match (正常匹配)
+    // 2: Revive (借尸还魂/复活)
+    // 3: Birth (新生/投胎)
 
     std::deque<Eigen::Vector2f> position_history;  // 位置历史
     std::deque<Eigen::Vector2f> velocity_history;  // 速度历史

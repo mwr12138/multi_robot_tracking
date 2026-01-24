@@ -52,7 +52,10 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates)
             tracks_[i].missed_count = 999; tracks_[i].velocity = Eigen::Vector2f::Zero();
         }
     }
-
+    // === 修改点 1：每帧开始先把所有 Track 标记为 Miss (0) ===
+    for(auto& tr : tracks_) {
+        tr.match_type = 0; // 默认没匹配
+    }
     // --- 1. 候选点预处理 (合并双黄蛋) ---
     // PHD滤波器有时会对一个强目标输出2个靠得很近的点，必须先合并，否则必定导致多ID
     std::vector<Candidate> candidates = raw_candidates; // 拷贝一份
@@ -168,7 +171,8 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates)
 
             tr.position_history.push_back(new_pos);
             if (tr.position_history.size() > HISTORY_SIZE) tr.position_history.pop_front();
-
+            // === 修改点 2：标记为正常匹配 ===
+            tr.match_type = 1; 
             track_matched[mp.track_idx] = true;
             candidate_used[cid] = true;
         }
@@ -209,6 +213,8 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates)
             tr.x = candidates[j].x; tr.P = candidates[j].P; tr.confidence = candidates[j].w;
             Eigen::Vector2f p; p << tr.x(0), tr.x(2);
             tr.position_history.push_back(p);
+            // === 修改点 3：标记为借尸还魂 (复活) ===
+            tr.match_type = 2;
             candidate_used[j] = true;
         }
     }
@@ -245,6 +251,8 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates)
             tr.position_history.clear(); tr.velocity_history.clear();
             Eigen::Vector2f p; p << tr.x(0), tr.x(2);
             tr.position_history.push_back(p);
+            // === 修改点 4：标记为新生 ===
+            tr.match_type = 3;
             candidate_used[j] = true;
         }
     }
@@ -1621,6 +1629,9 @@ void PhdFilter::phd_prune() //剪枝
     // ROS_ERROR_STREAM("wk_bar_fixed_k is:\n" << wk_bar_fixed_k << "\n");
     // ROS_ERROR_STREAM("mk_bar_fixed_k is:\n" << mk_bar_fixed_k << "\n");
     // ROS_INFO_STREAM("Pk_bar_fixed_k is:\n" << Pk_bar_fixed_k << "\n");
+    wk_bar_fixed = Eigen::MatrixXf::Constant(1, NUM_DRONES, -1.0f);
+    mk_bar_fixed = Eigen::MatrixXf::Zero(n_state, NUM_DRONES);
+    Pk_bar_fixed = Eigen::MatrixXf::Zero(n_state, n_state * NUM_DRONES);
  
     // 调整索引
     Eigen::MatrixXi newIndex = index_order;

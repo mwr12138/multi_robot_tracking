@@ -1137,64 +1137,99 @@ void multi_robot_tracking_Nodelet::draw_image() {
         // ==========================================================
 
 
+// ==========================================================
+        // === 修改：右下角显示 Track 状态 (正常/复活/遮挡) ===
         // ==========================================================
-        // === 新增：右下角显示 Candidate 详细数据 (调试用) ===
-        // ==========================================================
-        int list_x = input_image.cols - 380; // 文字起始X坐标 (靠右)
-        int list_y_base = input_image.rows - 20; // 文字起始Y坐标 (靠底)
-        int line_step = 16; // 行间距
-        int max_lines = 15; // 最多显示多少行，防止遮挡太多
+        
+        // 1. 布局设置 (宽度调整为 460 以容纳状态字符串)
+        int list_x = input_image.cols - 460; 
+        int list_y_base = input_image.rows - 20; 
+        int line_step = 16; 
+        int max_lines = 15; 
 
-        // 1. 先画一个半透明黑色背景框，保证文字清晰
-        int box_height = std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step + 30;
-        cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 390, box_height));
-        cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
-        double alpha = 0.5;
-        cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+        // 统计所有 Tracks (包括不活跃的，方便看遮挡)
+        int total_tracks = phd_filter_.tracks_.size();
 
-        // 2. 打印表头
-        // P: [位置X / 速度X / 位置Y / 速度Y]
-        std::string header = "ID | Wgt | P:[PosX VelX PosY VelY]";
+        // 2. 画半透明黑色背景框
+        int rows_to_draw = std::min(total_tracks, max_lines);
+        if (rows_to_draw > 0) {
+            int box_height = rows_to_draw * line_step + 30;
+            // 边界检查
+            if (list_x > 0 && list_y_base - box_height > 0) {
+                cv::Mat roi = input_image(cv::Rect(list_x - 10, list_y_base - box_height, 470, box_height));
+                cv::Mat color(roi.size(), CV_8UC3, cv::Scalar(0, 0, 0)); 
+                double alpha = 0.5;
+                cv::addWeighted(color, alpha, roi, 1.0 - alpha, 0.0, roi);
+            }
+        }
+
+        // 3. 打印表头
+        // TYPE: 匹配类型 (MATCH/REVIV/BIRTH/MISS)
+        std::string header = "ID | TYPE | Conf | P:[Pos Vel]";
         cv::putText(input_image, header, 
-                    cv::Point(list_x, list_y_base - (std::min((int)phd_filter_.candidates_for_matching.size(), max_lines) * line_step) - 5),
+                    cv::Point(list_x, list_y_base - (rows_to_draw * line_step) - 5),
                     cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
 
-        // 3. 遍历并打印数据 (倒序打印，让列表从底向上堆叠)
+        // 4. 遍历 Tracks 并打印
         int count = 0;
-        for (size_t i = 0; i < phd_filter_.candidates_for_matching.size(); i++) 
+        for (const auto& tr : phd_filter_.tracks_) 
         {
             if (count >= max_lines) break;
 
-            const auto& cand = phd_filter_.candidates_for_matching[i];
-            
+            // --- 解析状态字符串和颜色 ---
+            std::string type_str;
+            cv::Scalar txt_color;
+
+            // 根据 match_type 决定显示的文字和颜色
+            switch (tr.match_type) {
+                case 1: // Normal Match
+                    type_str = "MATCH"; 
+                    txt_color = cv::Scalar(0, 255, 0); // 绿色 (正常)
+                    break;
+                case 2: // Revive (借尸还魂) -> 重点关注这个！
+                    type_str = "REVIV"; 
+                    txt_color = cv::Scalar(0, 255, 255); // 黄色 (高亮提醒)
+                    break;
+                case 3: // Birth (新生)
+                    type_str = "BIRTH"; 
+                    txt_color = cv::Scalar(255, 0, 255); // 品红
+                    break;
+                case 0: // Miss (遮挡/丢失)
+                default:
+                    type_str = "MISS "; 
+                    txt_color = cv::Scalar(180, 180, 180); // 灰色
+                    break;
+            }
+
             // 格式化字符串
             char buffer[256];
-            // 只取 P 的对角线元素，保留整数部分即可 (方差通常比较大)
-            // 如果方差特别小(<1)，可以改用 %.1f
-            sprintf(buffer, "#%zu | %.2f | [%.0f, %.0f, %.0f, %.0f]", 
-                    i, 
-                    cand.w, 
-                    cand.P(0,0), cand.P(1,1), cand.P(2,2), cand.P(3,3));
-
-            // 根据权重变色：高权重(>0.5)显示绿色，低权重显示品红
-            cv::Scalar txt_color = (cand.w > 0.5) ? cv::Scalar(0, 255, 0) : cv::Scalar(255, 0, 255);
+            // ID | 类型 | 置信度 | P矩阵(位置/速度)
+            sprintf(buffer, "#%d | %s | %.2f | [%.0f, %.0f]", 
+                    tr.id, 
+                    type_str.c_str(),
+                    tr.confidence,
+                    tr.P(0,0), tr.P(1,1)); 
 
             // 从底部向上绘制
             int draw_y = list_y_base - (count * line_step);
             cv::putText(input_image, buffer, cv::Point(list_x, draw_y),
                         cv::FONT_HERSHEY_SIMPLEX, 0.35, txt_color, 1, cv::LINE_AA);
 
-            // 可选：同时在原来的白圈旁边画个 ID，方便对应
-            // 重新计算坐标
-            float raw_x = cand.x(0);
-            float raw_y = cand.x(2);
-            float scaleX = input_image.cols / (float)detection_width;
-            float scaleY = input_image.rows / (float)detection_height;
-            int sx = floor((raw_x + detection_offset_x) * scaleX);
-            int sy = floor((raw_y + detection_offset_y) * scaleY);
-            if(sx > 0 && sx < input_image.cols && sy > 0 && sy < input_image.rows) {
-                 cv::putText(input_image, to_string(i), cv::Point(sx+10, sy), 
-                        cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
+            // --- 可选：在图像画面中的目标旁边也写上特殊状态 ---
+            // 只有当它是活跃的，且发生了特殊事件(复活/新生)时才画在目标旁边
+            if (tr.active && (tr.match_type == 2 || tr.match_type == 3)) { 
+                float raw_x = tr.x(0);
+                float raw_y = tr.x(2);
+                float scaleX = input_image.cols / (float)detection_width;
+                float scaleY = input_image.rows / (float)detection_height;
+                int sx = floor((raw_x + detection_offset_x) * scaleX);
+                int sy = floor((raw_y + detection_offset_y) * scaleY);
+                
+                if(sx > 0 && sx < input_image.cols && sy > 0 && sy < input_image.rows) {
+                     // 在目标旁边写上 REVIV 或 BIRTH
+                     cv::putText(input_image, type_str, cv::Point(sx+15, sy), 
+                            cv::FONT_HERSHEY_SIMPLEX, 0.4, txt_color, 1);
+                }
             }
 
             count++;
