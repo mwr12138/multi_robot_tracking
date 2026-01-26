@@ -21,7 +21,7 @@ PhdFilter::PhdFilter()
 // ==========================================
 
 // 1. 分级阈值
-static const float HIGH_SCORE_THRESH = 1.0f; // 只有权重 > 0.8 才算“高分目标”，参与第一轮匹配
+static const float HIGH_SCORE_THRESH = 0.8f; // 只有权重 > 0.8 才算“高分目标”，参与第一轮匹配
 static const float LOW_SCORE_THRESH  = 0.1f; // 权重 < 0.1 的直接视为杂波，不参与任何匹配
 
 // 2. 距离门限 (Gate)
@@ -126,95 +126,6 @@ void PhdFilter::apply_CA_AKS_Update(Tracknew& tr, const Candidate& cand) {
 //   - gate_dist: 距离门限
 //   - strict_direction: 是否启用严格的方向检查 (第一轮启用)
 // =========================================================
-// std::vector<std::pair<int, int>> PhdFilter::associate_candidates_greedy(
-//     const std::vector<int>& track_indices,
-//     const std::vector<int>& cand_indices,
-//     float gate_dist,
-//     bool strict_direction
-// ) {
-//     std::vector<MatchCost> all_costs;
-//     std::vector<std::pair<int, int>> matches;
-
-//     // 1. 构建代价列表
-//     for (int t_idx : track_indices) {
-//         Tracknew& tr = tracks_[t_idx];
-        
-//         // 预测位置 (在 updateTracks 开头已计算，这里直接用预测值)
-//         Eigen::Vector2f pred_pos; 
-//         pred_pos << tr.x(0) + tr.velocity(0) * dt_cam, 
-//                     tr.x(2) + tr.velocity(1) * dt_cam;
-
-//         for (int c_idx : cand_indices) {
-//             const Candidate& cand = candidates_for_matching[c_idx]; // 注意：这里用类成员变量或者传参
-//             Eigen::Vector2f cand_pos; 
-//             cand_pos << cand.x(0), cand.x(2);
-
-//             // --- A. 距离门控 ---
-//             float pos_dist = (pred_pos - cand_pos).norm();
-//             if (pos_dist > gate_dist) continue; 
-
-//             // 基础 Cost = 位置距离
-//             float cost = pos_dist;
-
-//             // --- B. 运动一致性门控 (strict_direction 为 true 时启用) ---
-//             if (strict_direction) {
-//                 // 计算该匹配意味着的“瞬时速度”
-//                 Eigen::Vector2f implied_velocity = (cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2))) / dt_cam;
-                
-//                 // 计算速度差的模长 (Velocity Difference)
-//                 // ID 5 (0,0) vs Cand A (0,10) -> diff = 10
-//                 // ID 6 (0,10) vs Cand A (0,10) -> diff = 0
-//                 float vel_diff = (tr.velocity - implied_velocity).norm();
-//                 // 在 associate_candidates_greedy 中微调
-
-//                 float dist_cost = pos_dist;
-//                 float vel_cost = vel_diff;
-
-//                 // 【新增】贴脸保护机制
-//                 // 当距离非常近时，我们几乎完全依赖速度来区分目标
-//                 if (pos_dist < 20.0f) {
-//                     vel_cost *= 5.0f; // 放大 5 倍速度惩罚！
-//                 } else {
-//                     vel_cost *= 2.0f; // 正常 2 倍
-//                 }
-
-//                 float cost = dist_cost + vel_cost;
-//                 // 将速度差加入 Cost
-//                 // 权重 2.0 是经验值，意味着 1个单位的速度差 等同于 2个像素的位置差
-//                 cost += vel_diff * 2.0f; 
-
-//                 // 原有的方向约束保持不变 (作为硬门控)
-//                 if (tr.velocity.norm() > MIN_VEL_FOR_DIR) {
-//                     float cos_sim = calculate_cosine_similarity(tr.velocity, implied_velocity);
-//                     if (cos_sim < DIR_COSINE_THRESH) continue; // 只有动目标才做方向硬门控
-//                 }
-//             }
-
-//             all_costs.push_back({t_idx, c_idx, cost});
-//         }
-//     }
-
-//     // 2. 排序 (贪婪策略：优先满足 Cost 最小的配对)
-//     std::sort(all_costs.begin(), all_costs.end());
-
-//     // 3. 分配
-//     std::vector<bool> track_used(tracks_.size(), false);
-//     std::vector<bool> cand_used(candidates_for_matching.size(), false); // 注意大小
-
-//     for (const auto& mc : all_costs) {
-//         if (track_used[mc.track_idx] || cand_used[mc.cand_idx]) continue;
-
-//         matches.push_back({mc.track_idx, mc.cand_idx});
-//         track_used[mc.track_idx] = true;
-//         cand_used[mc.cand_idx] = true;
-//     }
-
-//     return matches;
-// }
-
-// =========================================================
-// 辅助函数：贪婪匹配 (带 cout 调试版)
-// =========================================================
 std::vector<std::pair<int, int>> PhdFilter::associate_candidates_greedy(
     const std::vector<int>& track_indices,
     const std::vector<int>& cand_indices,
@@ -224,121 +135,52 @@ std::vector<std::pair<int, int>> PhdFilter::associate_candidates_greedy(
     std::vector<MatchCost> all_costs;
     std::vector<std::pair<int, int>> matches;
 
-    // --- 调试：只关注这几个 ID (根据你的情况修改) ---
-    // 假设真值里是 6 和 7，代码里对应 index 可能是 5 和 6
-    int debug_id_1 = 5; 
-    int debug_id_2 = 6; 
-    bool debug_enable = true; // 总开关
-
     // 1. 构建代价列表
     for (int t_idx : track_indices) {
         Tracknew& tr = tracks_[t_idx];
         
-        // 预测位置
+        // 预测位置 (在 updateTracks 开头已计算，这里直接用预测值)
         Eigen::Vector2f pred_pos; 
         pred_pos << tr.x(0) + tr.velocity(0) * dt_cam, 
                     tr.x(2) + tr.velocity(1) * dt_cam;
 
         for (int c_idx : cand_indices) {
-            const Candidate& cand = candidates_for_matching[c_idx];
+            const Candidate& cand = candidates_for_matching[c_idx]; // 注意：这里用类成员变量或者传参
             Eigen::Vector2f cand_pos; 
             cand_pos << cand.x(0), cand.x(2);
 
             // --- A. 距离门控 ---
-            float pos_dist = (pred_pos - cand_pos).norm();
-            if (pos_dist > gate_dist) continue; 
+            float dist = (pred_pos - cand_pos).norm();
+            if (dist > gate_dist) continue; // 距离太远，跳过
 
-            // 基础 Cost
-            float cost = pos_dist;
-            float vel_diff_debug = -1.0f; // 用于打印调试
+            float cost = dist;
 
-            // --- B & C. 速度与方向门控 ---
-            if (strict_direction) {
-                // 计算隐含速度
-                Eigen::Vector2f implied_velocity = (cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2))) / dt_cam;
-                float vel_diff = (tr.velocity - implied_velocity).norm();
-                vel_diff_debug = vel_diff;
+            // --- B. 方向门控 (仅对第一轮且有速度的目标启用) ---
+            if (strict_direction && tr.velocity.norm() > MIN_VEL_FOR_DIR) {
+                Eigen::Vector2f move_vec = cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2));
+                float cos_sim = calculate_cosine_similarity(tr.velocity, move_vec);
 
-                // [关键] 硬门控：如果速度差太大，直接拒绝！
-                // 只有当目标是活跃的动目标时才启用
-                if (tr.active && tr.velocity.norm() > 2.0f) {
-                    // 阈值：10.0 (约300像素/秒的突变)
-                    if (vel_diff > 10.0f) {
-                        if (debug_enable && (tr.id == debug_id_1 || tr.id == debug_id_2)) {
-                            std::cout << "[DEBUG-REJECT] Frame " << k_iteration 
-                                      << " | T" << tr.id << " vs C" << c_idx
-                                      << " | REJECTED by Hard Velocity Gate!"
-                                      << " (VelDiff: " << std::fixed << std::setprecision(2) << vel_diff << " > 10.0)"
-                                      << std::endl;
-                        }
-                        continue; // 直接跳过，不加入 Cost 列表
-                    }
-                }
+                // 如果夹角过大 (例如交叉时)，直接拒绝匹配
+                if (cos_sim < DIR_COSINE_THRESH) continue;
 
-                // 软约束：将速度差加入 Cost
-                // 建议：对于超近距离，大幅增加速度权重
-                if (pos_dist < 20.0f) {
-                    cost += vel_diff * 5.0f; // 贴脸时，速度权重放大5倍
-                } else {
-                    cost += vel_diff * 2.0f; // 正常2倍
-                }
-
-                // 方向约束 (保持不变)
-                if (tr.velocity.norm() > MIN_VEL_FOR_DIR) {
-                    float cos_sim = calculate_cosine_similarity(tr.velocity, implied_velocity);
-                    if (cos_sim < DIR_COSINE_THRESH) continue; 
-                }
-            }
-
-            // 存入列表前，打印一下计算结果
-            if (debug_enable && (tr.id == debug_id_1 || tr.id == debug_id_2)) {
-                std::cout << "[DEBUG-CALC] Frame " << k_iteration 
-                          << " | T" << tr.id << " vs C" << c_idx
-                          << " | PosDist: " << std::fixed << std::setprecision(2) << pos_dist
-                          << " | VelDiff: " << vel_diff_debug
-                          << " | FinalCost: " << cost
-                          << std::endl;
+                // 将方向差异加入 Cost (方向越偏，Cost 越大，优先匹配顺路的)
+                // 权重 0.5f 是经验值，让方向好的目标排在前面
+                cost += (1.0f - cos_sim) * 50.0f; 
             }
 
             all_costs.push_back({t_idx, c_idx, cost});
         }
     }
 
-    // 2. 排序
+    // 2. 排序 (贪婪策略：优先满足 Cost 最小的配对)
     std::sort(all_costs.begin(), all_costs.end());
 
     // 3. 分配
     std::vector<bool> track_used(tracks_.size(), false);
-    std::vector<bool> cand_used(candidates_for_matching.size(), false);
-
-    if (debug_enable) {
-        // 打印排序后的前几个匹配意向，看看谁排在前面
-        for (const auto& mc : all_costs) {
-            if (tracks_[mc.track_idx].id == debug_id_1 || tracks_[mc.track_idx].id == debug_id_2) {
-                 std::cout << "[DEBUG-SORT] T" << tracks_[mc.track_idx].id 
-                           << " wants C" << mc.cand_idx 
-                           << " with Cost " << mc.cost << std::endl;
-            }
-        }
-    }
+    std::vector<bool> cand_used(candidates_for_matching.size(), false); // 注意大小
 
     for (const auto& mc : all_costs) {
-        // 如果已经被抢占
-        if (track_used[mc.track_idx] || cand_used[mc.cand_idx]) {
-            if (debug_enable && (tracks_[mc.track_idx].id == debug_id_1 || tracks_[mc.track_idx].id == debug_id_2)) {
-                std::cout << "[DEBUG-FAIL] T" << tracks_[mc.track_idx].id 
-                          << " failed to match C" << mc.cand_idx
-                          << " (Already Used? T:" << track_used[mc.track_idx] 
-                          << " C:" << cand_used[mc.cand_idx] << ")" << std::endl;
-            }
-            continue;
-        }
-
-        // 匹配成功
-        if (debug_enable && (tracks_[mc.track_idx].id == debug_id_1 || tracks_[mc.track_idx].id == debug_id_2)) {
-            std::cout << ">>> [DEBUG-MATCH] SUCCESS: T" << tracks_[mc.track_idx].id 
-                      << " <==> C" << mc.cand_idx << " (Cost " << mc.cost << ")" << std::endl;
-        }
+        if (track_used[mc.track_idx] || cand_used[mc.cand_idx]) continue;
 
         matches.push_back({mc.track_idx, mc.cand_idx});
         track_used[mc.track_idx] = true;
