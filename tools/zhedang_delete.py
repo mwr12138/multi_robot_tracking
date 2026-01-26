@@ -3,10 +3,10 @@ from collections import defaultdict
 # ===============================
 # 路径
 # ===============================
-gt_path = "/home/mwr/tracking/tools/gt.txt"
-out_path = "/home/mwr/tracking/tools/gt4.txt"
+gt_path = "/media/mwr/新加卷/Drone/AIRMOT/images/test/Lab_FL5_02/gt/gt.txt"
+out_path = "/home/mwr/tracking/tools/gt6Lab_FL5_02.txt"
 
-COVER_TH = 0.5   # 被遮挡比例阈值（50%）
+COVER_TH = 0.5   # 被遮挡比例阈值（50%） 
 
 # ===============================
 # 相交面积

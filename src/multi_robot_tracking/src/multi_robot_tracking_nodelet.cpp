@@ -1491,15 +1491,15 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
             phd_filter_.phd_track();   //运行gmphd    执行更新步骤
             //id_consensus = phd_filter_.id_consensus;
             // 更新ID状态矩阵 上边的注释掉了
-            update_id_status_matrix();
+            //////////////////////////////////////////////////////////update_id_status_matrix();
             
             // 处理新检测的目标
-            process_new_detections();
+            //process_new_detections();
             
             // 更新id_consensus
             update_id_consensus_from_status();
             draw_image();
-            ROS_ERROR_STREAM("id_status_matrix_: \n" << id_status_matrix_);
+            //ROS_ERROR_STREAM("id_status_matrix_: \n" << id_status_matrix_);
             // auto end_time = std::chrono::high_resolution_clock::now();
             // auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
             // auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
