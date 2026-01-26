@@ -208,7 +208,14 @@ class PhdFilter
   
   
   int next_track_id_ = 0; // 下一个可用的跟踪ID
-
+  // 辅助函数
+  void apply_CA_AKS_Update(Tracknew& tr, const Candidate& cand);
+  std::vector<std::pair<int, int>> associate_candidates_greedy(
+      const std::vector<int>& track_indices,
+      const std::vector<int>& cand_indices,
+      float gate_dist,
+      bool strict_direction
+  );
 
   int occlusion_counter = 0;//连续遮挡帧数计数器
   const int OCCLUSION_THRESHOLD = 20; // 触发清零的连续遮挡帧数阈值

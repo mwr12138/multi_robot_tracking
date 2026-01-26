@@ -1616,96 +1616,103 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
     ROS_INFO_STREAM("Pub track");
     publish_tracks();
 
-// ===== 新增：生成跟踪CSV =====
+// ===== 修改后：适配 tracks_ 结构的 CSV 生成代码 =====
 if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
-    // 确定目标数量
-    int num_targets = phd_filter_.X_k.cols();
     
-    // 定义缓冲区存储上一次的宽度和高度信息
+    // 1. 获取最新的 Tracks 列表
+    const auto& tracks = phd_filter_.tracks_;
+    int num_possible_tracks = tracks.size(); // 通常等于 NUM_DRONES
+
+    // 2. 定义缓冲区存储上一次的宽度和高度 (索引对应 track 的 index)
     static std::vector<float> prev_widths;
     static std::vector<float> prev_heights;
-    if (prev_widths.size() < num_targets) {
-        prev_widths.resize(num_targets, 50);
-        prev_heights.resize(num_targets, 50);
+    
+    // 初始化或扩容缓冲区
+    if (prev_widths.size() < num_possible_tracks) {
+        prev_widths.resize(num_possible_tracks, 50.0f); // 默认宽50
+        prev_heights.resize(num_possible_tracks, 50.0f); // 默认高50
     }
 
-    for (int i = 0; i < num_targets; i++) {
-        // 获取目标ID
-        int target_id = (i < id_consensus.size()) ? id_consensus(i) : i;
+    // 3. 遍历所有 Track
+    for (int i = 0; i < num_possible_tracks; i++) {
+        const auto& tr = tracks[i];
 
-        // 获取跟踪估计的中心位置
-        float track_center_x = phd_filter_.X_k(0, i);
-        float track_center_y = phd_filter_.X_k(2, i);
+        // 过滤：只输出活跃的，或者虽然在滑行(Coasting)但没彻底丢失的目标
+        // 如果置信度太低且未匹配，可能是纯杂波，不写入CSV
+        if (!tr.active || tr.confidence < 0.1f) {
+            continue; 
+        }
 
-        // 获取边界框信息
-        float center_x = 0, center_y = 0, width = 50, height = 50;
-        bool valid_detection = false;
+        // 获取 ID (MOT标准通常 ID 从 1 开始，所以 +1)
+        int target_id = tr.id + 1; 
 
-        // 动态计算距离阈值
-        float distance_threshold = 0.0f;
+        // 获取跟踪中心 (注意：假设状态向量是 [x, vx, y, vy])
+        float track_x = tr.x(0);
+        float track_y = tr.x(2);
 
-        // 优先使用当前帧检测，并进行筛选
-        if (i < in_PoseArray.poses.size()) {
-            center_x = in_PoseArray.poses[i].position.x;
-            center_y = in_PoseArray.poses[i].position.y;
-            width = in_PoseArray.poses[i].orientation.x;
-            height = in_PoseArray.poses[i].orientation.y;
+        // --- 宽高匹配逻辑 ---
+        // 因为 Filter 不带宽高，我们需要去当前的 detections 里找一个离得最近的，
+        // 借用它的宽高。如果找不到，就沿用上一帧的宽高。
+        float best_w = prev_widths[i];
+        float best_h = prev_heights[i];
+        
+        float min_dist = 100.0f; // 搜索半径 (像素)
+        int best_det_idx = -1;
 
-            // 计算动态距离阈值
-            distance_threshold = (width + height) / 2.0f;
-
-            // 计算检测框中心与跟踪估计中心的距离
-            float distance = std::hypot(center_x - track_center_x, center_y - track_center_y);
-            if (distance < distance_threshold) {
-                valid_detection = true;
-                // 更新缓冲区
-                prev_widths[i] = width;
-                prev_heights[i] = height;
+        // 在当前帧检测中寻找最近的框
+        for (size_t k = 0; k < in_PoseArray.poses.size(); k++) {
+            float det_x = in_PoseArray.poses[k].position.x;
+            float det_y = in_PoseArray.poses[k].position.y;
+            
+            float dist = std::hypot(det_x - track_x, det_y - track_y);
+            
+            // 距离更近，且该检测框大小合理
+            if (dist < min_dist) {
+                min_dist = dist;
+                best_det_idx = k;
             }
         }
 
-        // 若当前帧检测无效，使用缓冲区中的上一次宽度和高度
-        if (!valid_detection) {
-            center_x = track_center_x;
-            center_y = track_center_y;
-            width = prev_widths[i];
-            height = prev_heights[i];
+        // 如果找到了对应的检测框，更新宽高缓冲区
+        if (best_det_idx != -1) {
+            best_w = in_PoseArray.poses[best_det_idx].orientation.x;
+            best_h = in_PoseArray.poses[best_det_idx].orientation.y;
+            prev_widths[i] = best_w;
+            prev_heights[i] = best_h;
         }
 
-        // 将浮点数值四舍五入为整数
-        int bb_left = static_cast<int>(std::round(center_x - width/2.0f));
-        int bb_top = static_cast<int>(std::round(center_y - height/2.0f));
-        int bb_width = static_cast<int>(std::round(width));
-        int bb_height = static_cast<int>(std::round(height));
-        
-        // 检查是否有任何数值为负数
-        bool has_negative = (bb_left < 0) || (bb_top < 0) || 
-                            (bb_width < 0) || (bb_height < 0) ||
-                            (target_id < 0) || (frame_count_ + 1 < 0);
-        bool exceeds_height = (bb_top + bb_height / 2.0f) > detection_height;
-        bool exceeds_width = (bb_left + bb_width / 2.0f) > detection_width;
-        if (!has_negative && !exceeds_height && !exceeds_width) {
-            // 写入CSV行（全部使用整数）
-            tracking_csv_ << frame_count_+1 << ","
-                          << target_id+1 << ","
-                          << bb_left << "," << bb_top << ","
-                          << bb_width << "," << bb_height << ","
-                          << 1 << ","  // 置信度
-                          << 1 << ","    // 类别
-                          << 1 << "\n"; // 可见度
-        }
+        // --- 生成边界框 ---
+        int bb_left   = static_cast<int>(std::round(track_x - best_w / 2.0f));
+        int bb_top    = static_cast<int>(std::round(track_y - best_h / 2.0f));
+        int bb_width  = static_cast<int>(std::round(best_w));
+        int bb_height = static_cast<int>(std::round(best_h));
 
+        // --- 边界检查 (防止越界或负数) ---
+        // 允许有一部分在屏幕外，但宽和高必须为正
+        if (bb_width > 0 && bb_height > 0) {
+            
+            // 写入 CSV (MOT 格式: frame, id, left, top, w, h, conf, class, visibility)
+            tracking_csv_ << frame_count_ + 1 << ","
+                          << target_id << ","
+                          << bb_left << "," 
+                          << bb_top << ","
+                          << bb_width << "," 
+                          << bb_height << ","
+                          << 1 << "," // 输出精确的置信度
+                          << 1 << ","   // Class: 1
+                          << 1 << "\n"; // Visibility: 1
+        }
     }
-
+    
     frame_count_++;
 }
 
-auto end_time = std::chrono::high_resolution_clock::now();
-            auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-            auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-            std::cout << "detection_callback() 运行时间：\n";
-            std::cout << duration_ms.count() << " 毫秒\n"; 
-            std::cout << duration_us.count() << " 微秒\n";
+    auto end_time = std::chrono::high_resolution_clock::now();
+                auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+                auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+                std::cout << "detection_callback() 运行时间：\n";
+                std::cout << duration_ms.count() << " 毫秒\n"; 
+                std::cout << duration_us.count() << " 微秒\n";
 }
 
 

@@ -14,6 +14,395 @@ PhdFilter::PhdFilter()
 {
     
 }
+
+
+// ==========================================
+// 核心参数配置 (调参重点区)
+// ==========================================
+
+// 1. 分级阈值
+static const float HIGH_SCORE_THRESH = 0.8f; // 只有权重 > 0.8 才算“高分目标”，参与第一轮匹配
+static const float LOW_SCORE_THRESH  = 0.1f; // 权重 < 0.1 的直接视为杂波，不参与任何匹配
+
+// 2. 距离门限 (Gate)
+static const float GATE_DIST_HIGH = 100.0f; // 第一轮(高分)匹配的最大允许距离 (像素)
+static const float GATE_DIST_LOW  = 200.0f; // 第二轮(低分/捡漏)允许更大的搜索范围
+
+// 3. 方向一致性约束
+static const float DIR_COSINE_THRESH = 0.5f; // 余弦相似度阈值 (0.5 约等于 60度)。夹角 > 60度 则拒绝匹配
+static const float MIN_VEL_FOR_DIR   = 2.0f; // 只有当速度大于 2 像素/帧 时，才启用方向检查 (静止物体不查方向)
+
+// 4. CA-AKS 速度更新参数
+static const float ALPHA_BASE = 0.2f; // 基础学习率：保证至少 20% 的信息来自当前测量
+static const float ALPHA_BETA = 0.6f; // 权重影响因子：如果 w=1.0，总学习率 = 0.2 + 0.6 = 0.8
+
+// 5. 生命周期管理
+static const int MAX_COAST_FRAMES = 30; // 遮挡后“滑行”的最大帧数，超过则认为彻底丢失
+
+// ==========================================
+// 辅助结构体：用于贪婪匹配
+// ==========================================
+struct MatchCost {
+    int track_idx;
+    int cand_idx;
+    float cost;
+    
+    // 排序算子：按代价从小到大排
+    bool operator<(const MatchCost& other) const {
+        return cost < other.cost;
+    }
+};
+
+// ==========================================
+// 辅助函数：计算两个向量的余弦相似度
+// 返回值: 1.0 (同向) -> -1.0 (反向)
+// ==========================================
+float calculate_cosine_similarity(const Eigen::Vector2f& v1, const Eigen::Vector2f& v2) {
+    float norm1 = v1.norm();
+    float norm2 = v2.norm();
+    if (norm1 < 1e-4 || norm2 < 1e-4) return 1.0f; // 如果有一个是静止的，默认方向一致
+    return v1.dot(v2) / (norm1 * norm2);
+}
+
+// =========================================================
+// 核心函数：CA-AKS (置信度感知自适应运动平滑)
+// 功能：利用权重动态调整速度更新率，更新 Track 状态
+// =========================================================
+void PhdFilter::apply_CA_AKS_Update(Tracknew& tr, const Candidate& cand) {
+    // 1. 提取位置 (假设状态向量索引 0=x, 2=y，请根据您的定义确认)
+    Eigen::Vector2f meas_pos; 
+    meas_pos << cand.x(0), cand.x(2);
+    
+    Eigen::Vector2f last_pos;
+    last_pos << tr.x(0), tr.x(2); // 上一帧的位置
+
+    // 2. 计算瞬时测量速度 (Instant Velocity)
+    // dt_cam 是两帧图像的时间间隔
+    Eigen::Vector2f v_instant = (meas_pos - last_pos) / dt_cam;
+
+    // 3. 计算自适应平滑因子 Alpha
+    // 逻辑：权重越大，Alpha 越大，越信任当前测量；权重越小，Alpha 越小，越信任历史惯性
+    float w_clamped = std::min(cand.w, 1.0f); // 防止权重爆表
+    float alpha = ALPHA_BASE + (ALPHA_BETA * w_clamped);
+
+    // 安全钳位：保留至少 10% 的历史惯性，防止瞬时噪声带偏
+    if (alpha > 0.9f) alpha = 0.9f;
+
+    // *特殊保护*：如果权重很低(捡漏回来的)，且速度方向剧烈反转(>120度)，可能是误匹配了杂波
+    // 这种情况下，强制 Alpha = 0，完全只信惯性，忽略这次测量的速度跳变
+    if (cand.w < 0.4f) {
+        float cos_sim = calculate_cosine_similarity(tr.velocity, v_instant);
+        if (cos_sim < -0.5f) { 
+            alpha = 0.0f; 
+            ROS_WARN("Track %d: Low conf match with reverse velocity. Ignoring meas velocity.", tr.id);
+        }
+    }
+
+    // 4. 执行速度更新 (递归滤波)
+    tr.velocity = alpha * v_instant + (1.0f - alpha) * tr.velocity;
+
+    // 5. 更新其他状态
+    tr.x = cand.x;       // 更新位置为当前测量位置
+    tr.P = cand.P;       // 更新协方差
+    tr.confidence = cand.w;
+    tr.missed_count = 0; // 重置丢失计数
+    tr.active = true;    // 标记为活跃
+    tr.match_type = 1;   // 标记为正常匹配 (MATCH)
+
+    // 存入历史 (用于调试或未来计算平均速度)
+    tr.position_history.push_back(meas_pos);
+    if(tr.position_history.size() > 10) tr.position_history.pop_front();
+    
+    tr.velocity_history.push_back(tr.velocity);
+    if(tr.velocity_history.size() > 10) tr.velocity_history.pop_front();
+}
+
+// =========================================================
+// 辅助函数：贪婪匹配 (Greedy Association)
+// 功能：计算代价矩阵并分配 ID，支持方向和距离门控
+// inputs: 
+//   - track_indices: 参与匹配的 Track 索引列表
+//   - cand_indices: 参与匹配的 Candidate 索引列表
+//   - gate_dist: 距离门限
+//   - strict_direction: 是否启用严格的方向检查 (第一轮启用)
+// =========================================================
+std::vector<std::pair<int, int>> PhdFilter::associate_candidates_greedy(
+    const std::vector<int>& track_indices,
+    const std::vector<int>& cand_indices,
+    float gate_dist,
+    bool strict_direction
+) {
+    std::vector<MatchCost> all_costs;
+    std::vector<std::pair<int, int>> matches;
+
+    // 1. 构建代价列表
+    for (int t_idx : track_indices) {
+        Tracknew& tr = tracks_[t_idx];
+        
+        // 预测位置 (在 updateTracks 开头已计算，这里直接用预测值)
+        Eigen::Vector2f pred_pos; 
+        pred_pos << tr.x(0) + tr.velocity(0) * dt_cam, 
+                    tr.x(2) + tr.velocity(1) * dt_cam;
+
+        for (int c_idx : cand_indices) {
+            const Candidate& cand = candidates_for_matching[c_idx]; // 注意：这里用类成员变量或者传参
+            Eigen::Vector2f cand_pos; 
+            cand_pos << cand.x(0), cand.x(2);
+
+            // --- A. 距离门控 ---
+            float dist = (pred_pos - cand_pos).norm();
+            if (dist > gate_dist) continue; // 距离太远，跳过
+
+            float cost = dist;
+
+            // --- B. 方向门控 (仅对第一轮且有速度的目标启用) ---
+            if (strict_direction && tr.velocity.norm() > MIN_VEL_FOR_DIR) {
+                Eigen::Vector2f move_vec = cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2));
+                float cos_sim = calculate_cosine_similarity(tr.velocity, move_vec);
+
+                // 如果夹角过大 (例如交叉时)，直接拒绝匹配
+                if (cos_sim < DIR_COSINE_THRESH) continue;
+
+                // 将方向差异加入 Cost (方向越偏，Cost 越大，优先匹配顺路的)
+                // 权重 0.5f 是经验值，让方向好的目标排在前面
+                cost += (1.0f - cos_sim) * 50.0f; 
+            }
+
+            all_costs.push_back({t_idx, c_idx, cost});
+        }
+    }
+
+    // 2. 排序 (贪婪策略：优先满足 Cost 最小的配对)
+    std::sort(all_costs.begin(), all_costs.end());
+
+    // 3. 分配
+    std::vector<bool> track_used(tracks_.size(), false);
+    std::vector<bool> cand_used(candidates_for_matching.size(), false); // 注意大小
+
+    for (const auto& mc : all_costs) {
+        if (track_used[mc.track_idx] || cand_used[mc.cand_idx]) continue;
+
+        matches.push_back({mc.track_idx, mc.cand_idx});
+        track_used[mc.track_idx] = true;
+        cand_used[mc.cand_idx] = true;
+    }
+
+    return matches;
+}
+
+// =========================================================
+// 主函数：UpdateTracks (重构版 V1)
+// =========================================================
+void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates) {
+    // 0. 将输入暂存到类成员，方便辅助函数访问 (或者通过参数传递)
+    candidates_for_matching = raw_candidates; 
+    int num_cands = candidates_for_matching.size();
+
+    // 标记位：记录 Candidate 是否已被使用
+    std::vector<bool> cand_is_matched(num_cands, false);
+    
+    // 初始化 Tracks (如果第一次运行)
+    if (tracks_.size() != NUM_DRONES) initTracks();
+
+    // 重置本帧匹配状态
+    for(auto& tr : tracks_) {
+        tr.match_type = 0; // 默认为 MISS
+    }
+
+    // ==========================================
+    // Step 1: 预处理与分级 (Split)
+    // ==========================================
+    std::vector<int> high_score_indices; // 高分候选池
+    std::vector<int> low_score_indices;  // 低分候选池
+
+    for (int i = 0; i < num_cands; ++i) {
+        if (candidates_for_matching[i].w >= HIGH_SCORE_THRESH) {
+            high_score_indices.push_back(i);
+        } else if (candidates_for_matching[i].w >= LOW_SCORE_THRESH) {
+            low_score_indices.push_back(i);
+        }
+        // 权重极低 (<0.1) 的直接忽略，视为纯噪声
+    }
+
+    // ==========================================
+    // Step 2: 第一轮匹配 (High-High Match)
+    // 策略：活跃 Track 匹配 高分 Candidate (严格方向约束)
+    // ==========================================
+    std::vector<int> active_track_indices;
+    for (int i = 0; i < NUM_DRONES; ++i) {
+        // 只有没彻底丢失(Miss < Max) 且 之前有过匹配的才参与第一轮
+        // 或者是刚初始化的 Track 也参与
+        if (tracks_[i].missed_count < MAX_COAST_FRAMES) {
+            active_track_indices.push_back(i);
+        }
+    }
+
+    // 执行匹配 (严格模式：Strict Direction = true)
+    auto matches_round1 = associate_candidates_greedy(
+        active_track_indices, 
+        high_score_indices, 
+        GATE_DIST_HIGH, 
+        true // 启用严格方向检查！防止交叉时 ID 互换
+    );
+
+    // 应用更新
+    std::vector<bool> track_matched_flag(NUM_DRONES, false);
+    for (auto& p : matches_round1) {
+        int t_idx = p.first;
+        int c_idx = p.second;
+        
+        apply_CA_AKS_Update(tracks_[t_idx], candidates_for_matching[c_idx]);
+        
+        track_matched_flag[t_idx] = true;
+        cand_is_matched[c_idx] = true;
+        tracks_[t_idx].match_type = 1; // MATCH
+    }
+
+    // ==========================================
+    // Step 3: 第二轮匹配 (Low/Recover Match)
+    // 策略：未匹配 Track 匹配 (剩余 High + 所有 Low)
+    // 门限：放宽距离，禁用方向 (因为低分目标方向可能极其不准)
+    // ==========================================
+    std::vector<int> unmatched_track_indices;
+    for (int i : active_track_indices) {
+        if (!track_matched_flag[i]) unmatched_track_indices.push_back(i);
+    }
+
+    std::vector<int> second_round_cand_indices;
+    // 加入剩余的高分候选
+    for (int i : high_score_indices) {
+        if (!cand_is_matched[i]) second_round_cand_indices.push_back(i);
+    }
+    // 加入所有低分候选
+    for (int i : low_score_indices) {
+        if (!cand_is_matched[i]) second_round_cand_indices.push_back(i);
+    }
+
+    // 执行匹配 (宽松模式：Strict Direction = false, Gate 变大)
+    auto matches_round2 = associate_candidates_greedy(
+        unmatched_track_indices, 
+        second_round_cand_indices, 
+        GATE_DIST_LOW, 
+        false // 关掉方向检查，主要靠距离捡漏
+    );
+
+    // 应用更新
+    for (auto& p : matches_round2) {
+        int t_idx = p.first;
+        int c_idx = p.second;
+        
+        // 这一步捡回来的可能是“复活”的目标
+        apply_CA_AKS_Update(tracks_[t_idx], candidates_for_matching[c_idx]);
+        
+        // 如果之前 missed_count 很大，现在找回来了，标记为 REVIV
+        if (tracks_[t_idx].missed_count > 5) {
+             tracks_[t_idx].match_type = 2; // REVIV
+             ROS_WARN("Track %d REVIVED from Low Score Cand!", tracks_[t_idx].id);
+        }
+
+        track_matched_flag[t_idx] = true;
+        cand_is_matched[c_idx] = true;
+    }
+
+    // ==========================================
+    // Step 4: 未匹配处理 (Coasting / Lost)
+    // ==========================================
+    for (int i = 0; i < NUM_DRONES; ++i) {
+        if (!track_matched_flag[i]) {
+            tracks_[i].missed_count++;
+            
+            // --- Coasting (滑行) 逻辑 ---
+            if (tracks_[i].missed_count <= MAX_COAST_FRAMES && tracks_[i].active) {
+                // 仅更新位置，完全依靠惯性 (Velocity 保持不变)
+                // P_new = P_old + Vel * dt
+                tracks_[i].x(0) += tracks_[i].velocity(0) * dt_cam;
+                tracks_[i].x(2) += tracks_[i].velocity(1) * dt_cam;
+                
+                // 协方差 P 应该变大 (表示不确定性增加)，这里简单处理，或者保持不变
+                // tracks_[i].confidence *= 0.95; // 信心衰减
+                
+                // 标记为遮挡/未匹配
+                tracks_[i].match_type = 0; 
+            } else {
+                // 超过最大滑行帧数，彻底死亡
+                tracks_[i].active = false;
+                tracks_[i].velocity.setZero(); // 速度清零
+            }
+        }
+    }
+
+    // ==========================================
+    // Step 5: 新生处理 (Birth)
+    // 只有第一轮剩下的【高分】候选才能成为新 Track
+    // ==========================================
+    // 寻找空闲的 Track ID (假设 NUM_DRONES 固定，找 active=false 的坑位)
+    for (int i : high_score_indices) {
+        if (cand_is_matched[i]) continue;
+
+        // 找一个坑位
+        int free_id = -1;
+        // 优先找彻底死掉的 (active=false) 且 missed_count 很大的
+        int max_missed = -1;
+        for (int k = 0; k < NUM_DRONES; ++k) {
+            if (!tracks_[k].active && tracks_[k].missed_count > max_missed) {
+                max_missed = tracks_[k].missed_count;
+                free_id = k;
+            }
+        }
+
+        if (free_id != -1 && max_missed > MAX_COAST_FRAMES) {
+             // 只有当坑位真的很久没用了才分配，防止 ID 频繁跳变
+             // 初始化新 Track
+             Candidate& cand = candidates_for_matching[i];
+             Tracknew& tr = tracks_[free_id];
+             
+             tr.id = free_id;
+             tr.x = cand.x;
+             tr.P = cand.P;
+             tr.confidence = cand.w;
+             tr.velocity.setZero(); // 初始速度为 0
+             tr.active = true;
+             tr.missed_count = 0;
+             tr.match_type = 3; // BIRTH
+             
+             tr.position_history.clear();
+             tr.velocity_history.clear();
+             tr.position_history.push_back(Eigen::Vector2f(tr.x(0), tr.x(2)));
+             
+             ROS_INFO("BIRTH: New Track ID %d created from High Score Cand", free_id);
+             
+             cand_is_matched[i] = true;
+        }
+    }
+}
+
+void PhdFilter::initTracks() {
+    tracks_.clear();
+    tracks_.resize(NUM_DRONES); // 直接开辟好固定大小
+
+    for(int i=0; i<NUM_DRONES; ++i) {
+        // 1. 基础信息
+        tracks_[i].id = i;             // ID 绑定为索引
+        tracks_[i].active = false;     // 默认为非活跃
+        tracks_[i].missed_count = 999; // 初始设为极大值，确保不会干扰第一轮匹配
+        tracks_[i].match_type = 0;     // 0 = MISS
+
+        // 2. 状态向量与协方差
+        tracks_[i].x = Eigen::VectorXf::Zero(n_state);
+        tracks_[i].P = Eigen::MatrixXf::Identity(n_state, n_state) * 100.0f; // 初始协方差可以给大一点，表示不确定
+
+        // 3. 【新增】核心变量初始化 (必须做！)
+        tracks_[i].confidence = 0.0f;           // 初始置信度为0
+        tracks_[i].velocity = Eigen::Vector2f::Zero(); // 初始速度必须为0，防止 CA-AKS 计算出错
+        
+        // 4. 【新增】清空历史队列 (防止复用 ID 时残留脏数据)
+        tracks_[i].position_history.clear();
+        tracks_[i].velocity_history.clear();
+    }
+    
+    ROS_INFO("Tracks initialized for %d drones. Velocity and History cleared.", NUM_DRONES);
+}
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ==========================================
 // 放在 phd_filter.cpp 的 updateTracks 函数上方
 // ==========================================
@@ -31,9 +420,9 @@ static const float W_VEL  = 0.1f;       // 速度大小权重 (辅助)
 
 // 阈值：关键修改点！
 static const float GATE_DIST_BASE = 400.0f; // 搜索半径加大，防止跟丢
-static const float DUPLICATE_DIST = 1.0f; // 【关键】互斥半径加大！224像素下，20像素内视为同一个目标
+static const float DUPLICATE_DIST = 0.0f; // 【关键】互斥半径加大！224像素下，20像素内视为同一个目标
 static const float NEW_TRACK_TH   = 0.3f;  // 新生目标权重门限
-static const float MERGE_CAND_DIST = 15.0f; // 【新增】候选点合并距离
+static const float MERGE_CAND_DIST = 0.0f; // 【新增】候选点合并距离
 
 struct MatchPair {
     int track_idx;
@@ -41,7 +430,7 @@ struct MatchPair {
     float cost;
     bool operator<(const MatchPair& other) const { return cost < other.cost; }
 };
-
+/*
 void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates) 
 {
     // --- 0. 初始化 ---
@@ -304,6 +693,7 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates)
 
 
 }
+
 void PhdFilter::initTracks() {
     tracks_.clear();
     tracks_.resize(NUM_DRONES); // 直接开辟好固定大小
@@ -315,7 +705,7 @@ void PhdFilter::initTracks() {
         tracks_[i].P = Eigen::MatrixXf::Identity(n_state, n_state);
     }
 }
-
+*/
 // static const int MAX_MISSED = 10;           // 连续没匹配的最大帧数
 // // 定义一个结构体来存储潜在的配对
 // struct AssociationPair {
