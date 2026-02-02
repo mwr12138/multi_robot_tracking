@@ -1383,7 +1383,7 @@ Eigen::MatrixXf multi_robot_tracking_Nodelet::get_B_ang_vel_matrix(float x, floa
  * input: PoseArray
  * output: N/A
  */
-void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseArray& in_PoseArray)
+/*void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseArray& in_PoseArray)
 {   
     auto start_time = std::chrono::high_resolution_clock::now();
     static int callback_count = 0; // 静态变量，用于记录调用次数
@@ -1714,7 +1714,275 @@ if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
                 std::cout << duration_ms.count() << " 毫秒\n"; 
                 std::cout << duration_us.count() << " 微秒\n";
 }
+*/
+/* callback for 2D image to call phd track when using flightmare rosbag data
+ * input: PoseArray
+ * output: N/A
+ */
+void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseArray& in_PoseArray)
+{   
+    auto start_time = std::chrono::high_resolution_clock::now();
+    static int callback_count = 0; // 静态变量，用于记录调用次数
+    ros::Time current_time = ros::Time::now(); // 获取当前时间
+    
+    // 【修改点1】：获取实际检测数量，并进行截断处理
+    int process_count = in_PoseArray.poses.size();
+    
+    // 如果检测数量超过设定的无人机数量，打印警告并截断，而不是直接 return
+    if(process_count > num_drones)
+    {
+        ROS_WARN("MORE DETECTIONS (%d) THAN NO OF DRONES (%d)! Truncating...", process_count, num_drones);
+        process_count = num_drones; // 强制截断，只处理前 num_drones 个
+    }
 
+    //get time of detection
+    bbox_timestamp = in_PoseArray.header.stamp;
+    current_timestamp = bbox_timestamp.toSec();
+
+    ROS_WARN("bbox time: %f, dt: %f, imu time: %f",current_timestamp, delta_timestamp, imu_time);
+
+    jpdaf_filter_.last_timestamp_synchronized = in_PoseArray.header.stamp.toSec(); 
+
+    //store Z
+
+    //========= use jpdaf filter ===========
+    if(filter_to_use_.compare("jpdaf") == 0)
+    {
+        jpdaf_filter_.detected_size_k = process_count; // 使用截断后的数量
+
+        // 为了防止 JPDAF 内部处理越界，构造一个截断后的 PoseArray
+        // 这样对原有逻辑改动最小且安全
+        geometry_msgs::PoseArray processed_poses = in_PoseArray;
+        if (in_PoseArray.poses.size() > process_count) {
+            processed_poses.poses.resize(process_count);
+        }
+
+        //store Z
+        jpdaf_filter_.flightmare_bounding_boxes_msgs_buffer_.push_back(processed_poses);
+        //store imu
+        jpdaf_filter_.imu_buffer_.push_back(imu_);
+
+        jpdaf_filter_.track(true);
+    }
+
+    //========= use phd filter ===========
+    else if(filter_to_use_.compare("phd") == 0)
+    {
+
+        if(phd_filter_.first_callback)
+        {
+            phd_filter_.set_num_drones(num_drones);
+            phd_filter_.initialize_matrix(cx, cy, f, filter_dt);
+        }
+
+        phd_filter_.Detections.setZero();  
+        phd_filter_.detected_size_k = process_count; // 【修改点2】：使用截断后的数量
+
+        // 【修改点3】：循环条件改为 process_count
+        for(int i =0; i < process_count; i++)
+        {
+            //store Z
+            // x, y, w, h
+            phd_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
+            phd_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
+
+            phd_filter_.Detections(0,i) = in_PoseArray.poses[i].position.x;
+            phd_filter_.Detections(1,i) = in_PoseArray.poses[i].position.y;
+            phd_filter_.Detections(2,i) = in_PoseArray.poses[i].orientation.x;
+            phd_filter_.Detections(3,i) = in_PoseArray.poses[i].orientation.y;
+        }
+        
+        ROS_INFO_STREAM("Num Meas: " << phd_filter_.detected_size_k << "\n");
+        ROS_INFO_STREAM("Z_k_CB: " << endl << phd_filter_.Z_k << "\n");
+        ROS_INFO_STREAM("WK-1: " << phd_filter_.wk << "\n");
+        
+        if(phd_filter_.first_callback)
+        {
+            delta_timestamp =filter_dt;
+            phd_filter_.dt_cam = delta_timestamp; 
+
+            phd_filter_.initialize(phd_q_pos, phd_q_vel, phd_r_meas, phd_p_pos_init, phd_p_vel_init,
+                                   phd_prune_weight_threshold,
+                                   phd_prune_mahalanobis_dist_threshold,
+                                   phd_extract_weight_threshold);
+            phd_filter_.first_callback = false;
+
+            previous_timestamp = current_timestamp;
+        }
+        else 
+        {
+            delta_timestamp =filter_dt;
+            phd_filter_.dt_cam = delta_timestamp;
+            previous_timestamp = current_timestamp;
+            for(int i =0; i < phd_filter_.X_k.cols(); i++)
+            {
+                phd_filter_.B.block<4,3>(0,3*i) = get_B_ang_vel_matrix(phd_filter_.X_k(0,i),phd_filter_.X_k(2,i));
+            }
+
+            phd_filter_.phd_track();   // 只要不 return，这里就会执行
+            
+            // update_id_status_matrix(); // 您的代码中注释掉了
+            
+            update_id_consensus_from_status();
+            draw_image();
+            
+            first_track_flag = true;
+            consensus_sort();   
+            
+            //after tracking, store previous Z value to update velocity
+            // 【修改点4】：循环条件改为 process_count
+            for(int i =0; i < process_count; i++)
+            {
+                //store Z
+                phd_filter_.Z_k_previous(0,i) = in_PoseArray.poses[i].position.x;
+                phd_filter_.Z_k_previous(1,i) = in_PoseArray.poses[i].position.y;
+            }
+
+            phd_filter_.B = Eigen::MatrixXf::Zero(4,3*num_drones);
+        }
+    }
+
+    else if(filter_to_use_.compare("kalman") == 0)
+    {
+        if(kalman_filter_.first_callback)
+        {
+            kalman_filter_.setNumDrones(num_drones);
+            kalman_filter_.initializeMatrix(cx, cy, f, filter_dt);
+        }
+
+        kalman_filter_.detected_size_k = process_count; // 【修改点5】：使用截断后的数量
+        
+        // 【修改点6】：循环条件改为 process_count
+        for(int i =0; i < process_count; i++)
+        {
+            //store Z
+            // x, y, w, h
+            kalman_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
+            kalman_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
+
+            kalman_filter_.Detections(0,i) = in_PoseArray.poses[i].position.x;
+            kalman_filter_.Detections(1,i) = in_PoseArray.poses[i].position.y;
+            kalman_filter_.Detections(2,i) = in_PoseArray.poses[i].orientation.x;
+            kalman_filter_.Detections(3,i) = in_PoseArray.poses[i].orientation.y;
+        }
+        
+        ROS_INFO_STREAM("Num Meas: " << kalman_filter_.detected_size_k << "\n");
+        ROS_INFO_STREAM("Z_k_CB: " << endl << kalman_filter_.Z_k << "\n");
+        ROS_INFO_STREAM("WK-1: " << kalman_filter_.wk << "\n");
+        
+        if(kalman_filter_.first_callback)
+        {
+            delta_timestamp = filter_dt;
+            kalman_filter_.dt_cam = delta_timestamp;
+
+            kalman_filter_.initialize(jpdaf_q_pos, jpdaf_q_vel, jpdaf_r_meas, jpdaf_p_pos_init, jpdaf_p_vel_init,
+                                phd_prune_weight_threshold,
+                                phd_prune_mahalanobis_dist_threshold,
+                                phd_extract_weight_threshold);
+            kalman_filter_.first_callback = false;
+
+            previous_timestamp = current_timestamp;
+        }
+        else
+        {
+            delta_timestamp = filter_dt;
+            kalman_filter_.dt_cam = delta_timestamp;
+            previous_timestamp = current_timestamp;
+            for(int i =0; i < phd_filter_.X_k.cols(); i++)
+            {
+                kalman_filter_.B.block<4,3>(0,3*i) = get_B_ang_vel_matrix(phd_filter_.X_k(0,i),phd_filter_.X_k(2,i));
+            }
+
+            kalman_filter_.kalmanTrack();
+            ROS_INFO_STREAM("Finished track");
+            first_track_flag = true;
+            kalman_filter_.B = Eigen::MatrixXf::Zero(4,3*num_drones);
+        }
+    }
+
+    ROS_INFO_STREAM("Pub track");
+    publish_tracks();
+
+    // ===== 修改后：CSV 写入逻辑 =====
+    if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
+        
+        const auto& tracks = phd_filter_.tracks_;
+        int num_possible_tracks = tracks.size(); 
+
+        static std::vector<float> prev_widths;
+        static std::vector<float> prev_heights;
+        
+        if (prev_widths.size() < num_possible_tracks) {
+            prev_widths.resize(num_possible_tracks, 50.0f); 
+            prev_heights.resize(num_possible_tracks, 50.0f); 
+        }
+
+        for (int i = 0; i < num_possible_tracks; i++) {
+            const auto& tr = tracks[i];
+
+            if (!tr.active || tr.confidence < 0.1f) {
+                continue; 
+            }
+
+            int target_id = tr.id + 1; 
+            float track_x = tr.x(0);
+            float track_y = tr.x(2);
+
+            float best_w = prev_widths[i];
+            float best_h = prev_heights[i];
+            
+            float min_dist = 100.0f; 
+            int best_det_idx = -1;
+
+            // 【修改点7】：为了安全，寻找匹配框时也限制在 process_count 范围内
+            for (size_t k = 0; k < process_count; k++) {
+                float det_x = in_PoseArray.poses[k].position.x;
+                float det_y = in_PoseArray.poses[k].position.y;
+                
+                float dist = std::hypot(det_x - track_x, det_y - track_y);
+                
+                if (dist < min_dist) {
+                    min_dist = dist;
+                    best_det_idx = k;
+                }
+            }
+
+            if (best_det_idx != -1) {
+                best_w = in_PoseArray.poses[best_det_idx].orientation.x;
+                best_h = in_PoseArray.poses[best_det_idx].orientation.y;
+                prev_widths[i] = best_w;
+                prev_heights[i] = best_h;
+            }
+
+            int bb_left   = static_cast<int>(std::round(track_x - best_w / 2.0f));
+            int bb_top    = static_cast<int>(std::round(track_y - best_h / 2.0f));
+            int bb_width  = static_cast<int>(std::round(best_w));
+            int bb_height = static_cast<int>(std::round(best_h));
+
+            if (bb_width > 0 && bb_height > 0) {
+                tracking_csv_ << frame_count_ + 1 << ","
+                              << target_id << ","
+                              << bb_left << "," 
+                              << bb_top << ","
+                              << bb_width << "," 
+                              << bb_height << ","
+                              << 1 << "," 
+                              << 1 << ","   
+                              << 1 << "\n"; 
+            }
+        }
+        
+        frame_count_++;
+        tracking_csv_.flush(); 
+    }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+    // std::cout << "detection_callback() 运行时间：\n";
+    // std::cout << duration_ms.count() << " 毫秒\n"; 
+    // std::cout << duration_us.count() << " 微秒\n";
+}
 
 void multi_robot_tracking_Nodelet::process_new_detections() {
     // 这里可以添加逻辑来处理新检测到的目标
