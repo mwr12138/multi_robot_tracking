@@ -192,9 +192,10 @@ class PhdFilter
   float cu, cv, f;
   float dt;
 
-  const uint8_t n_state = 4;
-  const uint8_t n_meas = 2;
-  const uint8_t n_input = 3;
+  const uint8_t n_state = 6;  // 状态：[x, y, w, h, vx, vy]
+  const uint8_t n_meas = 4;   // 观测：[x, y, w, h]
+  const uint8_t n_input = 3;  // 输入：[omega_x, omega_y, omega_z]
+  
 
   std::vector<int> occluded_frame_count;  // 记录每列连续低权重帧数（需作为类成员变量）
   const int MIN_OCCLUDED_FRAMES = 3;  // 至少连续3帧权重低才视为空列

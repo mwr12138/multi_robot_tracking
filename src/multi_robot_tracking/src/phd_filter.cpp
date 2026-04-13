@@ -71,10 +71,10 @@ float calculate_cosine_similarity(const Eigen::Vector2f& v1, const Eigen::Vector
 void PhdFilter::apply_CA_AKS_Update(Tracknew& tr, const Candidate& cand) {
     // 1. 提取位置 (假设状态向量索引 0=x, 2=y，请根据您的定义确认)
     Eigen::Vector2f meas_pos; 
-    meas_pos << cand.x(0), cand.x(2);
+    meas_pos << cand.x(0), cand.x(1);
     
     Eigen::Vector2f last_pos;
-    last_pos << tr.x(0), tr.x(2); // 上一帧的位置
+    last_pos << tr.x(0), tr.x(1); // 上一帧的位置
 
     // 2. 计算瞬时测量速度 (Instant Velocity)
     // dt_cam 是两帧图像的时间间隔
@@ -142,12 +142,12 @@ std::vector<std::pair<int, int>> PhdFilter::associate_candidates_greedy(
         // 预测位置 (在 updateTracks 开头已计算，这里直接用预测值)
         Eigen::Vector2f pred_pos; 
         pred_pos << tr.x(0) + tr.velocity(0) * dt_cam, 
-                    tr.x(2) + tr.velocity(1) * dt_cam;
+                    tr.x(1) + tr.velocity(1) * dt_cam;
 
         for (int c_idx : cand_indices) {
             const Candidate& cand = candidates_for_matching[c_idx]; // 注意：这里用类成员变量或者传参
             Eigen::Vector2f cand_pos; 
-            cand_pos << cand.x(0), cand.x(2);
+            cand_pos << cand.x(0), cand.x(1);
 
             // --- A. 距离门控 ---
             float dist = (pred_pos - cand_pos).norm();
@@ -157,7 +157,7 @@ std::vector<std::pair<int, int>> PhdFilter::associate_candidates_greedy(
 
             // --- B. 方向门控 (仅对第一轮且有速度的目标启用) ---
             if (strict_direction && tr.velocity.norm() > MIN_VEL_FOR_DIR) {
-                Eigen::Vector2f move_vec = cand_pos - Eigen::Vector2f(tr.x(0), tr.x(2));
+                Eigen::Vector2f move_vec = cand_pos - Eigen::Vector2f(tr.x(0), tr.x(1));
                 float cos_sim = calculate_cosine_similarity(tr.velocity, move_vec);
 
                 // 如果夹角过大 (例如交叉时)，直接拒绝匹配
@@ -316,7 +316,7 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates) {
                 // 仅更新位置，完全依靠惯性 (Velocity 保持不变)
                 // P_new = P_old + Vel * dt
                 tracks_[i].x(0) += tracks_[i].velocity(0) * dt_cam;
-                tracks_[i].x(2) += tracks_[i].velocity(1) * dt_cam;
+                tracks_[i].x(1) += tracks_[i].velocity(1) * dt_cam;
                 
                 // 协方差 P 应该变大 (表示不确定性增加)，这里简单处理，或者保持不变
                 // tracks_[i].confidence *= 0.95; // 信心衰减
@@ -367,7 +367,7 @@ void PhdFilter::updateTracks(const std::vector<Candidate>& raw_candidates) {
              
              tr.position_history.clear();
              tr.velocity_history.clear();
-             tr.position_history.push_back(Eigen::Vector2f(tr.x(0), tr.x(2)));
+             tr.position_history.push_back(Eigen::Vector2f(tr.x(0), tr.x(1)));
              
              ROS_INFO("BIRTH: New Track ID %d created from High Score Cand", free_id);
              
@@ -1456,56 +1456,129 @@ void PhdFilter::set_num_drones(int num_drones_in)  //设置无人机数量
     NUM_DRONES = num_drones_in;
 }
 
-void PhdFilter::initialize(float q_pos, float q_vel, float r_meas, float p_pos_init, float p_vel_init,
-                        float prune_weight_threshold, float prune_mahalanobis_threshold, float extract_weight_threshold)  //初始化
-{
-    //ROS_ERROR("======= Initialize ======= \n");
-    Eigen::MatrixXf P_k_init;
-    P_k_init = Eigen::MatrixXf(n_state,n_state); //根据输入的参数初始化状态协方差矩阵
-    P_k_init <<
-            p_pos_init, 0,          0,          0,
-            0,          p_vel_init, 0,          0,
-            0,          0,          p_pos_init, 0,
-            0,          0,          0,          p_vel_init;
-    P_k_init = P_k_init * 1;
+// void PhdFilter::initialize(float q_pos, float q_vel, float r_meas, float p_pos_init, float p_vel_init,
+//                         float prune_weight_threshold, float prune_mahalanobis_threshold, float extract_weight_threshold)  //初始化
+// {
+//     //ROS_ERROR("======= Initialize ======= \n");
+//     Eigen::MatrixXf P_k_init;
+//     P_k_init = Eigen::MatrixXf(n_state,n_state); //根据输入的参数初始化状态协方差矩阵
+//     P_k_init <<
+//             p_pos_init, 0,          0,          0,
+//             0,          p_vel_init, 0,          0,
+//             0,          0,          p_pos_init, 0,
+//             0,          0,          0,          p_vel_init;
+//     P_k_init = P_k_init * 1;
 
+
+//     for(int i = 0; i < Z_k.cols(); i ++)
+//     {   
+//         //store Z into mk (x,y)
+//         // ROS_ERROR_STREAM("ZK: \n" << Z_k << endl); 
+//         // mk_minus_1.block(0, i, n_state, 1) = H.transpose()*Z_k.block(0,i, n_meas,1);
+//         mk_minus_1.block(0, i, n_state, 1) << Z_k.block(0, i, 1, 1), 0, Z_k.block(1, i, 1, 1), 0;   //将Z_k的测量值转换为mk_minus_1状态向量
+//         // ROS_ERROR_STREAM("mk_minus_1: \n" << mk_minus_1 << endl);         
+//         //store pre-determined weight into wk (from matlab)
+//         wk_minus_1(i) = .0016;  //给每个目标分配一个初始权重
+//         //store pre-determined weight into Pk (from paper)
+//         Pk_minus_1.block(0,i*4, n_state,n_state) = P_k_init; //给每个目标分配一个初始状态协方差矩阵4*4左右排列
+//     }
+
+//     A << 1,dt_imu,0,0,
+//             0,1,0,0,
+//             0,0,1,dt_imu,
+//             0,0,0,1;
+    
+//     //Measurement Matrix  H测量矩阵只提取位置、忽略速度（因为相机只能测位置）
+//     H << 1, 0, 0 , 0,
+//          0, 0, 1, 0;
+
+//     //Process noise covariance, given in Vo&Ma.  过程噪声协方差矩阵（运动模型的不确定性）
+//     Q << q_pos,     0,      0,          0,
+//          0,         q_vel,  0,          0,
+//          0,         0,      q_pos,      0,
+//          0,         0,      0,          q_vel;
+
+//     //Measurement Noise  R测量噪声协方差矩阵（相机测量的不确定性）
+//     R << r_meas,    0,
+//          0,         r_meas;
+
+//     numTargets_Jk_minus_1 = NUM_DRONES;
+//     cout<<"q_pos: "<<q_pos<<endl;
+//     cout<<"q_vel: "<<q_vel<<endl;
+// }
+
+
+void PhdFilter::initialize(float q_pos, float q_vel, float r_meas, float p_pos_init, float p_vel_init,
+                           float prune_weight_threshold, float prune_mahalanobis_threshold, float extract_weight_threshold) 
+{
+    ROS_INFO("======= Initialize (6D) ======= \n");
+    
+    // 1. 初始协方差矩阵 (P)
+    // 状态: [x, y, w, h, vx, vy]
+    // 我们为宽(w)和高(h)添加一个初始方差（可以使用 p_pos_init 或者单独定义的尺寸方差）
+    float p_size_init = p_pos_init; 
+    Eigen::MatrixXf P_k_init = Eigen::MatrixXf::Zero(n_state, n_state);
+    P_k_init <<
+        p_pos_init, 0,          0,          0,          0,          0,
+        0,          p_pos_init, 0,          0,          0,          0,
+        0,          0,          p_size_init,0,          0,          0,
+        0,          0,          0,          p_size_init,0,          0,
+        0,          0,          0,          0,          p_vel_init, 0,
+        0,          0,          0,          0,          0,          p_vel_init;
 
     for(int i = 0; i < Z_k.cols(); i ++)
     {   
-        //store Z into mk (x,y)
-        // ROS_ERROR_STREAM("ZK: \n" << Z_k << endl); 
-        // mk_minus_1.block(0, i, n_state, 1) = H.transpose()*Z_k.block(0,i, n_meas,1);
-        mk_minus_1.block(0, i, n_state, 1) << Z_k.block(0, i, 1, 1), 0, Z_k.block(1, i, 1, 1), 0;   //将Z_k的测量值转换为mk_minus_1状态向量
-        // ROS_ERROR_STREAM("mk_minus_1: \n" << mk_minus_1 << endl);         
-        //store pre-determined weight into wk (from matlab)
-        wk_minus_1(i) = .0016;  //给每个目标分配一个初始权重
-        //store pre-determined weight into Pk (from paper)
-        Pk_minus_1.block(0,i*4, n_state,n_state) = P_k_init; //给每个目标分配一个初始状态协方差矩阵4*4左右排列
+        // 状态初始化: [x, y, w, h, vx, vy]^T
+        // 我们从测量值中初始化 x, y, w, h。初始速度 vx, vy 设为 0。
+        mk_minus_1.block(0, i, n_state, 1) << Z_k.block(0, i, 4, 1), 0, 0;  
+        
+        wk_minus_1(i) = .0016; 
+        Pk_minus_1.block(0, i * n_state, n_state, n_state) = P_k_init; 
     }
 
-    A << 1,dt_imu,0,0,
-            0,1,0,0,
-            0,0,1,dt_imu,
-            0,0,0,1;
+    // 2. 基础状态转移矩阵 (A) - 暂不包含 IMU 旋转补偿
+    // 状态: [x, y, w, h, vx, vy]
+    // x_k = x_{k-1} + vx * dt
+    // y_k = y_{k-1} + vy * dt
+    // w_k = w_{k-1} (尺寸假设为随机游走)
+    // h_k = h_{k-1} (尺寸假设为随机游走)
+    A = Eigen::MatrixXf::Identity(n_state, n_state);
+    A(0, 4) = dt_imu; // x 依赖于 vx
+    A(1, 5) = dt_imu; // y 依赖于 vy
     
-    //Measurement Matrix  H测量矩阵只提取位置、忽略速度（因为相机只能测位置）
-    H << 1, 0, 0 , 0,
-         0, 0, 1, 0;
+    // 3. 观测矩阵 (H)
+    // 我们从 6D 状态 [x, y, w, h, vx, vy] 中测量 [x, y, w, h]
+    H = Eigen::MatrixXf::Zero(n_meas, n_state);
+    H(0, 0) = 1; // 测量 x
+    H(1, 1) = 1; // 测量 y
+    H(2, 2) = 1; // 测量 w
+    H(3, 3) = 1; // 测量 h
 
-    //Process noise covariance, given in Vo&Ma.  过程噪声协方差矩阵（运动模型的不确定性）
-    Q << q_pos,     0,      0,          0,
-         0,         q_vel,  0,          0,
-         0,         0,      q_pos,      0,
-         0,         0,      0,          q_vel;
+    // 4. 过程噪声协方差 (Q)
+    // 假设尺寸 (w,h) 的变化有一个较小的随机游走噪声 (q_size)
+    float q_size = q_pos * 0.1f; // 框的大小通常比位置变化得慢
+    Q = Eigen::MatrixXf::Zero(n_state, n_state);
+    Q << 
+        q_pos, 0,     0,      0,      0,     0,
+        0,     q_pos, 0,      0,      0,     0,
+        0,     0,     q_size, 0,      0,     0,
+        0,     0,     0,      q_size, 0,     0,
+        0,     0,     0,      0,      q_vel, 0,
+        0,     0,     0,      0,      0,     q_vel;
 
-    //Measurement Noise  R测量噪声协方差矩阵（相机测量的不确定性）
-    R << r_meas,    0,
-         0,         r_meas;
+    // 5. 观测噪声协方差 (R)
+    // 假设边界框尺寸的测量噪声与中心点的测量噪声略有不同
+    float r_meas_size = r_meas * 1.5f; 
+    R = Eigen::MatrixXf::Zero(n_meas, n_meas);
+    R << 
+        r_meas, 0,      0,           0,
+        0,      r_meas, 0,           0,
+        0,      0,      r_meas_size, 0,
+        0,      0,      0,           r_meas_size;
 
     numTargets_Jk_minus_1 = NUM_DRONES;
-    cout<<"q_pos: "<<q_pos<<endl;
-    cout<<"q_vel: "<<q_vel<<endl;
 }
+
 
 /* 
  * Prediction step is done async. The prediction is called whenever we get an IMU message.
@@ -1531,30 +1604,74 @@ void PhdFilter::asynchronous_predict_existing() //异步预测
 
     //ROS_INFO("size mk-1: %lu, size B: %lu",mk_minus_1.cols(), B.cols());
     //ROS_INFO_STREAM("A:\n" << A << endl);
+    // for (int i = 0; i < mk_minus_1.cols(); i++)
+    // {
+    //     // 注释：原计划根据加速度调整过程噪声，实际未启用
+    //     // float qAcc = sqrt((mk_k_minus_1(1, i))*(mk_k_minus_1(1, i)) + (mk_k_minus_1(3, i)*(mk_k_minus_1(3, i))));
+    //     // qAcc = ((qAcc*2)+1);
+    //     // ROS_INFO_STREAM("!!!!!!!!!!QACC = " << qAcc);
+    //     Eigen::MatrixXf Q_temp = Q; //过程噪声协方差矩阵
+    //     Q_temp = Q;// * qAcc;
+    //     // ROS_INFO("iteration: %d", i);
+    //     // ROS_INFO_STREAM("B:\n" << B.block(0,n_input*i, n_state,n_input)); 
+    //     Bu_temp = B.block(0,n_input*i, n_state,n_input) * ang_vel_k; //
+    //     // ROS_INFO_STREAM("Bu:\n" << Bu_temp); 
+    //     mk_minus_1.block(0,i, n_state,1) = A * mk_minus_1.block(0,i, n_state,1) + Bu_temp;  
+    //     P_temp = Pk_minus_1.block(0,n_state*i, n_state,n_state);
+    //     pu = mk_minus_1(0,i);
+    //     pv = mk_minus_1(2,i);
+
+    //     F(0,0) = (dt_imu*omega_y*(2*cu - 2*pu))/f - (dt_imu*omega_x*(cv - pv))/f + 1;      F(0,1) = dt;   F(0,2) = dt_imu*omega_z - (dt_imu*omega_x*(cu - pu))/f;                            F(0,3) = 0;
+    //     F(1,0) = 0;                                                                        F(1,1) = 1;    F(1,2) = 0;                                                                        F(1,3) = 0;
+    //     F(2,0) = (dt_imu*omega_y*(cv - pv))/f - dt_imu*omega_z;                            F(2,1) = 0;    F(2,2) = (dt_imu*omega_y*(cu - pu))/f - (dt_imu*omega_x*(2*cv - 2*pv))/f + 1;      F(2,3) = dt;
+    //     F(3,0) = 0;                                                                        F(3,1) = 0;    F(3,2) = 0;                                                                        F(3,3) = 1;
+
+    //     P_temp = Q + F* P_temp * F.transpose();  //// 预测协方差：不确定性 = 过程噪声 + F×上一协方差×F^T（传递不确定性）
+    //     Pk_minus_1.block(0,n_state*i, n_state,n_state) = P_temp; //计算出新的协方差矩阵
+    // }
     for (int i = 0; i < mk_minus_1.cols(); i++)
     {
-        // 注释：原计划根据加速度调整过程噪声，实际未启用
-        // float qAcc = sqrt((mk_k_minus_1(1, i))*(mk_k_minus_1(1, i)) + (mk_k_minus_1(3, i)*(mk_k_minus_1(3, i))));
-        // qAcc = ((qAcc*2)+1);
-        // ROS_INFO_STREAM("!!!!!!!!!!QACC = " << qAcc);
-        Eigen::MatrixXf Q_temp = Q; //过程噪声协方差矩阵
-        Q_temp = Q;// * qAcc;
-        // ROS_INFO("iteration: %d", i);
-        // ROS_INFO_STREAM("B:\n" << B.block(0,n_input*i, n_state,n_input)); 
-        Bu_temp = B.block(0,n_input*i, n_state,n_input) * ang_vel_k; //
-        // ROS_INFO_STREAM("Bu:\n" << Bu_temp); 
-        mk_minus_1.block(0,i, n_state,1) = A * mk_minus_1.block(0,i, n_state,1) + Bu_temp;  
-        P_temp = Pk_minus_1.block(0,n_state*i, n_state,n_state);
-        pu = mk_minus_1(0,i);
-        pv = mk_minus_1(2,i);
+        Eigen::MatrixXf Q_temp = Q;
+        
+        // 注意：这里的 B 矩阵稍后也需要改成 6x3 的维度
+        Bu_temp = B.block(0, n_input*i, n_state, n_input) * ang_vel_k; 
+        
+        mk_minus_1.block(0, i, n_state, 1) = A * mk_minus_1.block(0, i, n_state, 1) + Bu_temp;  
+        P_temp = Pk_minus_1.block(0, n_state*i, n_state, n_state);
+        
+        // 提取当前的 x 和 y 位置用于 IMU 补偿计算
+        pu = mk_minus_1(0, i); // x
+        pv = mk_minus_1(1, i); // 【关键修改】：在 6D 中，y 的索引变成了 1
 
-        F(0,0) = (dt_imu*omega_y*(2*cu - 2*pu))/f - (dt_imu*omega_x*(cv - pv))/f + 1;      F(0,1) = dt;   F(0,2) = dt_imu*omega_z - (dt_imu*omega_x*(cu - pu))/f;                            F(0,3) = 0;
-        F(1,0) = 0;                                                                        F(1,1) = 1;    F(1,2) = 0;                                                                        F(1,3) = 0;
-        F(2,0) = (dt_imu*omega_y*(cv - pv))/f - dt_imu*omega_z;                            F(2,1) = 0;    F(2,2) = (dt_imu*omega_y*(cu - pu))/f - (dt_imu*omega_x*(2*cv - 2*pv))/f + 1;      F(2,3) = dt;
-        F(3,0) = 0;                                                                        F(3,1) = 0;    F(3,2) = 0;                                                                        F(3,3) = 1;
+        // ==========================================
+        // 构建 6x6 的 F 矩阵 (雅可比矩阵)
+        // 状态顺序: [x, y, w, h, vx, vy]
+        // ==========================================
+        
+        // 1. 首先把整个 6x6 矩阵初始化为单位矩阵 (对角线全是1，其余全是0)
+        F = Eigen::MatrixXf::Identity(n_state, n_state);
 
-        P_temp = Q + F* P_temp * F.transpose();  //// 预测协方差：不确定性 = 过程噪声 + F×上一协方差×F^T（传递不确定性）
-        Pk_minus_1.block(0,n_state*i, n_state,n_state) = P_temp; //计算出新的协方差矩阵
+        // 2. 填写第 0 行：x(k) 的偏导数
+        // 对 x 的偏导: F(0,0)
+        F(0, 0) = (dt_imu*omega_y*(2*cu - 2*pu))/f - (dt_imu*omega_x*(cv - pv))/f + 1;
+        // 对 y 的偏导: F(0,1) 【原来是 F(0,2)】
+        F(0, 1) = dt_imu*omega_z - (dt_imu*omega_x*(cu - pu))/f;
+        // 对 vx 的偏导: F(0,4) 【原来是 F(0,1)】
+        F(0, 4) = dt; 
+
+        // 3. 填写第 1 行：y(k) 的偏导数 (原来在第2行)
+        // 对 x 的偏导: F(1,0) 【原来是 F(2,0)】
+        F(1, 0) = (dt_imu*omega_y*(cv - pv))/f - dt_imu*omega_z;
+        // 对 y 的偏导: F(1,1) 【原来是 F(2,2)】
+        F(1, 1) = (dt_imu*omega_y*(cu - pu))/f - (dt_imu*omega_x*(2*cv - 2*pv))/f + 1;
+        // 对 vy 的偏导: F(1,5) 【原来是 F(2,3)】
+        F(1, 5) = dt;
+
+        // 第 2, 3, 4, 5 行 (对应 w, h, vx, vy) 保持为单位矩阵的默认值 1
+        // 也就是 w_{k} = w_{k-1}, h_{k} = h_{k-1}, vx_{k} = vx_{k-1}, vy_{k} = vy_{k-1}
+
+        P_temp = Q + F * P_temp * F.transpose();  
+        Pk_minus_1.block(0, n_state*i, n_state, n_state) = P_temp; 
     }
 
     //更新预测后的状态、权重、协方差（用于后续更新步骤）
@@ -2286,8 +2403,8 @@ void PhdFilter::phd_state_extract()
 
                 // 将计算出的实时速度反馈给下一帧的预测
                 // 这样下一帧的预测位置 = 当前位置 + velocity * dt
-                mk_minus_1(1, i) = tracks_[i].velocity(0);
-                mk_minus_1(3, i) = tracks_[i].velocity(1);
+                mk_minus_1(4, i) = tracks_[i].velocity(0);
+                mk_minus_1(5, i) = tracks_[i].velocity(1);
                 
                 ROS_INFO("Drone %d Velocity: VX=%.2f, VY=%.2f", i, velocity(0, 0), velocity(1, 0));
             }

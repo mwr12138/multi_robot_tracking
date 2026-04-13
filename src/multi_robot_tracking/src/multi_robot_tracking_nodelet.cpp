@@ -304,58 +304,6 @@ int multi_robot_tracking_Nodelet::determine_occlusion_or_leave(int target_id, in
 }
 
 
-// void multi_robot_tracking_Nodelet::update_id_status_matrix() {   //更新ID状态矩阵的核心逻辑
-//     // 确保矩阵已初始化
-//     if (id_status_matrix_.cols() == 0) return;
-    
-//     for (int i = 0; i < num_drones; i++) {
-//         float weight = phd_filter_.wk_bar_display(i);
-//         float current_x = phd_filter_.X_k(0, i);
-//         float current_y = phd_filter_.X_k(2, i);
-        
-//         if (weight > 0.3f) {  // 目标可见
-//             id_visible_frames_[i]++;
-            
-//             // 如果目标之前是离开状态，检查是否是回归
-//             if (id_status_matrix_(1, i) == 1) {  // 之前是离开状态
-//                 float leave_x = id_status_matrix_(2, i);
-//                 float leave_y = id_status_matrix_(3, i);
-                
-//                 // 计算与离开位置的距离
-//                 float distance = std::sqrt(std::pow(current_x - leave_x, 2) + 
-//                                          std::pow(current_y - leave_y, 2));
-                
-//                 if (distance < return_distance_threshold_) {
-//                     // 目标回归！保持原有ID
-//                     id_status_matrix_(1, i) = 0;  // 状态恢复正常
-//                     id_status_matrix_(2, i) = -1; // 清除离开坐标
-//                     id_status_matrix_(3, i) = -1;
-//                     ROS_INFO("目标 %d 从离开位置回归，距离: %.1f", i, distance);
-//                 } else {
-//                     // 可能是新目标，在远处出现，暂时不处理
-//                 }
-//             } else {
-//                 // 目标正常可见，确保状态为正常
-//                 id_status_matrix_(1, i) = 0;
-//             }
-//         } else {  // 目标不可见
-//             // 如果目标之前可见且达到最小可见帧数，记录离开位置
-//             if (id_status_matrix_(1, i) == 0 && id_visible_frames_[i] >= min_visible_frames_) {
-//                 id_status_matrix_(1, i) = 1;  // 标记为离开状态
-//                 id_status_matrix_(2, i) = phd_filter_.X_k(0, i);  // 记录离开x坐标
-//                 id_status_matrix_(3, i) = phd_filter_.X_k(2, i);  // 记录离开y坐标
-//                 id_visible_frames_[i] = 0;  // 重置可见帧数
-//                 ROS_INFO("目标 %d 离开视野，位置: (%.1f, %.1f)", 
-//                         i, id_status_matrix_(2, i), id_status_matrix_(3, i));
-//             } else if (id_status_matrix_(1, i) == 0) {
-//                 // 可见帧数不足，不记录离开位置，但重置计数器
-//                 id_visible_frames_[i] = 0;
-//             }
-//         }
-//     }
-    
-// }
-
 
 void multi_robot_tracking_Nodelet::update_id_status_matrix() {
     // 确保矩阵已初始化
@@ -744,151 +692,7 @@ void multi_robot_tracking_Nodelet::init_matrices()
     }
 }
 
-// /* use tracking data to draw onto 2D image
-//  * input: N/A
-//  * output: 2D image with tracking ID
-//  */
-// void multi_robot_tracking_Nodelet::draw_image()
-// {
-// #ifdef HOST
-//     if(filter_to_use_.compare("jpdaf") == 0)
-//     {
-//         //          ROS_INFO("drawing jpdaf estimation");
-//         float scaleX = input_image.cols / (float)detection_width;
-//         float scaleY = input_image.rows / (float)detection_height;
-//         for(int k=0; k < jpdaf_filter_.tracks_.size(); k++)
-//         {
-//             Eigen::Vector2f temp_center;
-//             temp_center = jpdaf_filter_.tracks_[k].get_z();
-//             int scaledX = floor((temp_center[0] + detection_offset_x) * scaleX);
-//             int scaledY = floor((temp_center[1] + detection_offset_y) * scaleY);
-//             temp_center[0] = scaledX;
-//             temp_center[1] = scaledY;
-//             cv::Point2f target_center(temp_center(0), temp_center(1));
-//             cv::Point2f id_pos(temp_center(0),temp_center(1)+30);
-//             cv::circle(input_image,target_center,4, cv::Scalar(0, 210, 255), 2);
-//             putText(input_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 2.0, cvScalar(0, 0, 255), 2, cv::LINE_AA);//size 1.5 --> 0.5
 
-//             //draw cross
-//             cv::Point2f det_cross_a(temp_center(0)-5, temp_center(1)-5);
-//             cv::Point2f det_cross_b(temp_center(0)+5, temp_center(1)-5);
-//             cv::Point2f det_cross_c(temp_center(0)-5, temp_center(1)+5);
-//             cv::Point2f det_cross_d(temp_center(0)+5, temp_center(1)+5);
-//             line(input_image, det_cross_a, det_cross_d, cv::Scalar(255, 20, 150), 1, 1 );
-//             line(input_image, det_cross_b, det_cross_c, cv::Scalar(255, 20, 150), 1, 1 );
-//         }
-
-
-//     }
-
-//     else if(filter_to_use_.compare("phd") == 0) {
-
-//         //scale 224x224 to 640x480
-
-//         float scaleX = input_image.cols / (float)detection_width;
-//         float scaleY = input_image.rows / (float)detection_height;
-// //        ROS_INFO("drawing phd estimation");
-        
-// //measured input
-//         for (int k=0; k < phd_filter_.Detections.cols(); k++)
-//         {
-
-//             int scaledX = floor((phd_filter_.Detections(0,k) + detection_offset_x) * scaleX);
-//             int scaledY = floor((phd_filter_.Detections(1,k) + detection_offset_y) * scaleY);
-//             float scaledW = phd_filter_.Detections(2,k) * scaleX;
-//             float scaledH = phd_filter_.Detections(3,k) * scaleY;
-
-
-//             cv::Point2f measured_center(scaledX, scaledY);
-//             //cv::Point2f id_pos(phd_filter_.Z_k(0,k),phd_filter_.Z_k(1,k)+10);
-//             //cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 1);
-//             //              putText(previous_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
-//             cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
-//             cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
-//             cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
-
-//         }
-// // ROS_ERROR_STREAM("画图X_k is:\n" << phd_filter_.X_k << "\n");
-//         for(int k=0; k < phd_filter_.X_k.cols(); k++)
-//         {
-//             int scaledX = floor((phd_filter_.X_k(0,k) + detection_offset_x) * scaleX);
-//             int scaledY = floor((phd_filter_.X_k(2,k) + detection_offset_y) * scaleY);
-//             if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
-//             {
-//             cout << "object[" << k << "] - "
-//              << "(" << scaledX << ", " << scaledY << ")"
-//              << " ID: " << id_consensus(k) << endl;
-//             cv::Point2f target_center(scaledX,scaledY);
-//             cv::Point2f id_pos(scaledX,scaledY+20);
-//             cv::circle(input_image,target_center,2, cv::Scalar(0, 210, 255), 1);
-//             putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.4, cvScalar(0, 0, 255), 2.5, cv::LINE_AA);//size 1.5 --> 0.5
-//         cout<<""<<endl;
-//             }
-//         }
-
-        
-//         //cout<<"draw down"<<endl;
-//     }
-
-//     else if(filter_to_use_.compare("kalman") == 0) {
-
-//         //scale 224x224 to 640x480
-
-//         float scaleX = input_image.cols / (float)detection_width;
-//         float scaleY = input_image.rows / (float)detection_height;
-// //        ROS_INFO("drawing phd estimation");
-//         for(int k=0; k < num_drones; k++)
-//         {
-//             int scaledX = floor((kalman_filter_.X_k(0,k) + detection_offset_x) * scaleX);
-//             int scaledY = floor((kalman_filter_.X_k(2,k) + detection_offset_y) * scaleY);
-
-//             cv::Point2f target_center(scaledX,scaledY);
-//             cv::Point2f id_pos(scaledX,scaledY+10);
-//             cv::circle(input_image,target_center,6, cv::Scalar(0, 210, 255), 3);
-//             putText(input_image, to_string(int(id_consensus(k))), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
-//         }
-
-//         //measured input
-//         for (int k=0; k < num_drones; k++)
-//         {
-
-//             int scaledX = floor((kalman_filter_.Detections(0,k) + detection_offset_x) * scaleX);
-//             int scaledY = floor((kalman_filter_.Detections(1,k) + detection_offset_y) * scaleY);
-//             float scaledW = kalman_filter_.Detections(2,k) * scaleX;
-//             float scaledH = kalman_filter_.Detections(3,k) * scaleY;
-
-
-//             cv::Point2f measured_center(scaledX, scaledY);
-//             //cv::Point2f id_pos(phd_filter_.Z_k(0,k),phd_filter_.Z_k(1,k)+10);
-//             cv::circle(input_image,measured_center,4, cv::Scalar(255, 0, 0), 2);
-//             //              putText(previous_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, cv::LINE_AA);//size 1.5 --> 0.5
-//             cv::Point2f top_left(scaledX - scaledW/2, scaledY - scaledH/2);
-//             cv::Point2f bottom_right(scaledX + scaledW/2, scaledY + scaledH/2);
-//             cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
-
-//         }
-//     }
-
-//     //  ROS_INFO("drawing ground truth");
-//     //  for(int k=0; k < vicon_projected_2DposeArray.cols(); k++)
-//     //  {
-//     //    cv::Point2f target_center(vicon_projected_2DposeArray(0,k),vicon_projected_2DposeArray(1,k));
-//     //    cv::Point2f id_pos(vicon_projected_2DposeArray(0,k),vicon_projected_2DposeArray(1,k)+10);
-//     //    cv::circle(input_image,target_center,4, cv::Scalar(0, 255, 0), 2);
-//     //    putText(input_image, to_string(k), id_pos, cv::FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0, 255, 0), 2, CV_AA);//size 1.5 --> 0.5
-//     //  }
-//     // cv::imwrite("/home/greend/Desktop/0.png", input_image);
-//     image_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", input_image).toImageMsg();
-//     image_msg->header.stamp = img_timestamp;
-//     image_pub_.publish(image_msg);
-
-//     //  ROS_WARN("img time: %f",prev_img_timestamp.toSec());
-//     //  ROS_WARN("bbox time: %f",bbox_timestamp.toSec());
-
-// #endif
-//     return;
-
-// }
 
 void multi_robot_tracking_Nodelet::draw_image() {
 #ifdef HOST
@@ -910,45 +714,7 @@ void multi_robot_tracking_Nodelet::draw_image() {
             cv::rectangle(input_image, top_left, bottom_right, cv::Scalar(0, 255, 0), 2);
         }
 
-        // 绘制跟踪目标和速度箭头
-        // for(int k=0; k < phd_filter_.X_k.cols(); k++)
-        // {
-        //     int scaledX = floor((phd_filter_.X_k(0,k) + detection_offset_x) * scaleX);
-        //     int scaledY = floor((phd_filter_.X_k(2,k) + detection_offset_y) * scaleY);
-            
-        //     if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
-        //     {
-        //         cv::Point2f target_center(scaledX, scaledY);
-        //         cv::Point2f id_pos(scaledX, scaledY+20);
-                
-        //         // 绘制目标中心点
-        //         cv::circle(input_image, target_center, 3, cv::Scalar(0, 210, 255), 2);
-                
-        //         // 绘制ID文本
-        //         putText(input_image, to_string(int(id_consensus(k))), id_pos, 
-        //                cv::FONT_HERSHEY_COMPLEX_SMALL, 1.1, cvScalar(0, 0, 255), 1.1, cv::LINE_AA);
-                
-        //         // === 简化版速度箭头（使用OpenCV内置函数）===
-        //         float vx = phd_filter_.X_k(1,k);
-        //         float vy = phd_filter_.X_k(3,k);
-        //         float speed = std::sqrt(vx*vx + vy*vy);
-                
-        //         if (speed > 0.1f) {
-        //             // 计算箭头终点
-        //             float arrow_scale = 1.0f;
-        //             cv::Point2f arrow_end(
-        //                 scaledX + vx * arrow_scale,
-        //                 scaledY + vy * arrow_scale
-        //             );
-                    
-        //             // 使用OpenCV内置函数绘制箭头（黄色）
-        //             cv::arrowedLine(input_image, target_center, arrow_end, 
-        //                           cv::Scalar(0, 255, 255), 1, cv::LINE_AA, 0, 0.3);
-        //         }
-        //     }
-        // }
-        // 绘制跟踪目标和速度箭头
-        // 建议直接遍历 tracks_，而不是 X_k 矩阵
+ 
         for(const auto& tr : phd_filter_.tracks_)
         {
             //ROS_ERROR_STREAM("tr.confidence is: " << tr.confidence);
@@ -956,7 +722,7 @@ void multi_robot_tracking_Nodelet::draw_image() {
             if(!tr.active || tr.confidence < 0.1f) continue;
 
             int scaledX = floor((tr.x(0) + detection_offset_x) * scaleX);
-            int scaledY = floor((tr.x(2) + detection_offset_y) * scaleY);
+            int scaledY = floor((tr.x(1) + detection_offset_y) * scaleY);
             
             // 检查是否在画面内
             if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
@@ -972,8 +738,8 @@ void multi_robot_tracking_Nodelet::draw_image() {
                         cv::FONT_HERSHEY_SIMPLEX, 0.6, cv::Scalar(0, 0, 255), 2);
                 
                 // 3. 绘制速度箭头
-                float vx = tr.x(1);
-                float vy = tr.x(3);
+                float vx = tr.x(4);
+                float vy = tr.x(5);
                 float speed = std::sqrt(vx*vx + vy*vy);
                 
                 //if (speed > 1.0f) { // 稍微调高一点阈值防止抖动
@@ -1011,7 +777,7 @@ void multi_robot_tracking_Nodelet::draw_image() {
             ss << "ID " << tr.id
             << " [" << state_str << "] : ("
             << std::fixed << std::setprecision(2)
-            << tr.x(0) << ", " << tr.x(2) << ")";
+            << tr.x(0) << ", " << tr.x(1) << ")";
 
             // 如果你希望把 confidence 也打出来，可以打开这一行
             // ss << " conf=" << std::setprecision(2) << tr.confidence;
@@ -1029,60 +795,7 @@ void multi_robot_tracking_Nodelet::draw_image() {
 
             line_idx++;
         }
-        // // ===============================
-        // // 绘制 Candidate（白色空心圆）
-        // // ===============================
-        // for (const auto& cand : phd_filter_.candidates_)
-        // {
-        //     int scaledX = floor((cand.x(0) + detection_offset_x) * scaleX);
-        //     int scaledY = floor((cand.x(1) + detection_offset_y) * scaleY);
 
-        //     if (scaledX > 0 && scaledX < input_image.cols &&
-        //         scaledY > 0 && scaledY < input_image.rows)
-        //     {
-        //         cv::circle(
-        //             input_image,
-        //             cv::Point2f(scaledX, scaledY),
-        //             30,                          // 半径
-        //             cv::Scalar(255, 255, 255),  // 白色
-        //             1,                          // 空心
-        //             cv::LINE_AA
-        //         );
-        //     }
-        // }
-        // ==========================================================
-                // === 新增：绘制 Candidate（白色大空心圆） ===
-                // ==========================================================
-                // 在 multi_robot_tracking_Nodelet.cpp 的 draw_image 函数中
-
-        // ... 绘制 Candidate 部分 ...
-
-        // 1. 打印总数：看看是不是 0
-        //ROS_ERROR_STREAM("Drawing Debug: Candidates Size = " << phd_filter_.candidates_for_matching.size());
-
-        // for (const auto& cand : phd_filter_.candidates_for_matching)
-        // {
-        //     float raw_x = cand.x(0);
-        //     float raw_y = cand.x(2);
-            
-        //     int scaledX = floor((raw_x + detection_offset_x) * scaleX);
-        //     int scaledY = floor((raw_y + detection_offset_y) * scaleY);
-
-        //     // 2. 打印坐标：看看是不是算出界了
-        //     // ROS_INFO("Cand: Raw(%.1f, %.1f) -> Scaled(%d, %d) | ImgSize(%d, %d)", 
-        //     //           raw_x, raw_y, scaledX, scaledY, input_image.cols, input_image.rows);
-
-        //     if(scaledX > 0 && scaledX < input_image.cols && scaledY > 0 && scaledY < input_image.rows)
-        //     {
-        //         cv::circle(input_image, cv::Point(scaledX, scaledY), 12, cv::Scalar(255, 255, 255), 1, cv::LINE_AA);
-        //         ROS_ERROR_STREAM("Circle drawn!"); // 3. 如果打印这个，说明画了但你没看见
-        //     }
-        //     else 
-        //     {
-        //         ROS_ERROR_STREAM("Out of bounds!"); // 4. 如果打印这个，说明出界了
-        //     }
-        // }
-        // 【安全检查 1】确保图像不为空
         if (input_image.empty()) {
  
             return;
@@ -1102,12 +815,12 @@ void multi_robot_tracking_Nodelet::draw_image() {
             }
 
             // 【安全检查 3】检查数值是否为 NaN (滤波器发散时会出现)
-            if (std::isnan(cand.x(0)) || std::isnan(cand.x(2))) {
+            if (std::isnan(cand.x(0)) || std::isnan(cand.x(1))) {
                 continue; // 数值无效，跳过
             }
 
             float raw_x = cand.x(0);
-            float raw_y = cand.x(2);
+            float raw_y = cand.x(1);
 
             // 【安全检查 4】防止 float 转 int 溢出
             // 限制范围在 -10000 到 10000 之间，防止极端大数导致 int 溢出
@@ -1219,7 +932,7 @@ void multi_robot_tracking_Nodelet::draw_image() {
             // 只有当它是活跃的，且发生了特殊事件(复活/新生)时才画在目标旁边
             if (tr.active && (tr.match_type == 2 || tr.match_type == 3)) { 
                 float raw_x = tr.x(0);
-                float raw_y = tr.x(2);
+                float raw_y = tr.x(1);
                 float scaleX = input_image.cols / (float)detection_width;
                 float scaleY = input_image.rows / (float)detection_height;
                 int sx = floor((raw_x + detection_offset_x) * scaleX);
@@ -1344,377 +1057,38 @@ void multi_robot_tracking_Nodelet::imu_Callback(const sensor_msgs::ImuConstPtr &
             publish_tracks();
         }
     }
-    // if(filter_to_use_.compare("kalman") == 0)
-    // {
-    //     kalman_filter_.ang_vel_k(0) = imu_msg->angular_velocity.x;
-    //     kalman_filter_.ang_vel_k(1) = imu_msg->angular_velocity.y;
-    //     kalman_filter_.ang_vel_k(2) = imu_msg->angular_velocity.z;
-
-    //     //apply rotation from imu2cam frame
-    //     kalman_filter_.ang_vel_k.block<3,1>(0,0) = rotm_world2cam *  phd_filter_.ang_vel_k;
-
-    //     //asynchronous motion prediction
-    //     if(first_track_flag)
-    //     {
-    //         kalman_filter_.kalmanPredict();
-    //         publish_tracks();
-    //     }
-    // }
+ 
     imu_timestamp = imu_msg->header.stamp;
 }
 
 Eigen::MatrixXf multi_robot_tracking_Nodelet::get_B_ang_vel_matrix(float x, float y)
 {
     Eigen::MatrixXf temp_B_matrix;
-    temp_B_matrix = Eigen::MatrixXf::Zero(4,3);
+    
+    // 【关键修改 1】：矩阵大小从 4x3 变成 6x3
+    temp_B_matrix = Eigen::MatrixXf::Zero(6, 3);
 
-    temp_B_matrix(0,0) = (x-cx)*(y-cy)/f;       temp_B_matrix(0,1) = -(pow((x-cx),2)/f)-f;  temp_B_matrix(0,2) = (y-cy);
-    temp_B_matrix(1,0) = 0;                     temp_B_matrix(1,1) = 0;                     temp_B_matrix(1,2) = 0;
-    temp_B_matrix(2,0) = f+(pow((y-cy),2))/f;   temp_B_matrix(2,1) = (x-cx)*(y-cy)/f;       temp_B_matrix(2,2) = -x+cx;
-    temp_B_matrix(3,0) = 0;                     temp_B_matrix(3,1) = 0;                     temp_B_matrix(3,2) = 0;
+    // 第 0 行对应 X 坐标的像素平移补偿（保持不变）
+    temp_B_matrix(0,0) = (x-cx)*(y-cy)/f;       
+    temp_B_matrix(0,1) = -(pow((x-cx),2)/f)-f;  
+    temp_B_matrix(0,2) = (y-cy);
+    
+    // 【关键修改 2】：第 1 行现在对应 Y 坐标，把原来第 2 行的公式挪到这里
+    temp_B_matrix(1,0) = f+(pow((y-cy),2))/f;   
+    temp_B_matrix(1,1) = (x-cx)*(y-cy)/f;       
+    temp_B_matrix(1,2) = -x+cx;
 
+    // 注意：因为我们在上面用 Eigen::MatrixXf::Zero(6, 3) 初始化了整个矩阵，
+    // 所以第 2, 3 行 (w, h) 和 第 4, 5 行 (vx, vy) 已经是 0 了，
+    // 不需要像以前那样写一堆 temp_B_matrix(2,0) = 0; 的冗余代码了。
+
+    // 最后乘上时间间隔
     temp_B_matrix = temp_B_matrix * phd_filter_.dt_imu;
     return temp_B_matrix;
-
 }
 
 
-/* callback for 2D image to call phd track when using flightmare rosbag data
- * input: PoseArray
- * output: N/A
- */
-/*void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseArray& in_PoseArray)
-{   
-    auto start_time = std::chrono::high_resolution_clock::now();
-    static int callback_count = 0; // 静态变量，用于记录调用次数
-    ros::Time current_time = ros::Time::now(); // 获取当前时间
-    //std::cout << "detection_Callback called " << ++callback_count << " times at " << current_time.toSec() << std::endl;
-    if(in_PoseArray.poses.size() > num_drones)
-    {
-        ROS_ERROR("MORE DETECTIONS THAN NO OF DRONES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-        return;
-    }
 
-    //get time of detection
-    bbox_timestamp = in_PoseArray.header.stamp;
-    current_timestamp = bbox_timestamp.toSec();
-    //cout<<"bbox_timestamp.toSec()========"<<bbox_timestamp.toSec()<<endl;
-
-
-
-    ROS_WARN("bbox time: %f, dt: %f, imu time: %f",current_timestamp, delta_timestamp, imu_time);
-
-    // ROS_INFO("detected size: %lu ", in_PoseArray.poses.size() );
-    jpdaf_filter_.last_timestamp_synchronized = in_PoseArray.header.stamp.toSec(); //用于JPDAF滤波器记录上一次同步的时间
-
-    //store Z
-
-    //========= use jpdaf filter ===========
-    if(filter_to_use_.compare("jpdaf") == 0)
-    {
-
-        jpdaf_filter_.detected_size_k = in_PoseArray.poses.size();
-
-        //store Z
-        jpdaf_filter_.flightmare_bounding_boxes_msgs_buffer_.push_back(in_PoseArray);
-        //store imu
-        jpdaf_filter_.imu_buffer_.push_back(imu_);
-
-        //    jpdaf_filter_.Z_k = Eigen::MatrixXf::Zero(4,jpdaf_filter_.detected_size_k);
-
-        //    for(int i =0; i < jpdaf_filter_.detected_size_k; i++)
-        //    {
-        //      jpdaf_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
-        //      jpdaf_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
-        //    }
-
-        jpdaf_filter_.track(true);
-    }
-
-    //========= use phd filter ===========
-    else if(filter_to_use_.compare("phd") == 0)
-    {
-
-        if(phd_filter_.first_callback)
-        {
-            phd_filter_.set_num_drones(num_drones);
-            phd_filter_.initialize_matrix(cx, cy, f, filter_dt);
-        }
-
-        phd_filter_.Detections.setZero();  //每次都将检测到的目标位置和方向初始化为0
-        phd_filter_.detected_size_k = in_PoseArray.poses.size();
-
-        for(int i =0; i < phd_filter_.detected_size_k; i++)
-        {
-            //store Z
-            // x, y, w, h
-            phd_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
-            phd_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
-
-            phd_filter_.Detections(0,i) = in_PoseArray.poses[i].position.x;
-            phd_filter_.Detections(1,i) = in_PoseArray.poses[i].position.y;
-            phd_filter_.Detections(2,i) = in_PoseArray.poses[i].orientation.x;
-            phd_filter_.Detections(3,i) = in_PoseArray.poses[i].orientation.y;
-        }
-        ROS_INFO_STREAM("Num Meas: " << phd_filter_.detected_size_k << "\n");
-        ROS_INFO_STREAM("Z_k_CB: " << endl << phd_filter_.Z_k << "\n");
-        ROS_INFO_STREAM("WK-1: " << phd_filter_.wk << "\n");
-        if(phd_filter_.first_callback)
-        {
-            delta_timestamp =filter_dt;//0.033;//0.043; //0.025;//0.143; //0.225   0.125
-            phd_filter_.dt_cam = delta_timestamp;  //摄像头检测之间的时间间隔，用于PHD滤波器的主更新
-
-            phd_filter_.initialize(phd_q_pos, phd_q_vel, phd_r_meas, phd_p_pos_init, phd_p_vel_init,
-                                phd_prune_weight_threshold,
-                                phd_prune_mahalanobis_dist_threshold,
-                                phd_extract_weight_threshold);
-            phd_filter_.first_callback = false;
-
-            previous_timestamp = current_timestamp;
-        }
-
-        else 
-        {
-
-
-            delta_timestamp =filter_dt;//0.025;//0.043; //0.025; //hard-coded for 4.5 Hz TO DO FIX   0.143
-            //      delta_timestamp = current_timestamp - previous_timestamp;
-            //check for data with no timestamp and thus dt = 0
-
-            phd_filter_.dt_cam = delta_timestamp;
-            previous_timestamp = current_timestamp;
-            for(int i =0; i < phd_filter_.X_k.cols(); i++)
-            {
-                phd_filter_.B.block<4,3>(0,3*i) = get_B_ang_vel_matrix(phd_filter_.X_k(0,i),phd_filter_.X_k(2,i));
-            }
-
-            phd_filter_.phd_track();   //运行gmphd    执行更新步骤
-            //id_consensus = phd_filter_.id_consensus;
-            // 更新ID状态矩阵 上边的注释掉了
-            //////////////////////////////////////////////////////////update_id_status_matrix();
-            
-            // 处理新检测的目标
-            //process_new_detections();
-            
-            // 更新id_consensus
-            update_id_consensus_from_status();
-            draw_image();
-            //ROS_ERROR_STREAM("id_status_matrix_: \n" << id_status_matrix_);
-            // auto end_time = std::chrono::high_resolution_clock::now();
-            // auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-            // auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-            // std::cout << "phd_track() 运行时间：\n";
-            // std::cout << duration_ms.count() << " 毫秒\n"; 
-            // std::cout << duration_us.count() << " 微秒\n";
-            
-            first_track_flag = true;
-            consensus_sort();   //################################################################################################################################
-            //associate_ids();
-            //after tracking, store previous Z value to update velocity
-            for(int i =0; i < phd_filter_.detected_size_k; i++)
-            {
-                //store Z
-                phd_filter_.Z_k_previous(0,i) = in_PoseArray.poses[i].position.x;
-                phd_filter_.Z_k_previous(1,i) = in_PoseArray.poses[i].position.y;
-
-            }
-
-
-            phd_filter_.B = Eigen::MatrixXf::Zero(4,3*num_drones);
-
-            //update for B ang vel matrix
-            //store B matrix for ang velocity
-            
-
-           // imu_timestamp = in_PoseArray.header.stamp;
-        }
-    }
-
-    else if(filter_to_use_.compare("kalman") == 0)
-    {
-
-        if(kalman_filter_.first_callback)
-        {
-            kalman_filter_.setNumDrones(num_drones);
-            kalman_filter_.initializeMatrix(cx, cy, f, filter_dt);
-        }
-
-
-        kalman_filter_.detected_size_k = in_PoseArray.poses.size();
-        
-
-        for(int i =0; i < kalman_filter_.detected_size_k; i++)
-        {
-            //store Z
-            // x, y, w, h
-            kalman_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
-            kalman_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
-
-            kalman_filter_.Detections(0,i) = in_PoseArray.poses[i].position.x;
-            kalman_filter_.Detections(1,i) = in_PoseArray.poses[i].position.y;
-            kalman_filter_.Detections(2,i) = in_PoseArray.poses[i].orientation.x;
-            kalman_filter_.Detections(3,i) = in_PoseArray.poses[i].orientation.y;
-        }
-        ROS_INFO_STREAM("Num Meas: " << kalman_filter_.detected_size_k << "\n");
-        ROS_INFO_STREAM("Z_k_CB: " << endl << kalman_filter_.Z_k << "\n");
-        ROS_INFO_STREAM("WK-1: " << kalman_filter_.wk << "\n");
-        if(kalman_filter_.first_callback)
-        {
-            delta_timestamp = filter_dt;//0.125;//0.143; //0.225
-            kalman_filter_.dt_cam = delta_timestamp;
-
-            kalman_filter_.initialize(jpdaf_q_pos, jpdaf_q_vel, jpdaf_r_meas, jpdaf_p_pos_init, jpdaf_p_vel_init,
-                                phd_prune_weight_threshold,
-                                phd_prune_mahalanobis_dist_threshold,
-                                phd_extract_weight_threshold);
-            kalman_filter_.first_callback = false;
-
-            previous_timestamp = current_timestamp;
-        }
-
-        else
-        {
-
-
-            delta_timestamp = filter_dt;//0.143; //hard-coded for 4.5 Hz TO DO FIX
-            //      delta_timestamp = current_timestamp - previous_timestamp;
-            //check for data with no timestamp and thus dt = 0
-
-            kalman_filter_.dt_cam = delta_timestamp;
-            previous_timestamp = current_timestamp;
-            for(int i =0; i < phd_filter_.X_k.cols(); i++)
-            {
-                kalman_filter_.B.block<4,3>(0,3*i) = get_B_ang_vel_matrix(phd_filter_.X_k(0,i),phd_filter_.X_k(2,i));
-            }
-
-            kalman_filter_.kalmanTrack();
-            ROS_INFO_STREAM("Finished track");
-            first_track_flag = true;
-
-            //after tracking, store previous Z value to update velocity
-            // for(int i =0; i < phd_filter_.detected_size_k; i++)
-            // {
-            //     //store Z
-            //     kalman_filter_.Z_k_previous(0,i) = in_PoseArray.poses[i].position.x;
-            //     kalman_filter_.Z_k_previous(1,i) = in_PoseArray.poses[i].position.y;
-
-            // }
-
-
-            kalman_filter_.B = Eigen::MatrixXf::Zero(4,3*num_drones);
-
-            //update for B ang vel matrix
-            //store B matrix for ang velocity
-            
-
-            // consensus_sort();
-
-            // imu_timestamp = in_PoseArray.header.stamp;
-        }
-    }
-
-    ROS_INFO_STREAM("Pub track");
-    publish_tracks();
-
-// ===== 修改后：适配 tracks_ 结构的 CSV 生成代码 =====
-if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
-    
-    // 1. 获取最新的 Tracks 列表
-    const auto& tracks = phd_filter_.tracks_;
-    int num_possible_tracks = tracks.size(); // 通常等于 NUM_DRONES
-
-    // 2. 定义缓冲区存储上一次的宽度和高度 (索引对应 track 的 index)
-    static std::vector<float> prev_widths;
-    static std::vector<float> prev_heights;
-    
-    // 初始化或扩容缓冲区
-    if (prev_widths.size() < num_possible_tracks) {
-        prev_widths.resize(num_possible_tracks, 50.0f); // 默认宽50
-        prev_heights.resize(num_possible_tracks, 50.0f); // 默认高50
-    }
-
-    // 3. 遍历所有 Track
-    for (int i = 0; i < num_possible_tracks; i++) {
-        const auto& tr = tracks[i];
-
-        // 过滤：只输出活跃的，或者虽然在滑行(Coasting)但没彻底丢失的目标
-        // 如果置信度太低且未匹配，可能是纯杂波，不写入CSV
-        if (!tr.active || tr.confidence < 0.1f) {
-            continue; 
-        }
-
-        // 获取 ID (MOT标准通常 ID 从 1 开始，所以 +1)
-        int target_id = tr.id + 1; 
-
-        // 获取跟踪中心 (注意：假设状态向量是 [x, vx, y, vy])
-        float track_x = tr.x(0);
-        float track_y = tr.x(2);
-
-        // --- 宽高匹配逻辑 ---
-        // 因为 Filter 不带宽高，我们需要去当前的 detections 里找一个离得最近的，
-        // 借用它的宽高。如果找不到，就沿用上一帧的宽高。
-        float best_w = prev_widths[i];
-        float best_h = prev_heights[i];
-        
-        float min_dist = 100.0f; // 搜索半径 (像素)
-        int best_det_idx = -1;
-
-        // 在当前帧检测中寻找最近的框
-        for (size_t k = 0; k < in_PoseArray.poses.size(); k++) {
-            float det_x = in_PoseArray.poses[k].position.x;
-            float det_y = in_PoseArray.poses[k].position.y;
-            
-            float dist = std::hypot(det_x - track_x, det_y - track_y);
-            
-            // 距离更近，且该检测框大小合理
-            if (dist < min_dist) {
-                min_dist = dist;
-                best_det_idx = k;
-            }
-        }
-
-        // 如果找到了对应的检测框，更新宽高缓冲区
-        if (best_det_idx != -1) {
-            best_w = in_PoseArray.poses[best_det_idx].orientation.x;
-            best_h = in_PoseArray.poses[best_det_idx].orientation.y;
-            prev_widths[i] = best_w;
-            prev_heights[i] = best_h;
-        }
-
-        // --- 生成边界框 ---
-        int bb_left   = static_cast<int>(std::round(track_x - best_w / 2.0f));
-        int bb_top    = static_cast<int>(std::round(track_y - best_h / 2.0f));
-        int bb_width  = static_cast<int>(std::round(best_w));
-        int bb_height = static_cast<int>(std::round(best_h));
-
-        // --- 边界检查 (防止越界或负数) ---
-        // 允许有一部分在屏幕外，但宽和高必须为正
-        if (bb_width > 0 && bb_height > 0) {
-            
-            // 写入 CSV (MOT 格式: frame, id, left, top, w, h, conf, class, visibility)
-            tracking_csv_ << frame_count_ + 1 << ","
-                          << target_id << ","
-                          << bb_left << "," 
-                          << bb_top << ","
-                          << bb_width << "," 
-                          << bb_height << ","
-                          << 1 << "," // 输出精确的置信度
-                          << 1 << ","   // Class: 1
-                          << 1 << "\n"; // Visibility: 1
-        }
-    }
-    
-    frame_count_++;
-}
-
-    auto end_time = std::chrono::high_resolution_clock::now();
-                auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-                auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
-                std::cout << "detection_callback() 运行时间：\n";
-                std::cout << duration_ms.count() << " 毫秒\n"; 
-                std::cout << duration_us.count() << " 微秒\n";
-}
-*/
 /* callback for 2D image to call phd track when using flightmare rosbag data
  * input: PoseArray
  * output: N/A
@@ -1785,6 +1159,8 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
             // x, y, w, h
             phd_filter_.Z_k(0,i) = in_PoseArray.poses[i].position.x;
             phd_filter_.Z_k(1,i) = in_PoseArray.poses[i].position.y;
+            phd_filter_.Z_k(2,i) = in_PoseArray.poses[i].orientation.x; // 宽 (根据你的格式)
+            phd_filter_.Z_k(3,i) = in_PoseArray.poses[i].orientation.y; // 高 (根据你的格式)
 
             phd_filter_.Detections(0,i) = in_PoseArray.poses[i].position.x;
             phd_filter_.Detections(1,i) = in_PoseArray.poses[i].position.y;
@@ -1903,78 +1279,7 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
     ROS_INFO_STREAM("Pub track");
     publish_tracks();
 
-    // // ===== 修改后：CSV 写入逻辑 =====
-    // if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
-        
-    //     const auto& tracks = phd_filter_.tracks_;
-    //     int num_possible_tracks = tracks.size(); 
-
-    //     static std::vector<float> prev_widths;
-    //     static std::vector<float> prev_heights;
-        
-    //     if (prev_widths.size() < num_possible_tracks) {
-    //         prev_widths.resize(num_possible_tracks, 50.0f); 
-    //         prev_heights.resize(num_possible_tracks, 50.0f); 
-    //     }
-
-    //     for (int i = 0; i < num_possible_tracks; i++) {
-    //         const auto& tr = tracks[i];
-
-    //         if (!tr.active || tr.confidence < 0.1f) {
-    //             continue; 
-    //         }
-
-    //         int target_id = tr.id + 1; 
-    //         float track_x = tr.x(0);
-    //         float track_y = tr.x(2);
-
-    //         float best_w = prev_widths[i];
-    //         float best_h = prev_heights[i];
-            
-    //         float min_dist = 100.0f; 
-    //         int best_det_idx = -1;
-
-    //         // 【修改点7】：为了安全，寻找匹配框时也限制在 process_count 范围内
-    //         for (size_t k = 0; k < process_count; k++) {
-    //             float det_x = in_PoseArray.poses[k].position.x;
-    //             float det_y = in_PoseArray.poses[k].position.y;
-                
-    //             float dist = std::hypot(det_x - track_x, det_y - track_y);
-                
-    //             if (dist < min_dist) {
-    //                 min_dist = dist;
-    //                 best_det_idx = k;
-    //             }
-    //         }
-
-    //         if (best_det_idx != -1) {
-    //             best_w = in_PoseArray.poses[best_det_idx].orientation.x;
-    //             best_h = in_PoseArray.poses[best_det_idx].orientation.y;
-    //             prev_widths[i] = best_w;
-    //             prev_heights[i] = best_h;
-    //         }
-
-    //         int bb_left   = static_cast<int>(std::round(track_x - best_w / 2.0f));
-    //         int bb_top    = static_cast<int>(std::round(track_y - best_h / 2.0f));
-    //         int bb_width  = static_cast<int>(std::round(best_w));
-    //         int bb_height = static_cast<int>(std::round(best_h));
-
-    //         if (bb_width > 0 && bb_height > 0) {
-    //             tracking_csv_ << frame_count_ + 1 << ","
-    //                           << target_id << ","
-    //                           << bb_left << "," 
-    //                           << bb_top << ","
-    //                           << bb_width << "," 
-    //                           << bb_height << ","
-    //                           << 1 << "," 
-    //                           << 1 << ","   
-    //                           << 1 << "\n"; 
-    //         }
-    //     }
-        
-    //     frame_count_++;
-    //     tracking_csv_.flush(); 
-    // }
+ 
     // ===== 修改后：输出原始检测框 (Raw Detections) 以提升 MOTP =====
     if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
         
@@ -2001,7 +1306,7 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
             
             // 【默认值】先拿滤波器的值保底 (万一没匹配到检测框，虽然 match_type!=0 时不太可能)
             float output_x = tr.x(0);
-            float output_y = tr.x(2);
+            float output_y = tr.x(1);
             float output_w = prev_widths[i];
             float output_h = prev_heights[i];
             
@@ -2016,7 +1321,7 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
                 float det_y = in_PoseArray.poses[k].position.y;
                 
                 // 计算距离 (这里用 tr.x 也就是预测位置去搜最近的检测，是很准的)
-                float dist = std::hypot(det_x - tr.x(0), det_y - tr.x(2));
+                float dist = std::hypot(det_x - tr.x(0), det_y - tr.x(1));
                 
                 if (dist < min_dist) {
                     min_dist = dist;
@@ -2208,17 +1513,7 @@ void multi_robot_tracking_Nodelet::publish_tracks()
     else
     {
 
-        //store estimated PHD X_k into tracked output
-        // for(int i =0; i < phd_filter_.X_k.cols(); i++) {
 
-        //     temp_pose.position.x = phd_filter_.X_k(0,i);
-        //     temp_pose.position.y = phd_filter_.X_k(1,i);
-        //     tracked_output_pose.poses.push_back(temp_pose);
-
-        //     temp_velocity.position.x = phd_filter_.X_k(2,i);
-        //     temp_velocity.position.y = phd_filter_.X_k(3,i);
-        //     tracked_velocity_pose.poses.push_back(temp_velocity);
-        // }
         for(int i =0; i < phd_filter_.X_k.cols(); i++) {
 
             temp_pose.position.x = phd_filter_.X_k(0,i);
