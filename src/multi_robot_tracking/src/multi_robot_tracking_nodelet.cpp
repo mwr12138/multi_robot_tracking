@@ -1903,7 +1903,79 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
     ROS_INFO_STREAM("Pub track");
     publish_tracks();
 
-    // ===== 修改后：CSV 写入逻辑 =====
+    // // ===== 修改后：CSV 写入逻辑 =====
+    // if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
+        
+    //     const auto& tracks = phd_filter_.tracks_;
+    //     int num_possible_tracks = tracks.size(); 
+
+    //     static std::vector<float> prev_widths;
+    //     static std::vector<float> prev_heights;
+        
+    //     if (prev_widths.size() < num_possible_tracks) {
+    //         prev_widths.resize(num_possible_tracks, 50.0f); 
+    //         prev_heights.resize(num_possible_tracks, 50.0f); 
+    //     }
+
+    //     for (int i = 0; i < num_possible_tracks; i++) {
+    //         const auto& tr = tracks[i];
+
+    //         if (!tr.active || tr.confidence < 0.1f) {
+    //             continue; 
+    //         }
+
+    //         int target_id = tr.id + 1; 
+    //         float track_x = tr.x(0);
+    //         float track_y = tr.x(2);
+
+    //         float best_w = prev_widths[i];
+    //         float best_h = prev_heights[i];
+            
+    //         float min_dist = 100.0f; 
+    //         int best_det_idx = -1;
+
+    //         // 【修改点7】：为了安全，寻找匹配框时也限制在 process_count 范围内
+    //         for (size_t k = 0; k < process_count; k++) {
+    //             float det_x = in_PoseArray.poses[k].position.x;
+    //             float det_y = in_PoseArray.poses[k].position.y;
+                
+    //             float dist = std::hypot(det_x - track_x, det_y - track_y);
+                
+    //             if (dist < min_dist) {
+    //                 min_dist = dist;
+    //                 best_det_idx = k;
+    //             }
+    //         }
+
+    //         if (best_det_idx != -1) {
+    //             best_w = in_PoseArray.poses[best_det_idx].orientation.x;
+    //             best_h = in_PoseArray.poses[best_det_idx].orientation.y;
+    //             prev_widths[i] = best_w;
+    //             prev_heights[i] = best_h;
+    //         }
+
+    //         int bb_left   = static_cast<int>(std::round(track_x - best_w / 2.0f));
+    //         int bb_top    = static_cast<int>(std::round(track_y - best_h / 2.0f));
+    //         int bb_width  = static_cast<int>(std::round(best_w));
+    //         int bb_height = static_cast<int>(std::round(best_h));
+
+    //         if (bb_width > 0 && bb_height > 0) {
+    //             tracking_csv_ << frame_count_ + 1 << ","
+    //                           << target_id << ","
+    //                           << bb_left << "," 
+    //                           << bb_top << ","
+    //                           << bb_width << "," 
+    //                           << bb_height << ","
+    //                           << 1 << "," 
+    //                           << 1 << ","   
+    //                           << 1 << "\n"; 
+    //         }
+    //     }
+        
+    //     frame_count_++;
+    //     tracking_csv_.flush(); 
+    // }
+    // ===== 修改后：输出原始检测框 (Raw Detections) 以提升 MOTP =====
     if (filter_to_use_.compare("phd") == 0 && tracking_csv_.is_open()) {
         
         const auto& tracks = phd_filter_.tracks_;
@@ -1920,26 +1992,31 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
         for (int i = 0; i < num_possible_tracks; i++) {
             const auto& tr = tracks[i];
 
-            if (!tr.active || tr.confidence < 0.1f) {
+            // 1. 基础过滤：只处理活跃且非 MISS 的目标
+            if (!tr.active || tr.confidence < 0.1f || tr.match_type == 0) {
                 continue; 
             }
 
             int target_id = tr.id + 1; 
-            float track_x = tr.x(0);
-            float track_y = tr.x(2);
-
-            float best_w = prev_widths[i];
-            float best_h = prev_heights[i];
             
+            // 【默认值】先拿滤波器的值保底 (万一没匹配到检测框，虽然 match_type!=0 时不太可能)
+            float output_x = tr.x(0);
+            float output_y = tr.x(2);
+            float output_w = prev_widths[i];
+            float output_h = prev_heights[i];
+            
+            // 2. 寻找最近的原始检测框 (Raw Detection)
+            // 既然 match_type != 0，说明一定有一个检测框和它关联上了
             float min_dist = 100.0f; 
             int best_det_idx = -1;
 
-            // 【修改点7】：为了安全，寻找匹配框时也限制在 process_count 范围内
+            // 注意：这里只搜索 process_count 范围内的有效检测
             for (size_t k = 0; k < process_count; k++) {
                 float det_x = in_PoseArray.poses[k].position.x;
                 float det_y = in_PoseArray.poses[k].position.y;
                 
-                float dist = std::hypot(det_x - track_x, det_y - track_y);
+                // 计算距离 (这里用 tr.x 也就是预测位置去搜最近的检测，是很准的)
+                float dist = std::hypot(det_x - tr.x(0), det_y - tr.x(2));
                 
                 if (dist < min_dist) {
                     min_dist = dist;
@@ -1947,17 +2024,32 @@ void multi_robot_tracking_Nodelet::detection_Callback(const geometry_msgs::PoseA
                 }
             }
 
+            // 3. 【核心修改】如果找到了对应的检测框，直接用原始数据覆盖输出！
             if (best_det_idx != -1) {
-                best_w = in_PoseArray.poses[best_det_idx].orientation.x;
-                best_h = in_PoseArray.poses[best_det_idx].orientation.y;
-                prev_widths[i] = best_w;
-                prev_heights[i] = best_h;
+                // 使用原始检测框的坐标 (X, Y) —— 这能大幅提升 MOTP
+                output_x = in_PoseArray.poses[best_det_idx].position.x;
+                output_y = in_PoseArray.poses[best_det_idx].position.y;
+                
+                // 使用原始检测框的尺寸 (W, H)
+                output_w = in_PoseArray.poses[best_det_idx].orientation.x;
+                output_h = in_PoseArray.poses[best_det_idx].orientation.y;
+                
+                // 更新历史尺寸缓存
+                prev_widths[i] = output_w;
+                prev_heights[i] = output_h;
+            } else {
+                // 如果极其罕见地没找到（距离太远），这里可以选择：
+                // A. 继续用滤波器平滑值 (保持 output_x/y 不变)
+                // B. 直接 continue 不写了 (更严格)
+                // 建议选 A，保底输出
+                // ROS_WARN_THROTTLE(1, "Track %d is matched but too far from any detection!", tr.id);
             }
 
-            int bb_left   = static_cast<int>(std::round(track_x - best_w / 2.0f));
-            int bb_top    = static_cast<int>(std::round(track_y - best_h / 2.0f));
-            int bb_width  = static_cast<int>(std::round(best_w));
-            int bb_height = static_cast<int>(std::round(best_h));
+            // 4. 生成边界框 (使用 output_x/y/w/h)
+            int bb_left   = static_cast<int>(std::round(output_x - output_w / 2.0f));
+            int bb_top    = static_cast<int>(std::round(output_y - output_h / 2.0f));
+            int bb_width  = static_cast<int>(std::round(output_w));
+            int bb_height = static_cast<int>(std::round(output_h));
 
             if (bb_width > 0 && bb_height > 0) {
                 tracking_csv_ << frame_count_ + 1 << ","
